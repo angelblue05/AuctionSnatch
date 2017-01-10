@@ -161,7 +161,7 @@ function ASbringtotop()
       AS.mainframe:SetFrameStrata("HIGH")
       --3 because theres the main frame, then the edit box, then the dropdown buttons - gotta cover them all
    end
-   AS.mainframe.headerframe.editbox:SetFocus()
+   --AS.mainframe.headerframe.editbox:SetFocus()
 end
 
 function GetCursorScaledPosition()
