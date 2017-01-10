@@ -57,7 +57,7 @@ function AScreatemainframe()
 
    end)
 
-    -- CLOSE BUTTON
+------ CLOSE BUTTON
     AS.mainframe.closebutton = CreateFrame("button", nil, AS.mainframe)
     AS.mainframe.closebutton:SetWidth(14)
     AS.mainframe.closebutton:SetHeight(14)
@@ -431,7 +431,7 @@ function ASresetpriceignore(self)
   if(listnum) then
     ASprint("Modify price. Showing input.")
     ASprint(AS.item[listnum])
-    AScreatemanualprompt(AS.item[listnum])
+    AScreatemanualprompt(AS.item[listnum], listnum)
     --AS.item[listnum].priceoverride = nil
     AS.optionframe:Hide()
     ASsavevariables()
@@ -467,20 +467,19 @@ function ASdeleterow(self)
 end
 
 
-function AScreatemanualprompt(item)
+function AScreatemanualprompt(item, listnumber)
 local buttonnames
 
     ASprint("|c004499FF creating prompt frame")
     if AS.manualprompt then
         AS.manualprompt:Hide()
     end
-
     if AS.prompt then
         AS.prompt:Hide()
     end
-
     if item then
         AS.item["ASmanualitem"] = item
+        AS.item['ASmanualitem'].listnumber = listnumber
     end
 
     AS.manualprompt = CreateFrame("Frame", "ASmanualpromptframe", UIParent)
@@ -511,66 +510,30 @@ local buttonnames
       ASprint("|c0055ffffManual Prompt is Hidden.")
    end)
 
-
-    --- Close button
-    AS.manualprompt.closebutton = CreateFrame("button",nil,AS.manualprompt)
+------ Close button
+    -------------- STYLE ----------------
+    AS.manualprompt.closebutton = CreateFrame("Button", nil, AS.manualprompt)
     AS.manualprompt.closebutton:SetWidth(15)
     AS.manualprompt.closebutton:SetHeight(15)
-    AS.manualprompt.closebutton:SetPoint("TopRight",AS.manualprompt,-2,-2)
-    AS.manualprompt.closebutton:SetScript("OnClick", function(self)
-                                            AS[AS_BUTTONCLOSEMANUAL]()
-                                          end)
-    F.ReskinClose(AS.manualprompt.closebutton)
-
------- Ignore button
-    -------------- STYLE ----------------
-    AS.manualprompt.ignorebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
-    AS.manualprompt.ignorebutton:SetText(AS_BUTTONIGNOREMANUAL)
-    AS.manualprompt.ignorebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
-    AS.manualprompt.ignorebutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.manualprompt.ignorebutton:SetPoint("BOTTOMLEFT",AS.manualprompt,"BOTTOMLEFT",18,12)
+    AS.manualprompt.closebutton:SetPoint("TOPRIGHT", AS.manualprompt, -2, -2)
     -------------- SCRIPT ----------------
-    AS.manualprompt.ignorebutton:SetScript("OnClick", function(self)
-        AS[AS_BUTTONIGNOREMANUAL]()
+    AS.manualprompt.closebutton:SetScript("OnClick", function(self)
+        AS[AS_BUTTONCLOSEMANUAL]()
     end)
-    AS.manualprompt.ignorebutton:SetScript("OnEnter",function(self)
-        ASshowtooltip(AS.manualprompt.ignorebutton, AS_BUTTONTEXT3)
-    end)
-    AS.manualprompt.ignorebutton:SetScript("OnLeave",function(self)
-        AShidetooltip()
-    end)
-    F.Reskin(AS.manualprompt.ignorebutton)
-    ---------------------------------------
+    F.ReskinClose(AS.manualprompt.closebutton) -- Aurora
 
-    --- Save button
-    AS.manualprompt.savebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
-    AS.manualprompt.savebutton:SetText(AS_BUTTONEXPENSIVEMANUAL)
-    AS.manualprompt.savebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
-    AS.manualprompt.savebutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.manualprompt.savebutton:SetPoint("BOTTOMRIGHT",AS.manualprompt,"BOTTOMRIGHT",-18,12)
-
-    AS.manualprompt.savebutton:SetScript("OnClick", function(self)
-                                            AS[AS_BUTTONEXPENSIVEMANUAL]()
-                                          end)
-    AS.manualprompt.savebutton:SetScript("OnEnter",function(self)
-                                            ASshowtooltip(AS.manualprompt.savebutton,AS_BUTTONTEXT8)
-                                         end)
-    AS.manualprompt.savebutton:SetScript("OnLeave", function(self)
-                                            AShidetooltip()
-                                         end)
-    F.Reskin(AS.manualprompt.savebutton)
-
-    --- Icon
+------ Icon
+    -------------- STYLE ----------------
     AS.manualprompt.icon = CreateFrame("Button", nil, AS.manualprompt)
-    AS.manualprompt.icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss")
-    AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)
-    AS.manualprompt.icon:SetPoint("TOPLEFT", AS.manualprompt, "TOPLEFT", AS_FRAMEWHITESPACE+2, -AS_FRAMEWHITESPACE)
+    AS.manualprompt.icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
+    AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+    AS.manualprompt.icon:SetPoint("TOPLEFT", AS.manualprompt, "TOPLEFT", 18, -15)
     AS.manualprompt.icon:SetHeight(37)
     AS.manualprompt.icon:SetWidth(37)
     if item then
         AS.manualprompt.icon:SetNormalTexture(item.icon)
     end
-
+    -------------- SCRIPT ----------------
     AS.manualprompt.icon:SetScript("OnEnter", function(self)
         local link = item.link
 
@@ -601,76 +564,111 @@ local buttonnames
         GameTooltip:Hide()
     end)
 
-    -- Item Label
-    AS.manualprompt.upperstring= AS.manualprompt:CreateFontString(nil,"OVERLAY","gamefontnormal")
+------ Item Label
+    -------------- STYLE ----------------
+    AS.manualprompt.upperstring= AS.manualprompt:CreateFontString(nil, "OVERLAY", "gamefontnormal")
     AS.manualprompt.upperstring:SetJustifyH("CENTER")
     AS.manualprompt.upperstring:SetWidth(AS.manualprompt:GetWidth() - (AS.manualprompt.icon:GetWidth() + 2*AS_FRAMEWHITESPACE)  )
     AS.manualprompt.upperstring:SetHeight(AS.manualprompt.icon:GetHeight())
-    AS.manualprompt.upperstring:SetPoint("LEFT",AS.manualprompt.icon,"right")
+    AS.manualprompt.upperstring:SetPoint("LEFT", AS.manualprompt.icon, "RIGHT")
     if item then
         AS.manualprompt.upperstring:SetText(item.name)
     end
 
-    -- Cutoff price
-    AS.manualprompt.lowerstring= AS.manualprompt:CreateFontString(nil,"OVERLAY","gamefontnormal")
+------ Cutoff price
+    -------------- STYLE ----------------
+    AS.manualprompt.lowerstring= AS.manualprompt:CreateFontString(nil, "OVERLAY","gamefontnormal")
     AS.manualprompt.lowerstring:SetJustifyH("Left")
     AS.manualprompt.lowerstring:SetJustifyV("Top")
     AS.manualprompt.lowerstring:SetWidth(AS.manualprompt:GetWidth() - (2*AS_FRAMEWHITESPACE))
-
-    AS.manualprompt.lowerstring:SetPoint("topright",AS.manualprompt.upperstring,"bottomright", 2)
+    AS.manualprompt.lowerstring:SetPoint("TOPRIGHT",AS.manualprompt.upperstring,"BOTTOMRIGHT", 2)
     if item and item.ignoretable then
-        AS.manualprompt.lowerstring:SetText("\n\n"..AS_CUTOFF..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
+        AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
     else
-        AS.manualprompt.lowerstring:SetText("\n\n"..AS_CUTOFF..":")
+        AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":")
     end
 
---   AS.prompt.lowerstring:IsMultiLine(true)
-
-    AS.manualprompt.priceoverride = CreateFrame("EditBox",nil,AS.manualprompt,"InputBoxTemplate")
-    AS.manualprompt.priceoverride:SetPoint("Right",-AS_FRAMEWHITESPACE,-10)
+------ Input box
+    -------------- STYLE ----------------
+    AS.manualprompt.priceoverride = CreateFrame("EditBox", nil, AS.manualprompt, "InputBoxTemplate")
+    AS.manualprompt.priceoverride:SetPoint("BOTTOMLEFT", AS.manualprompt.lowerstring, "BOTTOMLEFT", AS.manualprompt:GetWidth()-81, 5)
     AS.manualprompt.priceoverride:SetHeight(25)
     AS.manualprompt.priceoverride:SetWidth(45)
     AS.manualprompt.priceoverride:SetNumeric(true)
     AS.manualprompt.priceoverride:SetAutoFocus(false)
+    -------------- SCRIPT ----------------
+    AS.manualprompt.priceoverride:SetScript("OnEscapePressed", function(self)
+        AS.manualprompt.priceoverride:ClearFocus()
+    end)
+    AS.manualprompt.priceoverride:SetScript("OnTextChanged", function(self)
+        local messagestring
 
-  --AS.prompt.SetFontColor
-  AS.manualprompt.priceoverride:SetScript("OnEscapePressed",function(self)
-    AS.manualprompt.priceoverride:ClearFocus()
-  end)
-  AS.manualprompt.priceoverride:SetScript("OnTextChanged",function(self)
-    local messagestring
+        if AS.manualprompt.priceoverride:GetText() == "" then
+            AS.item["ASmanualitem"].priceoverride = nil
+        elseif ASsavedtable and ASsavedtable.copperoverride then
+            AS.item["ASmanualitem"].priceoverride = tonumber(AS.manualprompt.priceoverride:GetText())
+        else
+            AS.item["ASmanualitem"].priceoverride = AS.manualprompt.priceoverride:GetText() * COPPER_PER_GOLD
+        end
 
-    if (AS.manualprompt.priceoverride:GetText() == "") then
-      AS.item["ASmanualitem"].priceoverride = nil
-    else
-      if(ASsavedtable and ASsavedtable.copperoverride) then
-        AS.item["ASmanualitem"].priceoverride = tonumber(AS.manualprompt.priceoverride:GetText())
-      else
-        AS.item["ASmanualitem"].priceoverride = AS.manualprompt.priceoverride:GetText() * COPPER_PER_GOLD
-      end
-    end
+        if AS.item["ASmanualitem"].priceoverride and (tonumber(AS.item["ASmanualitem"].priceoverride) > 0) then
+            messagestring = "\n"..AS_CUTOFF..":\n"
+            messagestring = messagestring..ASGSC(tonumber(AS.item["ASmanualitem"].priceoverride))
+            AS.manualprompt.lowerstring:SetText(messagestring)
+        else
+            ASprint("|c00ffaaaaNo Cutoff price found!")
+        end
+    end)
+    AS.manualprompt.priceoverride:SetScript("OnEnter", function(self)
+        if ASsavedtable and ASsavedtable.copperoverride then
+            ASshowtooltip(self,"A value here, in COPPER, overrides all other ignore conditions")
+        else
+            ASshowtooltip(self,"A value here, in gold, overrides all other ignore conditions")
+        end
+    end)
+    AS.manualprompt.priceoverride:SetScript("OnLeave", function(self)
+        AShidetooltip()
+    end)
+    F.ReskinInput(AS.manualprompt.priceoverride) -- Aurora
 
-    if (AS.item["ASmanualitem"].priceoverride and tonumber(AS.item["ASmanualitem"].priceoverride) > 0) then
+------ IGNORE BUTTON
+    -------------- STYLE ----------------
+    AS.manualprompt.ignorebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
+    AS.manualprompt.ignorebutton:SetText(AS_BUTTONIGNOREMANUAL)
+    AS.manualprompt.ignorebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
+    AS.manualprompt.ignorebutton:SetHeight(AS_BUTTON_HEIGHT)
+    AS.manualprompt.ignorebutton:SetPoint("BOTTOMLEFT",AS.manualprompt,"BOTTOMLEFT",18,12)
+    -------------- SCRIPT ----------------
+    AS.manualprompt.ignorebutton:SetScript("OnClick", function(self)
+        AS[AS_BUTTONIGNOREMANUAL]()
+    end)
+    AS.manualprompt.ignorebutton:SetScript("OnEnter",function(self)
+        ASshowtooltip(AS.manualprompt.ignorebutton, AS_BUTTONTEXT3)
+    end)
+    AS.manualprompt.ignorebutton:SetScript("OnLeave",function(self)
+        AShidetooltip()
+    end)
+    F.Reskin(AS.manualprompt.ignorebutton)
 
-        messagestring="\n\n"..AS_CUTOFF..":\n"
-        messagestring=messagestring..ASGSC(tonumber(AS.item["ASmanualitem"].priceoverride))
-        AS.manualprompt.lowerstring:SetText(messagestring)
-    else
-        ASprint("|c00ffaaaaNo Cutoff price found!")
-    end
+------ SAVE BUTTON
+    -------------- STYLE ----------------
+    AS.manualprompt.savebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
+    AS.manualprompt.savebutton:SetText(AS_BUTTONEXPENSIVEMANUAL)
+    AS.manualprompt.savebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
+    AS.manualprompt.savebutton:SetHeight(AS_BUTTON_HEIGHT)
+    AS.manualprompt.savebutton:SetPoint("BOTTOMRIGHT",AS.manualprompt,"BOTTOMRIGHT",-18,12)
+    -------------- SCRIPT ----------------
+    AS.manualprompt.savebutton:SetScript("OnClick", function(self)
+        AS[AS_BUTTONEXPENSIVEMANUAL]()
+    end)
+    AS.manualprompt.savebutton:SetScript("OnEnter",function(self)
+        ASshowtooltip(AS.manualprompt.savebutton, AS_BUTTONTEXT8)
+    end)
+    AS.manualprompt.savebutton:SetScript("OnLeave", function(self)
+        AShidetooltip()
+    end)
+    F.Reskin(AS.manualprompt.savebutton)
 
-  end)
-  AS.manualprompt.priceoverride:SetScript("OnEnter",function(self)
-    if(ASsavedtable and ASsavedtable.copperoverride) then
-      ASshowtooltip(self,"A value here, in COPPER, overrides all other ignore conditions")
-    else
-      ASshowtooltip(self,"A value here, in gold, overrides all other ignore conditions")
-    end
-  end)
-  AS.manualprompt.priceoverride:SetScript("OnLeave",function(self)
-    AShidetooltip()
-  end)
-  F.ReskinInput(AS.manualprompt.priceoverride)
 
     ASprint("Done creating manual prompt frame")
 end

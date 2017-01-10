@@ -1336,17 +1336,18 @@ function AScreatebuttonhandlers()
              end
 
     AS[AS_BUTTONIGNOREMANUAL] = function()  --ignore this item
-        local name
-        name = AS.item["ASmanualitem"].name
-        if not (AS.item["ASmanualitem"].ignoretable) then
-           AS.item["ASmanualitem"].ignoretable = {}
-        end
-
-        AS.item["ASmanualitem"].ignoretable[name] = {}
-        AS.item["ASmanualitem"].ignoretable[name].cutoffprice = 0
-        AS.item["ASmanualitem"].ignoretable[name].quality = quality  --used when showing whats ignored, makes it look better
-        ASsavevariables()
-        AS.manualprompt:Hide()
+            local name = AS.item["ASmanualitem"].name
+            local listnumber = AS.item['ASmanualitem'].listnumber
+            
+            if not AS.item[listnumber].ignoretable then
+                AS.item[listnumber].ignoretable = {}
+            end
+            AS.item[listnumber].ignoretable[name] = {}
+            AS.item[listnumber].ignoretable[name].cutoffprice = 0
+            AS.item[listnumber].ignoretable[name].quality = quality  --used when showing whats ignored, makes it look better
+            AS.item['ASmanualitem'] = nil
+            ASsavevariables()
+            AS.manualprompt:Hide()
     end
 
    AS[AS_BUTTONEXPENSIVE] = function()  --too expensive
@@ -1371,17 +1372,18 @@ function AScreatebuttonhandlers()
              end
 
     AS[AS_BUTTONEXPENSIVEMANUAL] = function()  --too expensive
-            local name
-            name = AS.item["ASmanualitem"].name
-            if not (AS.item["ASmanualitem"].ignoretable) then
-               AS.item["ASmanualitem"].ignoretable = {}
+            local name = AS.item["ASmanualitem"].name
+            local listnumber = AS.item['ASmanualitem'].listnumber
+
+            if not AS.item[listnumber].ignoretable then
+               AS.item[listnumber].ignoretable = {}
             end
+            if not AS.item['ASmanualitem'].priceoverride then return false end
 
-            if not AS.item["ASmanualitem"].priceoverride then return false end
-
-            AS.item["ASmanualitem"].ignoretable[name] = {}
-            AS.item["ASmanualitem"].ignoretable[name].cutoffprice = AS.item["ASmanualitem"].priceoverride
-            AS.item["ASmanualitem"].ignoretable[name].quality = quality  --used when showing whats ignored, makes it look better
+            AS.item[listnumber].ignoretable[name] = {}
+            AS.item[listnumber].ignoretable[name].cutoffprice = AS.item["ASmanualitem"].priceoverride
+            AS.item[listnumber].ignoretable[name].quality = quality  --used when showing whats ignored, makes it look better
+            AS.item["ASmanualitem"] = nil
             ASsavevariables()
             AS.manualprompt:Hide()
     end
