@@ -1,0 +1,14 @@
+Auction Snatch keeps a saved list of items you want to buy from the Auction House, and automatically scans the Auction House for every item on your list.  It's very fast and will happen before you even have time to type anything in.  If an auction is found, a prompt will appear to ask you what you want to do.  The selections in the Prompt are self-explanatory.
+
+Many mods keep track of items you want to remember or search for - but I found it tedious to keep selecting items in the list.  Shopping List automates that process.  I no longer worry about missing the rare Hyacinth Macaw in the auction house!
+
+Directions:
+A new tab will appear on the Auction House Frame.  Clicking that will bring up the interface.  Type in your search queries, hit enter, and then when your list is complete, click 'Start Search'.
+
+Checking the 'Auto Search' button will automatically start searching when you open the auction house.
+'Esc' will always close any open frames.
+Items that appear when you search that are not what you were looking for, can be added to an 'ignore list'.  Next search, you will not be bothered by that item.  You may also ignore items that are too expensive.  Shopping List will remember the buyout price of that item, and not prompt you for items above that price.
+
+Shift-click on any item in your bags or in chat links, when the AS window is open, to add that item to your list.
+
+When opening the Auction House, holding shift will reverse the auto-search feature.

@@ -1,0 +1,16 @@
+------------------------------------------------------------------------
+r14 | daxdax | 2012-09-02 00:59:22 +0000 (Sun, 02 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/Auctionsnatch.toc
+
+toc update to 5.0
+------------------------------------------------------------------------
+r13 | daxdax | 2011-12-08 23:33:37 +0000 (Thu, 08 Dec 2011) | 2 lines
+Changed paths:
+   M /trunk/Auctionsnatch.toc
+   M /trunk/auctionsnatch.lua
+   M /trunk/auctionsnatchinterface.lua
+
+fixed for 4.3
+GetAuctionItemInfo() had changed, so had getItemRarity() in 4.2
+------------------------------------------------------------------------
