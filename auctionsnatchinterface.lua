@@ -17,7 +17,7 @@ function AScreatemainframe()
 
 
    --
-   AS.mainframe = CreateFrame("Frame","ASmainframe",UIParent)
+   AS.mainframe = CreateFrame("Frame","ASmainframe", UIParent)
    AS.mainframe:SetPoint("right",-100,0)
    AS.mainframe:SetHeight(AS_GROSSHEIGHT+7)
    AS.mainframe:SetWidth(280)
@@ -58,11 +58,12 @@ function AScreatemainframe()
    end)
 
 ------ CLOSE BUTTON
+    -------------- STYLE ----------------
     AS.mainframe.closebutton = CreateFrame("button", nil, AS.mainframe)
     AS.mainframe.closebutton:SetWidth(14)
     AS.mainframe.closebutton:SetHeight(14)
     AS.mainframe.closebutton:SetPoint("TOPRIGHT", AS.mainframe, "TOPRIGHT")
-
+    -------------- SCRIPT ----------------
     AS.mainframe.closebutton:SetScript("OnClick", function(self)
         AS.mainframe:Hide()
         if AS.prompt then
@@ -73,7 +74,6 @@ function AScreatemainframe()
         end
     end)
     F.ReskinClose(AS.mainframe.closebutton)
-
 
    ----------------------------------------------------------
    ---------------------------------------------------------
@@ -90,19 +90,20 @@ function AScreatemainframe()
    AS.mainframe.headerframe:SetPoint("right")
    AS.mainframe.headerframe:SetHeight(AS_HEADERHEIGHT)  --this should be sufficient
    --   AS.mainframe.listframe:SetAllPoints()
-   AS.mainframe.listframe:SetPoint("topleft",AS.mainframe.headerframe,"bottomleft")
-   AS.mainframe.listframe:SetPoint("bottomright")
+   AS.mainframe.listframe:SetPoint("TOPLEFT", AS.mainframe.headerframe,"BOTTOMLEFT",0,6)
+   AS.mainframe.listframe:SetPoint("BOTTOMRIGHT", AS.mainframe, "BOTTOMRIGHT", 0, 6)
    AS.mainframe.listframe:SetHeight(AS_LISTHEIGHT)
 
 
 ------------------------------------------------------------
-    --- INPUT SEARCH BOX
+------ INPUT SEARCH BOX
+    -------------- STYLE ----------------
     AS.mainframe.headerframe.editbox = CreateFrame("EditBox", nil, AS.mainframe.headerframe, "InputBoxTemplate")
-    AS.mainframe.headerframe.editbox:SetPoint("BOTTOMLEFT", AS.mainframe.headerframe, "BOTTOMLEFT", 19, 15)
+    AS.mainframe.headerframe.editbox:SetPoint("BOTTOMLEFT", AS.mainframe.headerframe, "BOTTOMLEFT", 27, 15)
     AS.mainframe.headerframe.editbox:SetHeight(AS_BUTTON_HEIGHT-5)
-    AS.mainframe.headerframe.editbox:SetWidth(AS.mainframe.headerframe:GetWidth()-68)
+    AS.mainframe.headerframe.editbox:SetWidth(AS.mainframe.headerframe:GetWidth()-76)
     AS.mainframe.headerframe.editbox:SetAutoFocus(false)
-
+    -------------- SCRIPT ----------------
     AS.mainframe.headerframe.editbox:SetScript("OnEscapePressed",function(self)
         AS.mainframe.headerframe.editbox:ClearFocus()
     end)
@@ -112,16 +113,18 @@ function AScreatemainframe()
     AS.mainframe.headerframe.editbox:SetScript("OnEnterPressed",function(self)
         AS.mainframe.headerframe.additembutton:Click()
     end)
-    F.ReskinInput(AS.mainframe.headerframe.editbox)
+    F.ReskinInput(AS.mainframe.headerframe.editbox) -- Aurora
 
-    --- ADD ITEM BUTTON
+------ ADD ITEM BUTTON
+    -------------- STYLE ----------------
     AS.mainframe.headerframe.additembutton = CreateFrame("Button",nil,AS.mainframe.headerframe,"UIPanelButtonTemplate")
     AS.mainframe.headerframe.additembutton:SetText("+")
     AS.mainframe.headerframe.additembutton:SetWidth(30)
     AS.mainframe.headerframe.additembutton:SetHeight(AS_BUTTON_HEIGHT-5)
     AS.mainframe.headerframe.additembutton:SetPoint("TOPLEFT", AS.mainframe.headerframe.editbox, "TOPRIGHT", 2, 0)
+    -------------- SCRIPT ----------------
     AS.mainframe.headerframe.additembutton:SetScript("OnClick", ASadditem)
-    F.Reskin(AS.mainframe.headerframe.additembutton)
+    F.Reskin(AS.mainframe.headerframe.additembutton) -- Aurora
 
 
 ------------------------------------------------------------
@@ -166,7 +169,6 @@ function AScreatemainframe()
     AS.mainframe.headerframe.stopsearchbutton:SetWidth(50)
     AS.mainframe.headerframe.stopsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
     AS.mainframe.headerframe.stopsearchbutton:Disable()
-    --AS.mainframe.headerframe.stopsearchbutton:SetMotionScriptsWhileDisabled(enabled)
     AS.mainframe.headerframe.stopsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe.startsearchbutton,"TOPRIGHT", 2, 0)
 
     AS.mainframe.headerframe.stopsearchbutton:SetScript("OnClick", function(self)
@@ -228,7 +230,7 @@ function AScreatemainframe()
     end)
 
     getglobal(AS.mainframe.headerframe.autoopen:GetName().."Text"):SetText(AS_AUTOOPEN);
-    F.ReskinCheck(AS.mainframe.headerframe.autoopen)
+    F.ReskinCheck(AS.mainframe.headerframe.autoopen) -- Aurora
 
 
 
@@ -277,7 +279,7 @@ function AScreatemainframe()
     end)
     F.Reskin(AS.mainframe.headerframe.deletelistbutton)
 
-    -- DROPDOWN MENU
+------ DROPDOWN MENU
     ASdropDownMenu = CreateFrame("Frame", "ASdropDownMenu", AS.mainframe, "UIDropDownMenuTemplate")
     UIDropDownMenu_SetWidth(ASdropDownMenu,130,4)
     ASdropDownMenu:SetPoint("TOPLEFT", AS.mainframe.headerframe.deletelistbutton, "TOPRIGHT", -8, 3)
@@ -468,7 +470,7 @@ end
 
 
 function AScreatemanualprompt(item, listnumber)
-local buttonnames
+    local buttonnames
 
     ASprint("|c004499FF creating prompt frame")
     if AS.manualprompt then
@@ -518,7 +520,7 @@ local buttonnames
     AS.manualprompt.closebutton:SetPoint("TOPRIGHT", AS.manualprompt, -2, -2)
     -------------- SCRIPT ----------------
     AS.manualprompt.closebutton:SetScript("OnClick", function(self)
-        AS[AS_BUTTONCLOSEMANUAL]()
+        AS[AS_BUTTONCLOSE]()
     end)
     F.ReskinClose(AS.manualprompt.closebutton) -- Aurora
 
@@ -588,10 +590,48 @@ local buttonnames
         AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":")
     end
 
+------ IGNORE BUTTON
+    -------------- STYLE ----------------
+    AS.manualprompt.ignorebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
+    AS.manualprompt.ignorebutton:SetText(AS_BUTTONIGNOREMANUAL)
+    AS.manualprompt.ignorebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
+    AS.manualprompt.ignorebutton:SetHeight(AS_BUTTON_HEIGHT)
+    AS.manualprompt.ignorebutton:SetPoint("BOTTOMLEFT",AS.manualprompt,"BOTTOMLEFT",18,12)
+    -------------- SCRIPT ----------------
+    AS.manualprompt.ignorebutton:SetScript("OnClick", function(self)
+        AS[AS_BUTTONIGNOREMANUAL]()
+    end)
+    AS.manualprompt.ignorebutton:SetScript("OnEnter",function(self)
+        ASshowtooltip(AS.manualprompt.ignorebutton, AS_BUTTONTEXT3)
+    end)
+    AS.manualprompt.ignorebutton:SetScript("OnLeave",function(self)
+        AShidetooltip()
+    end)
+    F.Reskin(AS.manualprompt.ignorebutton)
+
+------ SAVE BUTTON
+    -------------- STYLE ----------------
+    AS.manualprompt.savebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
+    AS.manualprompt.savebutton:SetText(AS_BUTTONEXPENSIVEMANUAL)
+    AS.manualprompt.savebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
+    AS.manualprompt.savebutton:SetHeight(AS_BUTTON_HEIGHT)
+    AS.manualprompt.savebutton:SetPoint("BOTTOMRIGHT",AS.manualprompt,"BOTTOMRIGHT",-18,12)
+    -------------- SCRIPT ----------------
+    AS.manualprompt.savebutton:SetScript("OnClick", function(self)
+        AS[AS_BUTTONEXPENSIVEMANUAL]()
+    end)
+    AS.manualprompt.savebutton:SetScript("OnEnter",function(self)
+        ASshowtooltip(AS.manualprompt.savebutton, AS_BUTTONTEXT8)
+    end)
+    AS.manualprompt.savebutton:SetScript("OnLeave", function(self)
+        AShidetooltip()
+    end)
+    F.Reskin(AS.manualprompt.savebutton)
+
 ------ Input box
     -------------- STYLE ----------------
     AS.manualprompt.priceoverride = CreateFrame("EditBox", nil, AS.manualprompt, "InputBoxTemplate")
-    AS.manualprompt.priceoverride:SetPoint("BOTTOMLEFT", AS.manualprompt.lowerstring, "BOTTOMLEFT", AS.manualprompt:GetWidth()-81, 5)
+    AS.manualprompt.priceoverride:SetPoint("BOTTOMRIGHT", AS.manualprompt.savebutton, "TOPRIGHT", 0, 5)
     AS.manualprompt.priceoverride:SetHeight(25)
     AS.manualprompt.priceoverride:SetWidth(45)
     AS.manualprompt.priceoverride:SetNumeric(true)
@@ -630,44 +670,6 @@ local buttonnames
         AShidetooltip()
     end)
     F.ReskinInput(AS.manualprompt.priceoverride) -- Aurora
-
------- IGNORE BUTTON
-    -------------- STYLE ----------------
-    AS.manualprompt.ignorebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
-    AS.manualprompt.ignorebutton:SetText(AS_BUTTONIGNOREMANUAL)
-    AS.manualprompt.ignorebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
-    AS.manualprompt.ignorebutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.manualprompt.ignorebutton:SetPoint("BOTTOMLEFT",AS.manualprompt,"BOTTOMLEFT",18,12)
-    -------------- SCRIPT ----------------
-    AS.manualprompt.ignorebutton:SetScript("OnClick", function(self)
-        AS[AS_BUTTONIGNOREMANUAL]()
-    end)
-    AS.manualprompt.ignorebutton:SetScript("OnEnter",function(self)
-        ASshowtooltip(AS.manualprompt.ignorebutton, AS_BUTTONTEXT3)
-    end)
-    AS.manualprompt.ignorebutton:SetScript("OnLeave",function(self)
-        AShidetooltip()
-    end)
-    F.Reskin(AS.manualprompt.ignorebutton)
-
------- SAVE BUTTON
-    -------------- STYLE ----------------
-    AS.manualprompt.savebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
-    AS.manualprompt.savebutton:SetText(AS_BUTTONEXPENSIVEMANUAL)
-    AS.manualprompt.savebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
-    AS.manualprompt.savebutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.manualprompt.savebutton:SetPoint("BOTTOMRIGHT",AS.manualprompt,"BOTTOMRIGHT",-18,12)
-    -------------- SCRIPT ----------------
-    AS.manualprompt.savebutton:SetScript("OnClick", function(self)
-        AS[AS_BUTTONEXPENSIVEMANUAL]()
-    end)
-    AS.manualprompt.savebutton:SetScript("OnEnter",function(self)
-        ASshowtooltip(AS.manualprompt.savebutton, AS_BUTTONTEXT8)
-    end)
-    AS.manualprompt.savebutton:SetScript("OnLeave", function(self)
-        AShidetooltip()
-    end)
-    F.Reskin(AS.manualprompt.savebutton)
 
 
     ASprint("Done creating manual prompt frame")
@@ -778,9 +780,9 @@ local buttonnames
        GameTooltip:Hide()
     end)
 
-   AS.prompt.buttonnames = {AS_BUTTONUPDATE,AS_BUTTONDELETE,AS_BUTTONIGNORE,AS_BUTTONNEXTAH,AS_BUTTONBID,AS_BUTTONCLOSE,AS_BUTTONDELETEALL,AS_BUTTONEXPENSIVE,AS_BUTTONNEXTLIST,AS_BUTTONBUYOUT}
+   AS.prompt.buttonnames = {AS_BUTTONUPDATE,AS_BUTTONDELETE,AS_BUTTONIGNORE,AS_BUTTONNEXTAH,AS_BUTTONBID,AS_BUTTONDELETEALL,AS_BUTTONEXPENSIVE,AS_BUTTONNEXTLIST,AS_BUTTONBUYOUT}
    buttonnames = AS.prompt.buttonnames
-   local buttontooltips = {AS_BUTTONTEXT1,AS_BUTTONTEXT2,AS_BUTTONTEXT3,AS_BUTTONTEXT4,AS_BUTTONTEXT5,AS_BUTTONTEXT6,AS_BUTTONTEXT7,AS_BUTTONTEXT8,AS_BUTTONTEXT9,AS_BUTTONTEXT10}
+   local buttontooltips = {AS_BUTTONTEXT1,AS_BUTTONTEXT2,AS_BUTTONTEXT3,AS_BUTTONTEXT4,AS_BUTTONTEXT5,AS_BUTTONTEXT7,AS_BUTTONTEXT8,AS_BUTTONTEXT9,AS_BUTTONTEXT10}
 
    buttonwidth = (AS.prompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE)  --basically half its frame size
 
@@ -891,7 +893,7 @@ function AScreatepromptbutton(groupname,name,tooltip)
    groupname[name]:SetScript("OnLeave", function(self)
         AShidetooltip()
                      end)
-   F.Reskin(groupname[name])
+   F.Reskin(groupname[name]) -- Aurora
 
 
 
@@ -907,8 +909,8 @@ function AScreatelistbutton(i)
    -------------------------------the actual button
    buttontemplate = CreateFrame("Button",nil,AS.mainframe.listframe)
    buttontemplate:SetHeight(AS_BUTTON_HEIGHT)
-   buttontemplate:SetWidth(AS.mainframe:GetWidth() - 40)
-   buttontemplate:SetPoint("top")
+   buttontemplate:SetWidth(AS.mainframe:GetWidth() - 60)
+   buttontemplate:SetPoint("TOP")
    buttontemplate:SetNormalFontObject("gamefontnormal")
    buttontemplate.buttonnumber=i
    buttontemplate:SetMovable(true)
@@ -1026,7 +1028,7 @@ function AScreatelistbutton(i)
    --cant use button text because button text cant be left justified
    buttontemplate.leftstring = buttontemplate:CreateFontString(nil,"OVERLAY","gamefontnormal")
    buttontemplate.leftstring:SetJustifyH("Left")
-   buttontemplate.leftstring:SetPoint("LEFT",ASnormaltexture,5,0)
+   buttontemplate.leftstring:SetPoint("LEFT", ASnormaltexture,"LEFT", 10, 0)
 
 
    ---------------------------------- the quantity
@@ -1036,14 +1038,14 @@ function AScreatelistbutton(i)
 
 
    ---------------the little icon on the left
-   buttontemplate.icon=CreateFrame("Button",nil,buttontemplate)
-   buttontemplate.icon:SetWidth(AS_BUTTON_HEIGHT)
-   buttontemplate.icon:SetHeight(AS_BUTTON_HEIGHT)
-   buttontemplate.icon:SetPoint("TOPLEFT")
-   buttontemplate.icon:SetNormalTexture("Interface\\Buttons\\UI-Slot-Background")
-   buttontemplate.icon:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
-   buttontemplate.icon:GetNormalTexture():SetTexCoord(0,0.640625, 0,0.640625)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
-   buttontemplate.icon:SetScript("OnEnter",function(self)
+    buttontemplate.icon=CreateFrame("Button",nil,buttontemplate)
+    buttontemplate.icon:SetWidth(AS_BUTTON_HEIGHT)
+    buttontemplate.icon:SetHeight(AS_BUTTON_HEIGHT)
+    buttontemplate.icon:SetPoint("TOPLEFT")
+    buttontemplate.icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
+    buttontemplate.icon:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
+    buttontemplate.icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
+    buttontemplate.icon:SetScript("OnEnter",function(self)
 
     if (buttontemplate.link) then
        local link = buttontemplate.link
@@ -1071,7 +1073,7 @@ function createAStexture(ourbutton)
    --left
    normaltextureleft=ourbutton:CreateTexture()
    normaltextureleft:SetHeight(AS_BUTTON_HEIGHT)
-   normaltextureleft:SetWidth(10) --10 is the gap between text and anything else
+   normaltextureleft:SetWidth(1) --10 is the gap between text and anything else
    normaltextureleft:SetPoint("left",34,0)
    normaltextureleft:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
    normaltextureleft:SetTexCoord(0,.07,0,1)
@@ -1227,53 +1229,51 @@ function AScreatescrollbartemplate()
 
 
 end
---=======================================================================
+
+
 function AScreateauctiontab()
 
-
-    if (AuctionFrame) then
-
-      ASauctiontab = CreateFrame("Button","ASauctiontab",AuctionFrame,"AuctionTabTemplate")
-      ASauctiontab:SetText("AS")
-      PanelTemplates_TabResize(ASauctiontab,50,70,70);
-      PanelTemplates_DeselectTab(ASauctiontab)
-      local origfunc = ASauctiontab:GetScript("OnClick")
-     ASauctiontab:SetScript("OnClick",function(...)
+    if AuctionFrame then
+        -------------- STYLE ----------------
+        ASauctiontab = CreateFrame("Button","ASauctiontab",AuctionFrame,"AuctionTabTemplate")
+        ASauctiontab:SetText("AS")
+        PanelTemplates_TabResize(ASauctiontab, 50, 70, 70);
+        PanelTemplates_DeselectTab(ASauctiontab)
+        -------------- SCRIPT ----------------
+        local origfunc = ASauctiontab:GetScript("OnClick")
+        ASauctiontab:SetScript("OnClick", function(...)
         -- origfunc(...)  --hides the browse/bid stuff, sets the ID - nothing important
-            ASopenedwithah=true
-            if ASautostart == TRUE then
-                AS.status = QUERYING
+            if AS.mainframe:IsShown() then
+                AS.mainframe:Hide()
+            else
+                ASopenedwithah = true
+                if ASautostart == true then
+                    AS.status = QUERYING
+                end
+                ASmain()
             end
-            ASmain()
-     end)
-        ASauctiontab:SetScript("OnMouseDown",function(...)
-            ASmain()
-    end)
-        F.ReskinTab(ASauctiontab)
+        end)
+        F.ReskinTab(ASauctiontab) -- Aurora
 
+        --*********************************************
+        local index = 1
+        -- Find the first unused tab.
+        while getglobal("AuctionFrameTab" .. index) do
+            index = index + 1;
+        end
 
---**********************************************
-      local index =1;
-      -- Find the first unused tab.
-      while (getglobal("AuctionFrameTab" .. index)) do
-         index = index + 1;
-      end
+        -- Make it an alias for our tab
+        setglobal("AuctionFrameTab" .. index, ASauctiontab)
 
+        -- Set up tabbing data
+        ASauctiontab:SetID(index);
+        PanelTemplates_SetNumTabs(AuctionFrame, index);
 
-      -- Make it an alias for our tab
-      setglobal("AuctionFrameTab" .. index, ASauctiontab)
-
-      -- Set up tabbing data
-      ASauctiontab:SetID(index);
-      PanelTemplates_SetNumTabs(AuctionFrame, index);
-
-      -- Set geometry
-      ASauctiontab:SetPoint("TOPLEFT", getglobal("AuctionFrameTab"..(index-1)), "TOPRIGHT", -8, 0);
-      -- thank you igors mass auction!!
-      --**********************************************
-   else
-      --   ASprint ("|c00ff0000error.  |r.  no auctionframe!")
-   end
+        -- Set geometry
+        ASauctiontab:SetPoint("TOPLEFT", getglobal("AuctionFrameTab"..(index-1)), "TOPRIGHT", -8, 0);
+        -- thank you igors mass auction!!
+        --**********************************************
+    end
    --------------------------------------------------------------------------------------
    --from igor
 --  <Button name="IMA_AuctionFrameTab" inherits="AuctionTabTemplate"  parent="AuctionFrame" text="IMA_MASS_AUCTION">

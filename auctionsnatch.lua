@@ -51,7 +51,7 @@ itemRarityColors = {
 }
 
 dropdown_labels = {
-    ["copperoverride"] = "Copper Override",
+    ["copperoverride"] = "Copper override",
     ["ASnodoorbell"] = AS_DOORBELLSOUND,
     ["ASignorebid"] = "Ignore bids",
     ["ASignorenobuyout"] = "Ignore no buyout"
@@ -283,7 +283,7 @@ function ASdropDownMenu_Initialise(self, level)
         local key, value
 
         --- Profile/Server list
-        info.text = "Import List"
+        info.text = "Import list"
         info.hasArrow = true
         info.value = "Import"
         UIDropDownMenu_AddButton(info,level)
@@ -775,22 +775,24 @@ end
 
 --*********************************************************************************
 function ASqueryah()
-   if not (AS.item) then
-      ASprint("error.  AS.item not found.")
-      AS.status=nil
-      return false
-   end
-   if not (AScurrentauctionsnatchitem) then
-      AScurrentauctionsnatchitem=1
-   end
-   if (AScurrentauctionsnatchitem > table.maxn(AS.item)) or (AScurrentauctionsnatchitem < 1) then
+        
+        if not (AS.item) then
+            ASprint("error.  AS.item not found.")
+            AS.status = nil
+            return false
+        end
+        if not (AScurrentauctionsnatchitem) then
+            AScurrentauctionsnatchitem=1
+        end
+        if (AScurrentauctionsnatchitem > table.maxn(AS.item)) or (AScurrentauctionsnatchitem < 1) then
 
-      ASprint("nothing to process. resetting.")
+            ASprint("nothing to process. resetting.")
 
-      AS.status=nil
-      AScurrentauctionsnatchitem=1
-      return false
-   end
+            AS.status=nil
+            AScurrentauctionsnatchitem=1
+            AS.mainframe.headerframe.stopsearchbutton:Disable()
+            return false
+        end
 
 
    if AuctionFrameBrowse then  --some mods change the default AH frame name
@@ -1415,23 +1417,7 @@ function AScreatebuttonhandlers()
                     ASscrollbar_Update()
                  end
               end
-   AS[AS_BUTTONCLOSE] = function()  --close
-            if AS.mainframe then
-                AS.mainframe.closebutton:Click()
-                AS.prompt:Hide()
-                BrowseName:SetText("")
-                AScurrentahresult = 0
-                AScurrentauctionsnatchitem = 1
-            else
-                ASprint("|c00ff0000error.  |r.  mainframe not found.")  --happens sometimes, not sure why
-
-                AS.prompt:Hide()
-                AS.mainframe.headerframe.stopsearchbutton:Disable()
-            end
-            AS.status = nil
-    end
-
-    AS[AS_BUTTONCLOSEMANUAL] = function()  --close manual price override
+    AS[AS_BUTTONCLOSE] = function()  --close manual price override
             AS.manualprompt:Hide()
     end
 end

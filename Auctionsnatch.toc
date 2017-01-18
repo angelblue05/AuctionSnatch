@@ -1,4 +1,4 @@
-## Interface: 70100
+## Interface: 70000
 ## Title: Auction Snatch
 ## Notes: "Get that auction!  Go! Go! Go!"
 ## Author:  Dax006
