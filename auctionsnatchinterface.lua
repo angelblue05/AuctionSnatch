@@ -16,46 +16,46 @@ function AScreatemainframe()
     ASprint("|c00229977 creating mainframe")
 
 
-   --
-   AS.mainframe = CreateFrame("Frame","ASmainframe", UIParent)
-   AS.mainframe:SetPoint("right",-100,0)
-   AS.mainframe:SetHeight(AS_GROSSHEIGHT+7)
-   AS.mainframe:SetWidth(280)
-   AS.mainframe:Hide()
-   AS.mainframe:SetBackdrop({
-                 bgFile = "Interface/Tooltips/UI-Background",
-                 edgeFile = nil,
-                 tile = true, tileSize = 32, edgeSize = 32,
-                 insets = { left = 0, right = 0, top = 0, bottom = 0}
-                  })
-   AS.mainframe:SetBackdropColor(0,0,0,.8)
-   AS.mainframe:SetMovable(true)
-   AS.mainframe:EnableMouse(true)
-   AS.mainframe:SetScript("OnMouseDown",function(self)
-                         AS.mainframe:StartMoving()
-                      end)
-   AS.mainframe:SetScript("OnMouseUp",function(self)
-                       AS.mainframe:StopMovingOrSizing()
-                       ASsavevariables()
-                    end)
-   AS.mainframe:SetScript("OnShow",function(self)
-      ASbringtotop()
-   end)
-   AS.mainframe:SetScript("OnEnter",function(self)
-       ASbringtotop()
-   end)
-       AS.mainframe:SetScript("OnLeave",function(self)
-    --check if the mouse actually left the frame
-       local x,y = GetCursorScaledPosition()
--- i decided not to check top and bottom because often i accidentaly drift up and down - only left and right seems to be when i actaully want to hide the frame
---  if(x<AS.mainframe:GetLeft() or x > AS.mainframe:GetRight() or y > AS.mainframe:GetTop() or y < AS.mainframe:GetBottom()) then
-       if(x<AS.mainframe:GetLeft() or x > AS.mainframe:GetRight()) then
-          AS.mainframe:SetFrameStrata("LOW")
+----- MAIN FRAME
+    -------------- STYLE ----------------
+    AS.mainframe = CreateFrame("Frame","ASmainframe", UIParent)
+    AS.mainframe:SetPoint("right",-100,0)
+    AS.mainframe:SetHeight(AS_GROSSHEIGHT+8)
+    AS.mainframe:SetWidth(280)
+    AS.mainframe:Hide()
+    AS.mainframe:SetBackdrop({
+        bgFile = "Interface/Tooltips/UI-Background",
+        edgeFile = nil,
+        tile = true, tileSize = 32, edgeSize = 32,
+        insets = { left = 0, right = 0, top = 0, bottom = 0}
+    })
+    AS.mainframe:SetBackdropColor(0,0,0,.8)
+    AS.mainframe:SetMovable(true)
+    AS.mainframe:EnableMouse(true)
+    -------------- SCRIPT ----------------
+    AS.mainframe:SetScript("OnMouseDown", function(self)
+        AS.mainframe:StartMoving()
+    end)
+    AS.mainframe:SetScript("OnMouseUp", function(self)
+        AS.mainframe:StopMovingOrSizing()
+        ASsavevariables()
+    end)
+    AS.mainframe:SetScript("OnShow", function(self)
+        ASbringtotop()
+    end)
+    AS.mainframe:SetScript("OnEnter", function(self)
+        ASbringtotop()
+    end)
+    AS.mainframe:SetScript("OnLeave", function(self)
+        --check if the mouse actually left the frame
+        local x,y = GetCursorScaledPosition()
+        --[[ i decided not to check top and bottom because often i accidentaly drift up and down - only left and right seems to be when i actaully want to hide the frame
+        if(x<AS.mainframe:GetLeft() or x > AS.mainframe:GetRight() or y > AS.mainframe:GetTop() or y < AS.mainframe:GetBottom()) then ]]
+        if (x < AS.mainframe:GetLeft() or x > AS.mainframe:GetRight()) then
+            AS.mainframe:SetFrameStrata("LOW")
           --AS.mainframe.headerframe.editbox:ClearFocus()
-       end
-
-
-   end)
+        end
+    end)
 
 ------ CLOSE BUTTON
     -------------- STYLE ----------------
@@ -73,6 +73,7 @@ function AScreatemainframe()
             AS.manualprompt:Hide()
         end
     end)
+
     F.ReskinClose(AS.mainframe.closebutton)
 
    ----------------------------------------------------------
@@ -94,6 +95,114 @@ function AScreatemainframe()
    AS.mainframe.listframe:SetPoint("BOTTOMRIGHT", AS.mainframe, "BOTTOMRIGHT", 0, 6)
    AS.mainframe.listframe:SetHeight(AS_LISTHEIGHT)
 
+------------------------------------------------------------
+------ START BUTTON
+    -------------- STYLE ----------------
+    AS.mainframe.headerframe.startsearchbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelButtonTemplate")
+    AS.mainframe.headerframe.startsearchbutton:SetText(AS_START)
+    AS.mainframe.headerframe.startsearchbutton:SetWidth(100)
+    AS.mainframe.headerframe.startsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
+    AS.mainframe.headerframe.startsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe,"TOPLEFT", 17, -25)
+    -------------- SCRIPT ----------------
+    AS.mainframe.headerframe.startsearchbutton:SetScript("OnClick", function(self)
+        if AS.manualprompt then
+            AS.manualprompt:Hide()
+        end
+        if AuctionFrame then
+            if (AuctionFrame:IsVisible()) then
+                AuctionFrameTab1:Click()  --??
+                if (AuctionFrameBrowse:IsVisible()) then
+                    if not IsShiftKeyDown() then
+                        AScurrentauctionsnatchitem = 1
+                    end
+                    AS.status = QUERYING
+                    AS.mainframe.headerframe.stopsearchbutton:Enable()
+                    return
+                end
+            end
+        end
+        ASprint("The Auction window is not visible.")
+    end)
+    AS.mainframe.headerframe.startsearchbutton:SetScript("OnEnter", function(self)
+        tooltip="Start the search from the top of your list (You can hold 'shift' to continue where you left off from last scan)"
+        ASshowtooltip( AS.mainframe.headerframe.startsearchbutton,tooltip)
+    end)
+    AS.mainframe.headerframe.startsearchbutton:SetScript("OnLeave", function(self)
+        AShidetooltip()
+    end)
+    F.Reskin(AS.mainframe.headerframe.startsearchbutton)
+
+------ STOP BUTTON
+    -------------- STYLE ----------------
+    AS.mainframe.headerframe.stopsearchbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelButtonTemplate")
+    AS.mainframe.headerframe.stopsearchbutton:SetText(AS_STOP)
+    AS.mainframe.headerframe.stopsearchbutton:SetWidth(50)
+    AS.mainframe.headerframe.stopsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
+    AS.mainframe.headerframe.stopsearchbutton:Disable()
+    AS.mainframe.headerframe.stopsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe.startsearchbutton,"TOPRIGHT", 2, 0)
+    -------------- SCRIPT ----------------
+    AS.mainframe.headerframe.stopsearchbutton:SetScript("OnClick", function(self)
+        if AS.mainframe then
+            AS.mainframe.headerframe.stopsearchbutton:Disable()
+            AS.prompt:Hide()
+            BrowseName:SetText("")
+            AScurrentahresult = 0
+        else
+            ASprint("|c00ff0000error.  |r.  mainframe not found.")  --happens sometimes, not sure why
+            AS.prompt:Hide()
+        end
+        AS.status = nil
+        --ASprint("The Auction window is not visible.")
+    end)
+    AS.mainframe.headerframe.stopsearchbutton:SetScript("OnEnter", function(self)
+        tooltip = "Stop the current search. It can be resumed by shift-clicking Start Search."
+        ASshowtooltip(AS.mainframe.headerframe.stopsearchbutton,tooltip)
+    end)
+    AS.mainframe.headerframe.stopsearchbutton:SetScript("OnLeave", function(self)
+        AShidetooltip()
+    end)
+    F.Reskin(AS.mainframe.headerframe.stopsearchbutton)
+
+------------------------------------------------------------
+------ AUTOSTART CHECK BUTTON
+    -------------- STYLE ----------------
+    AS.mainframe.headerframe.autostart = CreateFrame("CheckButton", "ASautostartbutton", AS.mainframe.headerframe, "OptionsCheckButtonTemplate")
+    AS.mainframe.headerframe.autostart:SetPoint("TOPLEFT", AS.mainframe.headerframe.startsearchbutton, "BOTTOMLEFT", -4, -2)
+    -------------- SCRIPT ----------------
+    AS.mainframe.headerframe.autostart:SetScript("OnClick", function(self)
+        if AS.mainframe.headerframe.autostart:GetChecked() then
+            ASautostart = true
+        else
+            ASautostart = false
+        end
+        ASsavevariables()
+    end)
+    AS.mainframe.headerframe.autostart:SetScript("OnEnter", function(self)
+        ASshowtooltip(self,AS_SEARCHTEXT)
+    end)
+    AS.mainframe.headerframe.autostart:SetScript("OnLeave", function(self)
+        AShidetooltip()
+    end)
+
+    getglobal(AS.mainframe.headerframe.autostart:GetName().."Text"):SetText(AS_AUTOSEARCH);
+    F.ReskinCheck(AS.mainframe.headerframe.autostart)
+
+------ AUTOOPEN CHECK BUTTON
+    -------------- STYLE ----------------
+    AS.mainframe.headerframe.autoopen = CreateFrame("CheckButton", "ASautoopenbutton", AS.mainframe.headerframe, "OptionsCheckButtonTemplate")
+    AS.mainframe.headerframe.autoopen:SetPoint("TOPLEFT", AS.mainframe.headerframe.autostart, "TOPRIGHT", 90, 0)
+    -------------- SCRIPT ----------------
+    AS.mainframe.headerframe.autoopen:SetScript("OnClick", function(self)
+        if AS.mainframe.headerframe.autoopen:GetChecked() then
+            ASautoopen = true
+        else
+            ASautoopen = false
+        end
+        ASsavevariables()
+    end)
+
+    getglobal(AS.mainframe.headerframe.autoopen:GetName().."Text"):SetText(AS_AUTOOPEN);
+    F.ReskinCheck(AS.mainframe.headerframe.autoopen) -- Aurora
 
 ------------------------------------------------------------
 ------ INPUT SEARCH BOX
@@ -125,113 +234,6 @@ function AScreatemainframe()
     -------------- SCRIPT ----------------
     AS.mainframe.headerframe.additembutton:SetScript("OnClick", ASadditem)
     F.Reskin(AS.mainframe.headerframe.additembutton) -- Aurora
-
-
-------------------------------------------------------------
-    -- START BUTTON
-    AS.mainframe.headerframe.startsearchbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelButtonTemplate")
-    AS.mainframe.headerframe.startsearchbutton:SetText(AS_START)
-    AS.mainframe.headerframe.startsearchbutton:SetWidth(100)
-    AS.mainframe.headerframe.startsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.mainframe.headerframe.startsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe,"TOPLEFT", 17, -24)
-
-    AS.mainframe.headerframe.startsearchbutton:SetScript("OnClick", function(self)
-        if AS.manualprompt then
-            AS.manualprompt:Hide()
-        end
-        if AuctionFrame then
-            if (AuctionFrame:IsVisible()) then
-                AuctionFrameTab1:Click()  --??
-                if (AuctionFrameBrowse:IsVisible()) then
-                    if not IsShiftKeyDown() then
-                        AScurrentauctionsnatchitem = 1
-                    end
-                    AS.status = QUERYING
-                    AS.mainframe.headerframe.stopsearchbutton:Enable()
-                    return
-                end
-            end
-        end
-        ASprint("The Auction window is not visible.")
-    end)
-    AS.mainframe.headerframe.startsearchbutton:SetScript("OnEnter", function(self)
-        tooltip="Start the search from the top of your list (You can hold 'shift' to continue where you left off from last scan)"
-        ASshowtooltip( AS.mainframe.headerframe.startsearchbutton,tooltip)
-    end)
-    AS.mainframe.headerframe.startsearchbutton:SetScript("OnLeave", function(self)
-        AShidetooltip()
-    end)
-    F.Reskin(AS.mainframe.headerframe.startsearchbutton)
-
-    -- STOP BUTTON
-    AS.mainframe.headerframe.stopsearchbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelButtonTemplate")
-    AS.mainframe.headerframe.stopsearchbutton:SetText(AS_STOP)
-    AS.mainframe.headerframe.stopsearchbutton:SetWidth(50)
-    AS.mainframe.headerframe.stopsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.mainframe.headerframe.stopsearchbutton:Disable()
-    AS.mainframe.headerframe.stopsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe.startsearchbutton,"TOPRIGHT", 2, 0)
-
-    AS.mainframe.headerframe.stopsearchbutton:SetScript("OnClick", function(self)
-        if AS.mainframe then
-            AS.mainframe.headerframe.stopsearchbutton:Disable()
-            AS.prompt:Hide()
-            BrowseName:SetText("")
-            AScurrentahresult = 0
-        else
-            ASprint("|c00ff0000error.  |r.  mainframe not found.")  --happens sometimes, not sure why
-            AS.prompt:Hide()
-        end
-        AS.status = nil
-        --ASprint("The Auction window is not visible.")
-    end)
-    AS.mainframe.headerframe.stopsearchbutton:SetScript("OnEnter", function(self)
-        tooltip = "Stop the current search. It can be resumed by shift-clicking Start Search."
-        ASshowtooltip(AS.mainframe.headerframe.stopsearchbutton,tooltip)
-    end)
-    AS.mainframe.headerframe.stopsearchbutton:SetScript("OnLeave", function(self)
-        AShidetooltip()
-    end)
-    F.Reskin(AS.mainframe.headerframe.stopsearchbutton)
-
------------------------------------------
-    -- AUTOSTART CHECK BUTTON
-    AS.mainframe.headerframe.autostart = CreateFrame("CheckButton","ASautostartbutton",AS.mainframe.headerframe, "OptionsCheckButtonTemplate")
-    AS.mainframe.headerframe.autostart:SetPoint("TOPLEFT", AS.mainframe.headerframe.startsearchbutton, "BOTTOMLEFT", -4, -2)
-
-    AS.mainframe.headerframe.autostart:SetScript("OnClick", function(self)
-        if AS.mainframe.headerframe.autostart:GetChecked() then
-            ASautostart = true
-        else
-            ASautostart = false
-        end
-        ASsavevariables()
-    end)
-    AS.mainframe.headerframe.autostart:SetScript("OnEnter", function(self)
-        ASshowtooltip(self,AS_SEARCHTEXT)
-    end)
-    AS.mainframe.headerframe.autostart:SetScript("OnLeave", function(self)
-        AShidetooltip()
-    end)
-
-    getglobal(AS.mainframe.headerframe.autostart:GetName().."Text"):SetText(AS_AUTOSEARCH);
-    F.ReskinCheck(AS.mainframe.headerframe.autostart)
-
-    -- AUTOOPEN CHECK BUTTON
-    AS.mainframe.headerframe.autoopen = CreateFrame("CheckButton","ASautoopenbutton",AS.mainframe.headerframe, "OptionsCheckButtonTemplate")
-    AS.mainframe.headerframe.autoopen:SetPoint("TOPLEFT", AS.mainframe.headerframe.autostart,"TOPRIGHT",90,0)
-
-    AS.mainframe.headerframe.autoopen:SetScript("OnClick", function(self)
-        if AS.mainframe.headerframe.autoopen:GetChecked() then
-            ASautoopen = true
-        else
-            ASautoopen = false
-        end
-        ASsavevariables()
-    end)
-
-    getglobal(AS.mainframe.headerframe.autoopen:GetName().."Text"):SetText(AS_AUTOOPEN);
-    F.ReskinCheck(AS.mainframe.headerframe.autoopen) -- Aurora
-
 
 
    AS.mainframe.listframe["itembutton"] = {}
@@ -427,17 +429,15 @@ function ASresetignore(self)
 end
 
 function ASresetpriceignore(self)
-  ASprint("Click manual price override")
+    local listnum = ASbuttontolistnum(self)
+    ASprint("Click manual price override")
 
-  local listnum = ASbuttontolistnum(self)
-  if(listnum) then
-    ASprint("Modify price. Showing input.")
-    ASprint(AS.item[listnum])
-    AScreatemanualprompt(AS.item[listnum], listnum)
-    --AS.item[listnum].priceoverride = nil
-    AS.optionframe:Hide()
-    ASsavevariables()
-  end
+    if listnum then
+        ASprint("Modify price. Showing input.")
+        --ASprint(AS.item[listnum])
+        AScreatemanualprompt(AS.item[listnum])
+        AS.optionframe:Hide()
+    end
 end
 
 function ASdeleterow(self)
@@ -469,7 +469,7 @@ function ASdeleterow(self)
 end
 
 
-function AScreatemanualprompt(item, listnumber)
+function AScreatemanualprompt(item)
     local buttonnames
 
     ASprint("|c004499FF creating prompt frame")
@@ -480,8 +480,9 @@ function AScreatemanualprompt(item, listnumber)
         AS.prompt:Hide()
     end
     if item then
-        AS.item["ASmanualitem"] = item
-        AS.item['ASmanualitem'].listnumber = listnumber
+        AS.item['ASmanualitem'] = {}
+        AS.item['ASmanualitem'].name = item.name
+        AS.item['ASmanualitem'].listnumber = item.listnumber
     end
 
     AS.manualprompt = CreateFrame("Frame", "ASmanualpromptframe", UIParent)
@@ -644,7 +645,7 @@ function AScreatemanualprompt(item, listnumber)
         local messagestring
 
         if AS.manualprompt.priceoverride:GetText() == "" then
-            AS.item["ASmanualitem"].priceoverride = nil
+            return--AS.item["ASmanualitem"].priceoverride = nil
         elseif ASsavedtable and ASsavedtable.copperoverride then
             AS.item["ASmanualitem"].priceoverride = tonumber(AS.manualprompt.priceoverride:GetText())
         else

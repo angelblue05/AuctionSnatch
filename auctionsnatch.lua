@@ -30,7 +30,7 @@ local EVALUATING=3
 local WAITINGFORPROMPT=4
 local BUYING = 5
 AS_FRAMEWHITESPACE=10
-AS_BUTTON_HEIGHT=25
+AS_BUTTON_HEIGHT=23
 AS_GROSSHEIGHT = 420
 AS_HEADERHEIGHT = 120
 AS_LISTHEIGHT = AS_GROSSHEIGHT-AS_HEADERHEIGHT
@@ -1347,6 +1347,7 @@ function AScreatebuttonhandlers()
             AS.item[listnumber].ignoretable[name] = {}
             AS.item[listnumber].ignoretable[name].cutoffprice = 0
             AS.item[listnumber].ignoretable[name].quality = quality  --used when showing whats ignored, makes it look better
+            AS.item[listnumber].priceoverride = nil
             AS.item['ASmanualitem'] = nil
             ASsavevariables()
             AS.manualprompt:Hide()
@@ -1374,7 +1375,7 @@ function AScreatebuttonhandlers()
              end
 
     AS[AS_BUTTONEXPENSIVEMANUAL] = function()  --too expensive
-            local name = AS.item["ASmanualitem"].name
+            local name = AS.item['ASmanualitem'].name
             local listnumber = AS.item['ASmanualitem'].listnumber
 
             if not AS.item[listnumber].ignoretable then
@@ -1383,9 +1384,10 @@ function AScreatebuttonhandlers()
             if not AS.item['ASmanualitem'].priceoverride then return false end
 
             AS.item[listnumber].ignoretable[name] = {}
-            AS.item[listnumber].ignoretable[name].cutoffprice = AS.item["ASmanualitem"].priceoverride
+            AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualitem'].priceoverride
             AS.item[listnumber].ignoretable[name].quality = quality  --used when showing whats ignored, makes it look better
-            AS.item["ASmanualitem"] = nil
+            AS.item[listnumber].priceoverride = AS.item['ASmanualitem'].priceoverride
+            AS.item['ASmanualitem'] = nil
             ASsavevariables()
             AS.manualprompt:Hide()
     end
