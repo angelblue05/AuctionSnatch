@@ -1054,7 +1054,9 @@ function AScreatelistbutton(i)
    --cant use button text because button text cant be left justified
    buttontemplate.leftstring = buttontemplate:CreateFontString(nil,"OVERLAY","gamefontnormal")
    buttontemplate.leftstring:SetJustifyH("Left")
+   buttontemplate.leftstring:SetWordWrap(false)
    buttontemplate.leftstring:SetPoint("LEFT", ASnormaltexture,"LEFT", 10, 0)
+   buttontemplate.leftstring:SetPoint("RIGHT", ASnormaltexture,"RIGHT", -2, 0)
 
 
    ---------------------------------- the quantity
@@ -1097,33 +1099,33 @@ end
 function createAStexture(ourbutton)
    local   normaltextureleft,normaltextureright,normaltexture,highlighttexture = nil
    --left
-   normaltextureleft=ourbutton:CreateTexture()
+   --[[normaltextureleft=ourbutton:CreateTexture()
    normaltextureleft:SetHeight(AS_BUTTON_HEIGHT)
    normaltextureleft:SetWidth(1) --10 is the gap between text and anything else
-   normaltextureleft:SetPoint("left",34,0)
-   normaltextureleft:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
+   normaltextureleft:SetPoint("left",30,0)
+   --normaltextureleft:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
    normaltextureleft:SetTexCoord(0,.07,0,1)
    normaltextureleft:Hide()
    --right
    normaltextureright=ourbutton:CreateTexture()
    normaltextureright:SetHeight(AS_BUTTON_HEIGHT)
-   normaltextureright:SetWidth(10)
+   normaltextureright:SetWidth(2)
    normaltextureright:SetPoint("right",-10,0)
-   normaltextureright:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
+   --normaltextureright:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
    normaltextureright:SetTexCoord(0,.8,0,1)
-   normaltextureright:Hide()
+   normaltextureright:Hide()]]
    --center?
    normaltexture=ourbutton:CreateTexture()
    normaltexture:SetHeight(AS_BUTTON_HEIGHT)
-   normaltexture:SetPoint("left",normaltextureleft,"right")
-   normaltexture:SetPoint("right",normaltextureright,"left")
+   normaltexture:SetPoint("left",30,0)
+   normaltexture:SetPoint("right",-12,0)
    normaltexture:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
-   normaltexture:SetTexCoord(0,.75,0,1)
+   normaltexture:SetTexCoord(.75,.75,0,1)
    --center highlight
    highlighttexture=ourbutton:CreateTexture()
    highlighttexture:SetHeight(AS_BUTTON_HEIGHT)
-   highlighttexture:SetWidth(normaltexture:GetWidth()) --10 is the gap between text and anything else
-   highlighttexture:SetPoint("left",normaltexture)
+   highlighttexture:SetWidth(1) --10 is the gap between text and anything else
+   highlighttexture:SetPoint("left",normaltexture,-4,0)
    highlighttexture:SetPoint("right",normaltexture)
    highlighttexture:SetTexture("Interface\\HelpFrame\\HelpFrameButton-Highlight")
    highlighttexture:SetTexCoord(0,1,.1,.1)
