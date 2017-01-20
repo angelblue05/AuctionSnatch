@@ -112,27 +112,13 @@ function AScreatemainframe()
     AS.mainframe.listframe = CreateFrame("Frame", nil, AS.mainframe.mainlistframe._scrollframe)
     --AS.mainframe.listframe:SetPoint("topleft",AS.mainframe.headerframe,"bottomleft")
     --AS.mainframe.listframe:SetPoint("bottomright", AS.mainframe, "BOTTOMRIGHT", 0, 0)
-    AS.mainframe.listframe:SetHeight(AS_LISTHEIGHT)
+    AS.mainframe.listframe:SetHeight(AS_LISTHEIGHT-20)
     AS.mainframe.listframe:SetWidth(AS.mainframe.mainlistframe._scrollframe:GetWidth())
+    AS.mainframe.listframe["itembutton"] = {}
 
     AS.mainframe.mainlistframe._scrollframe.content = AS.mainframe.listframe
     AS.mainframe.mainlistframe._scrollframe:SetScrollChild(AS.mainframe.listframe)
 
------- LIST FRAME LISTING
-    local i, currentrow, previousrow
-    AS.mainframe.listframe["itembutton"] = {}
-
-    for i = 1, 15 do
-        AS.mainframe.listframe.itembutton[i] = AScreatelistbutton(i)
-        currentrow = AS.mainframe.listframe.itembutton[i]
-        if i == 1 then
-            currentrow:SetPoint("TOP")
-        else
-            currentrow:SetPoint("TOP", previousrow, "bottom")
-        end
-        currentrow:Show()
-        previousrow = currentrow
-    end
 ------ LIST FRAME SCROLLBAR
     AScreatescrollbar()
 
@@ -260,6 +246,7 @@ function AScreatemainframe()
     AS.mainframe.headerframe.editbox:SetHeight(AS_BUTTON_HEIGHT-5)
     AS.mainframe.headerframe.editbox:SetWidth(AS.mainframe.headerframe:GetWidth()-76)
     AS.mainframe.headerframe.editbox:SetAutoFocus(false)
+    AS.mainframe.headerframe.editbox:SetToplevel(true)
     -------------- SCRIPT ----------------
     AS.mainframe.headerframe.editbox:SetScript("OnEscapePressed", function(self)
         AS.mainframe.headerframe.editbox:ClearFocus()
@@ -298,6 +285,10 @@ function AScreatemainframe()
     AS.mainframe.headerframe.deletelistbutton:SetScript("OnClick",
     function(self)
         if IsControlKeyDown() then
+            local x
+            for x = 1, table.maxn(AS.item) do
+                AS.mainframe.listframe.itembutton[x]:Hide()
+            end
             AS.item = {}
             ASscrollbar_Update()
         end
@@ -477,6 +468,8 @@ function ASdeleterow(self)
     if(listnum) then
         if(AS.item[listnum]) then
             if(AS.item[listnum].name) then
+                AS.mainframe.listframe.itembutton[table.maxn(AS.item)]:Hide()
+                --AS.mainframe.listframe.scrollMax = AS.mainframe.listframe.scrollMax - AS_BUTTON_HEIGHT
                 table.remove(AS.item,listnum)
                 --hide the delete button if theres nothing else to delete
                 if(table.maxn(AS.item) < listnum) then
@@ -1146,15 +1139,15 @@ end
 -------------------------------------------------------------------------------
 function AScreatescrollbar()
 
-    local scrollMax = 15
     AS.mainframe.listframe["scrollbarframe"] = CreateFrame("Slider", nil, AS.mainframe.mainlistframe._scrollframe, "UIPanelScrollBarTemplate") 
     AS.mainframe.listframe.scrollbarframe:SetPoint("TOPLEFT", AS.mainframe.mainlistframe, "TOPRIGHT", -36, -16) 
     AS.mainframe.listframe.scrollbarframe:SetPoint("BOTTOMLEFT", AS.mainframe.mainlistframe, "BOTTOMRIGHT", 0, 50) 
-    AS.mainframe.listframe.scrollbarframe:SetMinMaxValues(1, 15) 
+    AS.mainframe.listframe.scrollbarframe:SetMinMaxValues(1, 1) 
     AS.mainframe.listframe.scrollbarframe:SetValueStep(1) 
     AS.mainframe.listframe.scrollbarframe.scrollStep = 1
     AS.mainframe.listframe.scrollbarframe:SetValue(0) 
     AS.mainframe.listframe.scrollbarframe:SetWidth(16)
+    AS.mainframe.listframe.scrollMax = 0
     AS.mainframe.mainlistframe.scrollbar = AS.mainframe.listframe.scrollbarframe
     -------------- SCRIPT ----------------
     AS.mainframe.listframe.scrollbarframe:SetScript("OnValueChanged", 
@@ -1168,14 +1161,14 @@ function AScreatescrollbar()
             if IsShiftKeyDown() and (delta > 0) then
                 AS.mainframe.listframe.scrollbarframe:SetValue(0)
             elseif IsShiftKeyDown() and (delta < 0) then
-                AS.mainframe.listframe.scrollbarframe:SetValue(scrollMax)
-            elseif (delta < 0) and (current < scrollMax) then
+                AS.mainframe.listframe.scrollbarframe:SetValue(AS.mainframe.listframe.scrollMax)
+            elseif (delta < 0) and (current < AS.mainframe.listframe.scrollMax) then
                 AS.mainframe.listframe.scrollbarframe:SetValue(current + 20)
             elseif (delta > 0) and (current > 1) then
                 AS.mainframe.listframe.scrollbarframe:SetValue(current - 20)
             end
         end)
-    F.ReskinScroll(AS.mainframe.listframe.scrollbarframe)
+    F.ReskinScroll(AS.mainframe.listframe.scrollbarframe) -- Aurora
     ASscrollbar_Update()
 end
 
