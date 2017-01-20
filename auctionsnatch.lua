@@ -208,7 +208,6 @@ function ASinitialize()
    ASprint("new height="..newheight)
    AS.prompt:SetHeight(newheight)
 
-
    ASscrollbar_Update()
 end
 
@@ -416,8 +415,10 @@ function ASscrollbar_Update()
    --aight, so what do we have to do
    AS.optionframe:Hide()  --weird bugs if you delete while scrolling
 
+   ASnumberofitems = table.maxn(AS.item)
+
    --get the objects we're working with
-   local ASscrollbar = getglobal(AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBar")
+   --[[local ASscrollbar = getglobal(AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBar")
    local ASscrollupbutton = getglobal(  AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBarScrollUpButton" );
    local ASscrolldownbutton = getglobal(  AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBarScrollDownButton" );
 
@@ -437,7 +438,7 @@ function ASscrollbar_Update()
       ASscrollupbutton:Enable()
       ASscrolldownbutton:Enable()
 
-   end
+   end]]
 
    --GetValue()
    --value decides which rows to start showing.
@@ -445,24 +446,23 @@ function ASscrollbar_Update()
 
    local x,hexcolor,itemRarity
    local ourbutton, currentscrollbarvalue
-   currentscrollbarvalue=ASscrollbar:GetValue()
-
+   currentscrollbarvalue=0--AS.mainframe.listframe.scrollbarframe:GetValue()
 
    ASprint("scrollbarvalue = "..currentscrollbarvalue.."  #of items="..ASnumberofitems)
 
 
    if(AS) then
       if (AS.item) then
-      for x=1,ASrowsthatcanfit() do --apparently theres a bug here for some screen resolutions
+      for x=1, ASnumberofitems-1 do --apparently theres a bug here for some screen resolutions
         --get all buttons
         --get the appropriate item, which will be x + value
-        if  (AS.item[x+currentscrollbarvalue] and AS.mainframe.listframe.itembutton[x]) then
-           if (AS.item[x+currentscrollbarvalue].name) then
+        if (AS.item[x] and AS.mainframe.listframe.itembutton[x]) then
+           if (AS.item[x].name) then
            --set the item link
               --set the icon
               hexcolor = ""
 
-              if (AS.item[x+currentscrollbarvalue].icon) then
+              if (AS.item[x].icon) then
                  local icon=AS.item[x+currentscrollbarvalue].icon
                  AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture(icon)
                  --AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0,0.640625, 0,0.640625)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
@@ -521,8 +521,8 @@ function ASscrollbar_Update()
            --if theres no item, then clear the text
            AS.mainframe.listframe.itembutton[x].leftstring:SetText("")
            -- clear icon, link
-           AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface\\Buttons\\UI-Slot-Background")
-           AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0,0.640625, 0,0.640625)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
+           AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
+           AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
            AS.mainframe.listframe.itembutton[x].link = nil
            AS.mainframe.listframe.itembutton[x].rightstring:SetText("")
 
@@ -1387,6 +1387,8 @@ function AScreatebuttonhandlers()
             AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualitem'].priceoverride
             AS.item[listnumber].ignoretable[name].quality = quality  --used when showing whats ignored, makes it look better
             AS.item[listnumber].priceoverride = AS.item['ASmanualitem'].priceoverride
+            ASprint("TESTING OVERRIDE")
+            ASprint(AS.item[listnumber])
             AS.item['ASmanualitem'] = nil
             ASsavevariables()
             AS.manualprompt:Hide()
@@ -1546,8 +1548,8 @@ function ASmovelistbutton(orignumber,insertat)
         mouseoverbutton = GetMouseFocus()
         if(mouseoverbutton.buttonnumber) then
 
-           ASscrollbar = getglobal(AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBar")
-           insertat = mouseoverbutton.buttonnumber + ASscrollbar:GetValue()
+           ASscrollbar = AS.mainframe.listframe.scrollbarframe
+           insertat = mouseoverbutton.buttonnumber---1-- + ASscrollbar:GetValue()
            ASprint("Insertat needs to be created. = "..tostring(insertat).."  orignumber = "..tostring(orignumber))
         else
             ASprint("No insertat passed in.   No mouseoverfocus() found.  error i think.")
@@ -1579,8 +1581,9 @@ function ASmovelistbutton(orignumber,insertat)
 
     --now, if we moved a button up (backwards, lower numbers), we have to delete the original first, then insert
     -- if we moved a button down (below), we insert first, delete second
+
    if (insertat > orignumber) then  --we moved down the list
-      table.insert(AS.item,insertat,ASmoveme)
+      table.insert(AS.item,insertat+1,ASmoveme)
       table.remove(AS.item, orignumber)
    else
        table.remove(AS.item, orignumber)

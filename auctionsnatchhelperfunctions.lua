@@ -253,8 +253,11 @@ end
 
 function ASbuttontolistnum(button)
 
+    if AS.item.LastListButtonClicked then
+        return AS.item.LastListButtonClicked
+    end
 	--see the 'setparent()' call in the onclick handler below
-	if(button:GetParent() and button:GetParent():GetParent()) then
+	if (button:GetParent() and button:GetParent():GetParent()) then
 		local optionframeparent = button:GetParent():GetParent()
 	   if(optionframeparent.buttonnumber) then
 		  local value
@@ -263,7 +266,7 @@ function ASbuttontolistnum(button)
 		  ASprint("buttonnumber="..buttonnumber)
 		  value=ASscrollbar:GetValue()
 		  
-		  return buttonnumber+value
+		  return buttonnumber
 		end
 	end
 end
