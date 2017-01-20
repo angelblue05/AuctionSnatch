@@ -342,7 +342,7 @@ AS.optionframe = CreateFrame("Frame","ASoptionframe",UIParent)
    --AS.optionframe:SetHeight((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE )* 4) --4 buttons
    AS.optionframe:SetHeight((AS_BUTTON_HEIGHT* 5) + (AS_FRAMEWHITESPACE * 2))  --4 buttons
    AS.optionframe:SetWidth(200)
-   --AS.optionframe:SetToplevel(true)
+   AS.optionframe:SetToplevel(true)
    --AS.optionframe:Hide()
    AS.optionframe:SetBackdrop({
                  bgFile = "Interface/Tooltips/UI-Tooltip-Background",
@@ -360,7 +360,7 @@ AS.optionframe = CreateFrame("Frame","ASoptionframe",UIParent)
 
                     end)
    AS.optionframe:SetScript("OnShow",function(self)
-      AS.optionframe:SetFrameLevel(6)--AS.optionframe:GetParent():GetFrameLevel()+1)
+      --AS.optionframe:SetFrameLevel(6)--AS.optionframe:GetParent():GetFrameLevel()+1)
       ASprint("Showing the 2 buttons.:?")
       AS.optionframe.resetignorebutton:Show()
       AS.optionframe.deleterowbutton:Show()
@@ -462,14 +462,12 @@ function ASresetignore(self)
 end
 
 function ASresetpriceignore(self) -- manual price menu option
-
     local listnum = ASbuttontolistnum(self)
     ASprint("Click manual price override")
 
     if listnum then
         ASprint("Modify price. Showing input for listnum: "..listnum)
-        --ASprint(AS.item[listnum])
-        AScreatemanualprompt(AS.item[listnum])
+        AScreatemanualprompt(AS.item[listnum], listnum)
         AS.optionframe:Hide()
     end
 end
@@ -503,7 +501,7 @@ function ASdeleterow(self)
 end
 
 
-function AScreatemanualprompt(item)
+function AScreatemanualprompt(item, listnumber)
     local buttonnames
 
     ASprint("|c004499FF creating prompt frame")
@@ -514,10 +512,9 @@ function AScreatemanualprompt(item)
         AS.prompt:Hide()
     end
     if item then
-        ASprint(item)
         AS.item['ASmanualitem'] = {}
         AS.item['ASmanualitem'].name = item.name
-        AS.item['ASmanualitem'].listnumber = AS.item['LastListButtonClicked']
+        AS.item['ASmanualitem'].listnumber = listnumber
     end
 
     AS.manualprompt = CreateFrame("Frame", "ASmanualpromptframe", UIParent)
