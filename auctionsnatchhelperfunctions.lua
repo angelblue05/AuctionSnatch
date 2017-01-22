@@ -298,3 +298,14 @@ function ASremoveduplicates(ASlist)
 
 	return newlist
 end
+
+
+function ASvisibility(compared_to)
+    local x,y = GetCursorScaledPosition()
+    --ASprint("Cursor x,y="..x..","..y.."  Left, right, bottom, top="..compared_to:GetLeft()..","..compared_to:GetRight()..","..compared_to:GetBottom()..","..compared_to:GetTop())
+    
+    if(x < compared_to:GetLeft() or x > compared_to:GetRight() or y < compared_to:GetBottom() or y > compared_to:GetTop()) then
+        return false
+    end
+    return true
+end

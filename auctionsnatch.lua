@@ -475,13 +475,13 @@ function ASscrollbar_Update()
            --set the item link
               --set the icon
               hexcolor = ""
-              AS.mainframe.listframe.scrollMax = AS.mainframe.listframe.scrollMax + AS_BUTTON_HEIGHT-2
+              AS.mainframe.listframe.scrollMax = AS.mainframe.listframe.scrollMax + AS_BUTTON_HEIGHT-1.5
 
               if (AS.item[x].icon) then
                  local icon=AS.item[x+currentscrollbarvalue].icon
                  AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture(icon)
                  --AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0,0.640625, 0,0.640625)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
-                 AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0,1,0,1)
+                 AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)
 
                  --set the item link - if theres an icon, there must be a link
                  local link=AS.item[x+currentscrollbarvalue].link
@@ -550,9 +550,9 @@ function ASscrollbar_Update()
       ASprint("self |c00ff0000should never be seen>")
    end
    if (AS.mainframe.listframe.scrollMax-AS.mainframe.listframe.scrollbarframe:GetHeight()) < 5 then
-        AS.mainframe.listframe.scrollbarframe:SetMinMaxValues(1,1)
+        AS.mainframe.listframe.scrollbarframe:SetMinMaxValues(0,0)
     else
-        AS.mainframe.listframe.scrollbarframe:SetMinMaxValues(1, AS.mainframe.listframe.scrollMax-AS.mainframe.listframe.scrollbarframe:GetHeight())
+        AS.mainframe.listframe.scrollbarframe:SetMinMaxValues(0, AS.mainframe.listframe.scrollMax-AS.mainframe.listframe.scrollbarframe:GetHeight())
     end
    ASsavevariables()
 
