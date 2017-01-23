@@ -91,38 +91,66 @@ function AScreatemainframe()
     AS.mainframe.headerframe:SetPoint("RIGHT")
     AS.mainframe.headerframe:SetHeight(AS_HEADERHEIGHT)  --this should be sufficient
 
------- BAREBONE LIST FRAME
-    -------------- STYLE ----------------
-    AS.mainframe.mainlistframe = CreateFrame("Frame", nil, AS.mainframe)
-    AS.mainframe.mainlistframe:SetPoint("TOPLEFT", AS.mainframe.headerframe,"BOTTOMLEFT",0,6)
-    AS.mainframe.mainlistframe:SetPoint("BOTTOMRIGHT", AS.mainframe, "BOTTOMRIGHT", 0, 0)
-    --AS.mainframe.mainlistframe:SetHeight(AS_LISTHEIGHT)
 
------- SCROLL FRAME
-    -------------- STYLE ----------------
-    AS.mainframe.mainlistframe._scrollframe = CreateFrame("ScrollFrame", nil, AS.mainframe.mainlistframe)
-    AS.mainframe.mainlistframe._scrollframe:SetPoint("TOPLEFT", AS.mainframe.headerframe,"BOTTOMLEFT", -7, 6)
-    AS.mainframe.mainlistframe._scrollframe:SetPoint("BOTTOMRIGHT", AS.mainframe, "BOTTOMRIGHT", 0, 38)
-    AS.mainframe.mainlistframe._scrollframe:SetHeight(AS_LISTHEIGHT)
-    AS.mainframe.mainlistframe._scrollframe:EnableMouseWheel(true)
-    AS.mainframe.mainlistframe.scrollframe = AS.mainframe.mainlistframe._scrollframe
-    --F.ReskinScroll(AS.mainframe.mainlistframe._scrollframe.ScrollBar)
+    AS.mainframe.listframe = CreateFrame("Frame","FauxScrollFrameTest",AS.mainframe)
+    AS.mainframe.listframe:SetPoint("TOPLEFT", AS.mainframe.headerframe,"BOTTOMLEFT",0,6)
+    AS.mainframe.listframe:SetPoint("BOTTOMRIGHT", AS.mainframe, "BOTTOMRIGHT", 0, 10)
 
------- LIST FRAME
-    -------------- STYLE ----------------
-    AS.mainframe.listframe = CreateFrame("Frame", nil, AS.mainframe.mainlistframe._scrollframe)
-    --AS.mainframe.listframe:SetPoint("topleft",AS.mainframe.headerframe,"bottomleft")
-    --AS.mainframe.listframe:SetPoint("bottomright", AS.mainframe.mainlistframe._scrollframe, "BOTTOMRIGHT")
-    AS.mainframe.listframe:SetSize(AS_LISTHEIGHT,AS.mainframe.mainlistframe._scrollframe:GetWidth())
-    --AS.mainframe.listframe:SetHeight(AS_LISTHEIGHT-20)
-    --AS.mainframe.listframe:SetWidth(AS.mainframe.mainlistframe._scrollframe:GetWidth())
-    AS.mainframe.listframe["itembutton"] = {}
 
-    AS.mainframe.mainlistframe._scrollframe.content = AS.mainframe.listframe
-    AS.mainframe.mainlistframe._scrollframe:SetScrollChild(AS.mainframe.listframe)
+    AS.mainframe.listframe.scrollFrame = CreateFrame("ScrollFrame","FauxScrollFrameTestScrollFrame",AS.mainframe.listframe,"FauxScrollFrameTemplate")
+      -- note the anchors: the area of the scrollframe is the scrollable area
+      -- (that intercepts mousewheel to scroll). it does not include the scrollbar,
+      -- which is anchored off the right (hence the -28 xoffset)
+      AS.mainframe.listframe.scrollFrame:SetPoint("TOPLEFT", AS.mainframe.headerframe,"BOTTOMLEFT", -7, 6)
+    AS.mainframe.listframe.scrollFrame:SetPoint("BOTTOMRIGHT", AS.mainframe, "BOTTOMRIGHT", -40, 38)
+    --AS.mainframe.mainlistframe._scrollframe:SetHeight(AS_LISTHEIGHT)
+      -- make sure frame.ScrollFrameUpdate defined early -- and be prepared for
+      -- that function to run before the scrollframe has any real data
+      F.ReskinScroll(AS.mainframe.listframe.scrollFrame.ScrollBar)
+      AS.mainframe.listframe.scrollFrame:SetScript("OnShow",ASscrollbar_Update)
+      AS.mainframe.listframe.scrollFrame:SetScript("OnVerticalScroll",function(self,offset)
+        FauxScrollFrame_OnVerticalScroll(self,offset,20,ASscrollbar_Update)
+      end)
 
------- LIST FRAME SCROLLBAR
-    AScreatescrollbar()
+   -- create background frame to contain list
+  --AS.mainframe.frame:SetSize(228,256)
+  --AS.mainframe.frame:SetPoint("CENTER")
+  --AS.mainframe.frame:SetBackdrop({bgFile="Interface\\DialogFrame\\UI-DialogBox-Background", insets={left=4,right=4,top=4,bottom=4}, tileSize=16, tile=true, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", edgeSize=16})
+    -- create list of 12 buttons
+  AS.mainframe.listframe['itembutton'] = {}
+  for i=1,ASrowsthatcanfit() do
+    -- the button itself
+    AS.mainframe.listframe.itembutton[i]=AScreatelistbutton(i)
+      currentrow=AS.mainframe.listframe.itembutton[i]
+      if i==1 then
+         currentrow:SetPoint("TOP")
+      else
+        currentrow:SetPoint("TOP",previousrow,"bottom")
+      end
+      currentrow:Show()
+      previousrow=currentrow
+    --[[AS.mainframe.frame.list[i] = CreateFrame("Button",nil,AS.mainframe.frame)
+    AS.mainframe.frame.list[i]:SetSize(200,20)
+    AS.mainframe.frame.list[i]:SetPoint("TOPLEFT",AS.mainframe.frame,"TOPLEFT",8,(i-1)*-20-8)
+    -- the icon
+    AS.mainframe.frame.list[i].icon = AS.mainframe.frame.list[i]:CreateTexture(nil,"ARTWORK")
+    AS.mainframe.frame.list[i].icon:SetSize(16,16)
+    AS.mainframe.frame.list[i].icon:SetPoint("LEFT",4,0)
+    -- the text label
+    AS.mainframe.frame.list[i].name = AS.mainframe.frame.list[i]:CreateFontString(nil,"ARTWORK","GameFontHighlight")
+    AS.mainframe.frame.list[i].name:SetSize(200-16-8,20) -- full width-icon-padding(both sides)
+    AS.mainframe.frame.list[i].name:SetJustifyV("CENTER") -- center text vertically
+    AS.mainframe.frame.list[i].name:SetJustifyH("LEFT") -- we'll anchor it in update]]
+  end
+
+  --AS.mainframe.frame:Hide() -- we'll show it when we open a tradeskill
+
+
+  --create/find the anchor points to snap the buttons to.   Used for drag moving buttons
+
+
+
+   --AScreatescrollbar()
 
 ------------------------------------------------------------
 ------ START BUTTON
@@ -288,9 +316,9 @@ function AScreatemainframe()
     function(self)
         if IsControlKeyDown() then
             local x
-            for x = 1, table.maxn(AS.item) do
+            --[[for x = 1, table.maxn(AS.item) do
                 AS.mainframe.listframe.itembutton[x]:Hide()
-            end
+            end]]
             AS.item = {}
             ASscrollbar_Update()
         end
@@ -435,7 +463,7 @@ AS.optionframe = CreateFrame("Frame","ASoptionframe",UIParent)
    --AS.optionframe.movetobottombutton:SetBackdropColor(0,0,0,1)
    AS.optionframe.movetobottombutton:SetScript("OnClick",function(self)
         local listnum = ASbuttontolistnum(self)
-        ASmovelistbutton(listnum,#AS.item + 1)
+        ASmovelistbutton(listnum,table.maxn(AS.item))
     end)
 
 end  --end func
@@ -467,10 +495,11 @@ end
 
 function ASdeleterow(self)
     local listnum = ASbuttontolistnum(self)
+    ASprint(listnum)
     if(listnum) then
         if(AS.item[listnum]) then
             if(AS.item[listnum].name) then
-                AS.mainframe.listframe.itembutton[table.maxn(AS.item)]:Hide()
+                --AS.mainframe.listframe.itembutton[table.maxn(AS.item)]:Hide()
                 --AS.mainframe.listframe.scrollMax = AS.mainframe.listframe.scrollMax - AS_BUTTON_HEIGHT
                 table.remove(AS.item,listnum)
                 --hide the delete button if theres nothing else to delete
@@ -939,37 +968,37 @@ function AScreatelistbutton(i)
    -------------------------------the actual button
    buttontemplate = CreateFrame("Button",nil,AS.mainframe.listframe)
    buttontemplate:SetHeight(AS_BUTTON_HEIGHT)
-   buttontemplate:SetWidth(AS.mainframe:GetWidth() - 60)
-   buttontemplate:SetPoint("TOP")
+   buttontemplate:SetWidth(AS.mainframe:GetWidth() - 58)
+   buttontemplate:SetPoint("top")
    buttontemplate:SetNormalFontObject("gamefontnormal")
-   buttontemplate.buttonnumber = i
+   buttontemplate.buttonnumber=i
    buttontemplate:SetMovable(true)
 
-   buttontemplate:SetScript("OnMouseDown", function(self)
+   buttontemplate:SetScript("OnMouseDown",
+      function(self)
         --compensate for scroll bar
-        ASscrollbar = AS.mainframe.listframe.scrollbarframe
+        --ASscrollbar = getglobal(AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBar")
         --allow drag repositioning of buttons
-        ASorignumber = self.buttonnumber--+ASscrollbar:GetValue()
+        ASorignumber = self.buttonnumber+FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
       end)
 
 
     buttontemplate:SetScript("OnClick",
       function(self)
-        if ASvisibility(AS.mainframe.mainlistframe._scrollframe) then
-            ASprint("CLeeekkk!")
-            AS.item[i].listnumber = i
-            if(IsShiftKeyDown()) then
-                --get the link from this row
-                ASprint("SHIIIFTTT cleeek")
+        ASprint("CLeeekkk!")
+
+        if(IsShiftKeyDown()) then
+            --get the link from this row
+            ASprint("SHIIIFTTT cleeek")
+        else
+            if(AS.optionframe:IsVisible()) then
+                AS.optionframe:Hide()
             else
-                if AS.optionframe:IsVisible() then
-                    AS.optionframe:Hide()
-                else
-                    AS.optionframe:SetParent(AS.mainframe)
-                    AS.item['LastListButtonClicked'] = self.buttonnumber
-                    AS.optionframe:SetPoint("Top",self,"bottomright")
-                    AS.optionframe:Show()
-                end
+
+                AS.optionframe:Show()
+                AS.item['LastListButtonClicked'] = self.buttonnumber+FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+                AS.optionframe:SetParent(self)
+                AS.optionframe:SetPoint("Top",self,"bottomright")
             end
         end
 
@@ -977,75 +1006,68 @@ function AScreatelistbutton(i)
 
     buttontemplate:SetScript("OnMouseUp",
         function(self)
-            if ASvisibility(AS.mainframe.mainlistframe._scrollframe) then
-                ASmovelistbutton(ASorignumber)
-                ASscrollbar_Update()
-            end
+            ASmovelistbutton(ASorignumber)
+            ASscrollbar_Update()
         end)
 
    buttontemplate:SetScript("OnEnter",
       function(self)
-        if ASvisibility(AS.mainframe.mainlistframe._scrollframe) then
-          local ignoreprice,messagestring,quality
-             local mainfunc = AS.mainframe:GetScript("OnEnter")
-             if(buttontemplate.leftstring:GetText()) then
-               --show tooltip indicating you can double click this
+      local ignoreprice,messagestring,quality
+         local mainfunc = AS.mainframe:GetScript("OnEnter")
+         if(buttontemplate.leftstring:GetText()) then
+           --show tooltip indicating you can double click this
 
-                  messagestring = AS_INFO
-                  --show all cutoff prices
-                  local scrollvalue=0--AS.mainframe.listframe.scrollbarframe:GetValue()
+              messagestring = AS_INFO
+              --show all cutoff prices
+              local scrollvalue=FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
 
-                  if (AS and AS.item and AS.item[i+scrollvalue] and AS.item[i+scrollvalue].priceoverride) then
-                      messagestring = messagestring.."\nManual Override: "..ASGSC(tonumber(AS.item[i+scrollvalue].priceoverride))
-                  elseif (AS and AS.item and AS.item[i+scrollvalue] and AS.item[i+scrollvalue].ignoretable) then
-                       --loop through each entry in the ignore list
-                        messagestring = messagestring.."\n"..AS_IGNORECONDITIONS..":"
-                       for key,value in pairs(AS.item[i+scrollvalue].ignoretable) do
-                       --list the name and cutoff price
-                           --check if we can make it look prettier because we saved quality
-                           --newer versions, this is a table, to hold more data
-                           if(type(value) == "table") then
-                               --new version
-                               quality=value.quality
-                               ignoreprice = value.cutoffprice
-                           else
-                              --old version
-                              quality=0
-                              ignoreprice=value
-                           end
-
-                           key=itemRarityColors[quality]..key.."|r"
-
-                           if (ignoreprice == 0) then
-                                messagestring = messagestring.."\n"..key..": |cff9d9d9d"..AS_ALWAYS.."|r"
-                           else
-                               messagestring = messagestring.."\n"..key..": "..ASGSC(ignoreprice)
-                            end
+              if (AS and AS.item and AS.item[i+scrollvalue] and AS.item[i+scrollvalue].priceoverride) then
+                  messagestring = messagestring.."\nManual Override: "..ASGSC(tonumber(AS.item[i+scrollvalue].priceoverride))
+              elseif (AS and AS.item and AS.item[i+scrollvalue] and AS.item[i+scrollvalue].ignoretable) then
+                   --loop through each entry in the ignore list
+                    messagestring = messagestring.."\n"..AS_IGNORECONDITIONS..":"
+                   for key,value in pairs(AS.item[i+scrollvalue].ignoretable) do
+                   --list the name and cutoff price
+                       --check if we can make it look prettier because we saved quality
+                       --newer versions, this is a table, to hold more data
+                       if(type(value) == "table") then
+                           --new version
+                           quality=value.quality
+                           ignoreprice = value.cutoffprice
+                       else
+                          --old version
+                          quality=0
+                          ignoreprice=value
                        end
-                  else
-                     --ASprint("no ignore table")
-                  end
-                  ASshowtooltip(self,messagestring)
+
+                       key=itemRarityColors[quality]..key.."|r"
+
+                       if (ignoreprice == 0) then
+                            messagestring = messagestring.."\n"..key..": |cff9d9d9d"..AS_ALWAYS.."|r"
+                       else
+                           messagestring = messagestring.."\n"..key..": "..ASGSC(ignoreprice)
+                        end
+                   end
               else
-                AShidetooltip()
+                 --ASprint("no ignore table")
               end
-               mainfunc()
-            end
+              ASshowtooltip(self,messagestring)
+          else
+            AShidetooltip()
+          end
+           mainfunc()
       end)
 
    buttontemplate:SetScript("OnLeave",
       function(self)
-        if ASvisibility(AS.mainframe.mainlistframe._scrollframe) then
-             local mainfunc = AS.mainframe:GetScript("OnLeave")
-             AShidetooltip()
-             mainfunc()
-        end
+         local mainfunc = AS.mainframe:GetScript("OnLeave")
+         AShidetooltip()
+         mainfunc()
       end)
 
 
    buttontemplate:SetScript("OnDoubleClick",
       function(self)
-        if ASvisibility(AS.mainframe.mainlistframe._scrollframe) then
             if (BrowseName) then
                  if(buttontemplate.leftstring:GetText()) then
                     BrowseName:SetText(ASsanitize(buttontemplate.leftstring:GetText()))
@@ -1053,7 +1075,6 @@ function AScreatelistbutton(i)
                   --search for the auction in that box
                 end
             end
-        end
       end)
 
    -----------------------------the faint box background
@@ -1079,24 +1100,22 @@ function AScreatelistbutton(i)
 
 
    ---------------the little icon on the left
-    buttontemplate.icon=CreateFrame("Button",nil,buttontemplate)
-    buttontemplate.icon:SetWidth(AS_BUTTON_HEIGHT)
-    buttontemplate.icon:SetHeight(AS_BUTTON_HEIGHT)
-    buttontemplate.icon:SetPoint("TOPLEFT")
-    buttontemplate.icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
+   buttontemplate.icon=CreateFrame("Button",nil,buttontemplate)
+   buttontemplate.icon:SetWidth(AS_BUTTON_HEIGHT)
+   buttontemplate.icon:SetHeight(AS_BUTTON_HEIGHT)
+   buttontemplate.icon:SetPoint("TOPLEFT")
+   buttontemplate.icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
     buttontemplate.icon:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
     buttontemplate.icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
     buttontemplate.icon:SetScript("OnEnter",function(self)
 
     if (buttontemplate.link) then
-        if ASvisibility(AS.mainframe.mainlistframe._scrollframe) then
-           local link = buttontemplate.link
-           GameTooltip:SetOwner(self, "ANCHOR_NONE")
-           GameTooltip:SetHyperlink(link)
-           GameTooltip:ClearAllPoints()
-           GameTooltip:SetPoint("TOPRIGHT", self, "TOPLEFT", -10, -20)
-           GameTooltip:Show()
-        end
+       local link = buttontemplate.link
+       GameTooltip:SetOwner(self, "ANCHOR_NONE")
+       GameTooltip:SetHyperlink(link)
+       GameTooltip:ClearAllPoints()
+       GameTooltip:SetPoint("TOPRIGHT", self, "TOPLEFT", -10, -20)
+       GameTooltip:Show()
        --no enhtootip
     end
      end)
@@ -1148,47 +1167,6 @@ function createAStexture(ourbutton)
 
    return normaltexture,highlighttexture
 end
-
-
-
-----------------------------------------------------------------------------------
----------------------------------------------------
--------------------------------------------------------------------------------
-function AScreatescrollbar()
-
-    AS.mainframe.listframe["scrollbarframe"] = CreateFrame("Slider", nil, AS.mainframe.mainlistframe._scrollframe, "UIPanelScrollBarTemplate") 
-    AS.mainframe.listframe.scrollbarframe:SetPoint("TOPLEFT", AS.mainframe.mainlistframe, "TOPRIGHT", -36, -16) 
-    AS.mainframe.listframe.scrollbarframe:SetPoint("BOTTOMLEFT", AS.mainframe.mainlistframe, "BOTTOMRIGHT", 0, 50) 
-    AS.mainframe.listframe.scrollbarframe:SetMinMaxValues(0, 0) 
-    AS.mainframe.listframe.scrollbarframe:SetValueStep(1) 
-    AS.mainframe.listframe.scrollbarframe.scrollStep = 1
-    AS.mainframe.listframe.scrollbarframe:SetValue(0) 
-    AS.mainframe.listframe.scrollbarframe:SetWidth(16)
-    AS.mainframe.listframe.scrollMax = 0
-    AS.mainframe.mainlistframe.scrollbar = AS.mainframe.listframe.scrollbarframe
-    -------------- SCRIPT ----------------
-    AS.mainframe.listframe.scrollbarframe:SetScript("OnValueChanged", 
-        function (self, value) 
-            self:GetParent():SetVerticalScroll(value) 
-        end) 
-    AS.mainframe.mainlistframe._scrollframe:SetScript("OnMouseWheel",
-        function(self, delta)
-            local current = AS.mainframe.listframe.scrollbarframe:GetValue()
-               
-            if IsShiftKeyDown() and (delta > 0) then
-                AS.mainframe.listframe.scrollbarframe:SetValue(0)
-            elseif IsShiftKeyDown() and (delta < 0) then
-                AS.mainframe.listframe.scrollbarframe:SetValue(AS.mainframe.listframe.scrollMax)
-            elseif (delta < 0) and (current < AS.mainframe.listframe.scrollMax) then
-                AS.mainframe.listframe.scrollbarframe:SetValue(current + 20)
-            elseif (delta > 0) and (current > 1) then
-                AS.mainframe.listframe.scrollbarframe:SetValue(current - 20)
-            end
-        end)
-    F.ReskinScroll(AS.mainframe.listframe.scrollbarframe) -- Aurora
-    ASscrollbar_Update()
-end
-
 
 function AScreateauctiontab()
 

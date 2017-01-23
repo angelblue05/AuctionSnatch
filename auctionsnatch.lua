@@ -384,19 +384,12 @@ end
 
 
 
-
-
-
-
-
-
-
-
 --+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 function ASscrollbar_Update()
    --this redraws all the buttons and make sure they're showing the right stuff.
    --ASprint("printing sl.item at beginning of update.")
    --ASprint(AS.item)
+   local offset = FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
    local ASnumberofitems
 
    if not (AS) then
@@ -415,16 +408,16 @@ function ASscrollbar_Update()
    --aight, so what do we have to do
    AS.optionframe:Hide()  --weird bugs if you delete while scrolling
 
-   ASnumberofitems = table.maxn(AS.item)
-   AS.mainframe.listframe.scrollMax = 0
    --get the objects we're working with
-   --[[local ASscrollbar = getglobal(AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBar")
-   local ASscrollupbutton = getglobal(  AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBarScrollUpButton" );
-   local ASscrolldownbutton = getglobal(  AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBarScrollDownButton" );
+   --local ASscrollbar = getglobal(AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBar")
+   --local ASscrollupbutton = getglobal(  AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBarScrollUpButton" );
+   --local ASscrolldownbutton = getglobal(  AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBarScrollDownButton" );
 
    ASnumberofitems = table.maxn(AS.item)
+   FauxScrollFrame_Update(AS.mainframe.listframe.scrollFrame, ASnumberofitems, ASrowsthatcanfit(), AS_BUTTON_HEIGHT)
 
-   if ASnumberofitems < ASrowsthatcanfit() then
+
+   --[[if ASnumberofitems < ASrowsthatcanfit() then
       --disable the top and bottom buttons
 
       ASscrollbar:SetMinMaxValues(0,0)
@@ -445,39 +438,26 @@ function ASscrollbar_Update()
    --we show items value to value+getrowsthatcanfit()
 
    local x,hexcolor,itemRarity
-   local currentrow, previousrow
    local ourbutton, currentscrollbarvalue
-   currentscrollbarvalue=0--AS.mainframe.listframe.scrollbarframe:GetValue()
-   AS.mainframe.listframe.scrollMax = 1
+
+   currentscrollbarvalue=offset
+
 
    ASprint("scrollbarvalue = "..currentscrollbarvalue.."  #of items="..ASnumberofitems)
 
 
    if(AS) then
       if (AS.item) then
-      for x=1, ASnumberofitems do --apparently theres a bug here for some screen resolutions
+      for x=1,ASrowsthatcanfit() do --apparently theres a bug here for some screen resolutions
         --get all buttons
         --get the appropriate item, which will be x + value
-            if AS.mainframe.listframe.itembutton[x] == nil then
-                AS.mainframe.listframe.itembutton[x] = AScreatelistbutton(x)
-            end
-            currentrow = AS.mainframe.listframe.itembutton[x]
-            if x == 1 then
-                currentrow:SetPoint("TOP")
-            else
-                currentrow:SetPoint("TOP", previousrow, "bottom")
-            end
-            currentrow:Show()
-            previousrow = currentrow
-
-        if (AS.item[x] and AS.mainframe.listframe.itembutton[x]) then
-           if (AS.item[x].name) then
+        if  (AS.item[x+currentscrollbarvalue] and AS.mainframe.listframe.itembutton[x]) then
+           if (AS.item[x+currentscrollbarvalue].name) then
            --set the item link
               --set the icon
               hexcolor = ""
-              AS.mainframe.listframe.scrollMax = AS.mainframe.listframe.scrollMax + AS_BUTTON_HEIGHT-1.5
 
-              if (AS.item[x].icon) then
+              if (AS.item[x+currentscrollbarvalue].icon) then
                  local icon=AS.item[x+currentscrollbarvalue].icon
                  AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture(icon)
                  --AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0,0.640625, 0,0.640625)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
@@ -499,10 +479,10 @@ function ASscrollbar_Update()
                  end
               else
                  -- clear icon, link
-                    AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
+                 AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
                     AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
-                    AS.mainframe.listframe.itembutton[x].link = nil
-                    AS.mainframe.listframe.itembutton[x].rarity = nil
+                 AS.mainframe.listframe.itembutton[x].link = nil
+                 AS.mainframe.listframe.itembutton[x].rarity = nil
 
               end
 
@@ -511,6 +491,7 @@ function ASscrollbar_Update()
 
 
               AS.mainframe.listframe.itembutton[x].leftstring:SetText(hexcolor..tostring(AS.item[x+currentscrollbarvalue].name))
+              AS.mainframe.listframe.itembutton[x]:Show()
               --AS.mainframe.listframe.itembutton[x].rightstring:SetText(tostring(x+currentscrollbarvalue))
               --if we have a 'ignore' price  -- doesnt work because every item has lots of ignore prices, one for each different result
     --        if( AS.item[x+currentscrollbarvalue].ignoretable) then
@@ -532,15 +513,15 @@ function ASscrollbar_Update()
 
            end
         else
-            ASprint("no .item.  index= "..x)
+           --     ASprint("no .item.  index= "..x)
            --if theres no item, then clear the text
-           AS.mainframe.listframe.itembutton[x]:Hide()
-           --[[AS.mainframe.listframe.itembutton[x].leftstring:SetText("")
+           AS.mainframe.listframe.itembutton[x].leftstring:SetText("")
            -- clear icon, link
            AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
-           AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
+            AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
            AS.mainframe.listframe.itembutton[x].link = nil
-           AS.mainframe.listframe.itembutton[x].rightstring:SetText("")]]
+           AS.mainframe.listframe.itembutton[x].rightstring:SetText("")
+           AS.mainframe.listframe.itembutton[x]:Hide()
 
         end
         --end loop
@@ -549,11 +530,7 @@ function ASscrollbar_Update()
    else
       ASprint("self |c00ff0000should never be seen>")
    end
-   if (AS.mainframe.listframe.scrollMax-AS.mainframe.listframe.scrollbarframe:GetHeight()) < 5 then
-        AS.mainframe.listframe.scrollbarframe:SetMinMaxValues(0,0)
-    else
-        AS.mainframe.listframe.scrollbarframe:SetMinMaxValues(0, AS.mainframe.listframe.scrollMax-AS.mainframe.listframe.scrollbarframe:GetHeight())
-    end
+
    ASsavevariables()
 
 end
@@ -1568,8 +1545,8 @@ function ASmovelistbutton(orignumber,insertat)
         mouseoverbutton = GetMouseFocus()
         if(mouseoverbutton.buttonnumber) then
 
-           ASscrollbar = AS.mainframe.listframe.scrollbarframe
-           insertat = mouseoverbutton.buttonnumber---1-- + ASscrollbar:GetValue()
+           --ASscrollbar = AS.mainframe.listframe.scrollbarframe
+           insertat = mouseoverbutton.buttonnumber+ FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)---1-- + ASscrollbar:GetValue()
            ASprint("Insertat needs to be created. = "..tostring(insertat).."  orignumber = "..tostring(orignumber))
         else
             ASprint("No insertat passed in.   No mouseoverfocus() found.  error i think.")
