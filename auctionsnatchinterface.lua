@@ -101,7 +101,7 @@ function AScreatemainframe()
       -- note the anchors: the area of the scrollframe is the scrollable area
       -- (that intercepts mousewheel to scroll). it does not include the scrollbar,
       -- which is anchored off the right (hence the -28 xoffset)
-      AS.mainframe.listframe.scrollFrame:SetPoint("TOPLEFT", AS.mainframe.headerframe,"BOTTOMLEFT", -7, 6)
+    AS.mainframe.listframe.scrollFrame:SetPoint("TOPLEFT", AS.mainframe.headerframe,"BOTTOMLEFT", 0, 6)
     AS.mainframe.listframe.scrollFrame:SetPoint("BOTTOMRIGHT", AS.mainframe, "BOTTOMRIGHT", -40, 38)
     --AS.mainframe.mainlistframe._scrollframe:SetHeight(AS_LISTHEIGHT)
       -- make sure frame.ScrollFrameUpdate defined early -- and be prepared for
@@ -205,7 +205,6 @@ function AScreatemainframe()
         if AS.mainframe then
             AS.mainframe.headerframe.stopsearchbutton:Disable()
             AS.prompt:Hide()
-            BrowseName:SetText("")
             AScurrentahresult = 0
         else
             ASprint("|c00ff0000error.  |r.  mainframe not found.")  --happens sometimes, not sure why
@@ -273,7 +272,7 @@ function AScreatemainframe()
     -------------- STYLE ----------------
     AS.mainframe.headerframe.editbox = CreateFrame("EditBox", nil, AS.mainframe.headerframe, "InputBoxTemplate")
     AS.mainframe.headerframe.editbox:SetPoint("BOTTOMLEFT", AS.mainframe.headerframe, "BOTTOMLEFT", 27, 15)
-    AS.mainframe.headerframe.editbox:SetHeight(AS_BUTTON_HEIGHT-5)
+    AS.mainframe.headerframe.editbox:SetHeight(AS_BUTTON_HEIGHT)
     AS.mainframe.headerframe.editbox:SetWidth(AS.mainframe.headerframe:GetWidth()-76)
     AS.mainframe.headerframe.editbox:SetAutoFocus(false)
     AS.mainframe.headerframe.editbox:SetToplevel(true)
@@ -294,7 +293,7 @@ function AScreatemainframe()
     AS.mainframe.headerframe.additembutton = CreateFrame("Button",nil,AS.mainframe.headerframe,"UIPanelButtonTemplate")
     AS.mainframe.headerframe.additembutton:SetText("+")
     AS.mainframe.headerframe.additembutton:SetWidth(30)
-    AS.mainframe.headerframe.additembutton:SetHeight(AS_BUTTON_HEIGHT-5)
+    AS.mainframe.headerframe.additembutton:SetHeight(AS_BUTTON_HEIGHT)
     AS.mainframe.headerframe.additembutton:SetPoint("TOPLEFT", AS.mainframe.headerframe.editbox, "TOPRIGHT", 2, 0)
     -------------- SCRIPT ----------------
     AS.mainframe.headerframe.additembutton:SetScript("OnClick", ASadditem)
@@ -316,9 +315,6 @@ function AScreatemainframe()
     function(self)
         if IsControlKeyDown() then
             local x
-            --[[for x = 1, table.maxn(AS.item) do
-                AS.mainframe.listframe.itembutton[x]:Hide()
-            end]]
             AS.item = {}
             ASscrollbar_Update()
         end
@@ -363,7 +359,6 @@ AS.optionframe = CreateFrame("Frame","ASoptionframe",UIParent)
    --AS.optionframe:SetHeight((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE )* 4) --4 buttons
    AS.optionframe:SetHeight((AS_BUTTON_HEIGHT* 5) + (AS_FRAMEWHITESPACE * 2))  --4 buttons
    AS.optionframe:SetWidth(200)
-   AS.optionframe:SetToplevel(true)
    --AS.optionframe:Hide()
    AS.optionframe:SetBackdrop({
                  bgFile = "Interface/Tooltips/UI-Tooltip-Background",
@@ -984,7 +979,7 @@ function AScreatelistbutton(i)
 
 
     buttontemplate:SetScript("OnClick",
-      function(self)
+      function(self, button, down)
         ASprint("CLeeekkk!")
 
         if(IsShiftKeyDown()) then
@@ -994,20 +989,39 @@ function AScreatelistbutton(i)
             if(AS.optionframe:IsVisible()) then
                 AS.optionframe:Hide()
             else
-
-                AS.optionframe:Show()
                 AS.item['LastListButtonClicked'] = self.buttonnumber+FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
                 AS.optionframe:SetParent(self)
                 AS.optionframe:SetPoint("Top",self,"bottomright")
+                AS.optionframe:Show()
+            end
+
+            if AS.manualprompt then
+                AS.manualprompt:Hide()
             end
         end
 
       end)
 
     buttontemplate:SetScript("OnMouseUp",
-        function(self)
-            ASmovelistbutton(ASorignumber)
-            ASscrollbar_Update()
+        function(self, button)
+            if button == "RightButton" then
+                if AuctionFrame then
+                    if (AuctionFrame:IsVisible()) then
+                        AuctionFrameTab1:Click()  --??
+                        if (AuctionFrameBrowse:IsVisible()) then
+                            AScurrentauctionsnatchitem = self.buttonnumber+FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+                            AS.status = QUERYING
+                            AS.status_override = true
+                            AS.mainframe.headerframe.stopsearchbutton:Enable()
+                            return
+                        end
+                    end
+                end
+                ASprint("The Auction window is not visible.")
+            else
+                ASmovelistbutton(ASorignumber)
+                ASscrollbar_Update()
+            end
         end)
 
    buttontemplate:SetScript("OnEnter",

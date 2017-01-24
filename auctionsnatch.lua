@@ -502,7 +502,7 @@ function ASscrollbar_Update()
            else
                  ASprint("|c00ff0000error.  |ritem exists but no name for "..x.. "  Scrollbarvalue ="..currentscrollbarvalue)
                  AS.item[x+currentscrollbarvalue] = nil
-                 ASscrollbar:SetValue(ASscrollbar:GetValue()-1)
+                 --ASscrollbar:SetValue(currentscrollbarvalue-1)
                  --ASprint("printing AS.item")
                  --ASprint(AS.item)
                  --table.remove(AS.item,x+currentscrollbarvalue)
@@ -513,7 +513,7 @@ function ASscrollbar_Update()
 
            end
         else
-           --     ASprint("no .item.  index= "..x)
+           ASprint("no .item.  index= "..x)
            --if theres no item, then clear the text
            AS.mainframe.listframe.itembutton[x].leftstring:SetText("")
            -- clear icon, link
@@ -773,23 +773,25 @@ end
 --*********************************************************************************
 function ASqueryah()
         
-        if not (AS.item) then
-            ASprint("error.  AS.item not found.")
-            AS.status = nil
-            return false
-        end
-        if not (AScurrentauctionsnatchitem) then
-            AScurrentauctionsnatchitem=1
-        end
-        if (AScurrentauctionsnatchitem > table.maxn(AS.item)) or (AScurrentauctionsnatchitem < 1) then
+    if not (AS.item) then
+        ASprint("error.  AS.item not found.")
+        AS.status = nil
+        AS.mainframe.headerframe.stopsearchbutton:Disable()
+        return false
+    end
+    
+    if not (AScurrentauctionsnatchitem) then
+        AScurrentauctionsnatchitem=1
+    end
+    
+    if (AScurrentauctionsnatchitem > table.maxn(AS.item)) or (AScurrentauctionsnatchitem < 1) then
+        ASprint("nothing to process. resetting.")
 
-            ASprint("nothing to process. resetting.")
-
-            AS.status=nil
-            AScurrentauctionsnatchitem=1
-            AS.mainframe.headerframe.stopsearchbutton:Disable()
-            return false
-        end
+        AS.status=nil
+        AScurrentauctionsnatchitem=1
+        AS.mainframe.headerframe.stopsearchbutton:Disable()
+        return false
+    end
 
 
    if AuctionFrameBrowse then  --some mods change the default AH frame name
@@ -953,10 +955,16 @@ function ASisendoflist(batch,total)
          -- end of ah results.  reset and go to next query.
          ASprint(AScurrentahresult.."|c00eeaa00 = Current result > batch = "..batch.." (or total < 1).  Going to next query after:"..AScurrentauctionsnatchitem)
          AScurrentahresult=0
-         AScurrentauctionsnatchitem=AScurrentauctionsnatchitem+1
 
-         AS.status=QUERYING
-         return true
+         if AS.status_override then -- Single item search, when right clicking button
+            AS.mainframe.headerframe.stopsearchbutton:Disable()
+            AS.status = nil
+            AS.status_override = nil
+        else
+            AScurrentauctionsnatchitem=AScurrentauctionsnatchitem+1
+            AS.status=QUERYING
+        end
+        return true
       end
       return false
 end
