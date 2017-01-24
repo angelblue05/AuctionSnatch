@@ -23,11 +23,10 @@ function AScreatemainframe()
     AS.mainframe:SetHeight(AS_GROSSHEIGHT+8)
     AS.mainframe:SetWidth(280)
     AS.mainframe:Hide()
-    AS.mainframe:SetBackdrop({
-        bgFile = "Interface/Tooltips/UI-Background",
-        edgeFile = nil,
-        tile = true, tileSize = 32, edgeSize = 32,
-        insets = { left = 0, right = 0, top = 0, bottom = 0}
+    AS.mainframe:SetBackdrop({  bgFile = "Interface/Tooltips/UI-Background",
+                                edgeFile = nil,
+                                tile = true, tileSize = 32, edgeSize = 32,
+                                insets = { left = 0, right = 0, top = 0, bottom = 0}
     })
     AS.mainframe:SetBackdropColor(0,0,0,.8)
     AS.mainframe:SetMovable(true)
@@ -106,29 +105,29 @@ function AScreatemainframe()
     --AS.mainframe.mainlistframe._scrollframe:SetHeight(AS_LISTHEIGHT)
       -- make sure frame.ScrollFrameUpdate defined early -- and be prepared for
       -- that function to run before the scrollframe has any real data
-      F.ReskinScroll(AS.mainframe.listframe.scrollFrame.ScrollBar)
-      AS.mainframe.listframe.scrollFrame:SetScript("OnShow",ASscrollbar_Update)
-      AS.mainframe.listframe.scrollFrame:SetScript("OnVerticalScroll",function(self,offset)
+    F.ReskinScroll(AS.mainframe.listframe.scrollFrame.ScrollBar)
+    AS.mainframe.listframe.scrollFrame:SetScript("OnShow",ASscrollbar_Update)
+    AS.mainframe.listframe.scrollFrame:SetScript("OnVerticalScroll",function(self,offset)
         FauxScrollFrame_OnVerticalScroll(self,offset,20,ASscrollbar_Update)
-      end)
+    end)
 
    -- create background frame to contain list
   --AS.mainframe.frame:SetSize(228,256)
   --AS.mainframe.frame:SetPoint("CENTER")
   --AS.mainframe.frame:SetBackdrop({bgFile="Interface\\DialogFrame\\UI-DialogBox-Background", insets={left=4,right=4,top=4,bottom=4}, tileSize=16, tile=true, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", edgeSize=16})
     -- create list of 12 buttons
-  AS.mainframe.listframe['itembutton'] = {}
-  for i=1,ASrowsthatcanfit() do
+    AS.mainframe.listframe['itembutton'] = {}
+    for i=1,ASrowsthatcanfit() do
     -- the button itself
-    AS.mainframe.listframe.itembutton[i]=AScreatelistbutton(i)
-      currentrow=AS.mainframe.listframe.itembutton[i]
-      if i==1 then
-         currentrow:SetPoint("TOP")
-      else
-        currentrow:SetPoint("TOP",previousrow,"bottom")
-      end
-      currentrow:Show()
-      previousrow=currentrow
+        AS.mainframe.listframe.itembutton[i]=AScreatelistbutton(i)
+        currentrow=AS.mainframe.listframe.itembutton[i]
+        if i==1 then
+            currentrow:SetPoint("TOP")
+        else
+            currentrow:SetPoint("TOP",previousrow,"bottom")
+        end
+        currentrow:Show()
+        previousrow=currentrow
     --[[AS.mainframe.frame.list[i] = CreateFrame("Button",nil,AS.mainframe.frame)
     AS.mainframe.frame.list[i]:SetSize(200,20)
     AS.mainframe.frame.list[i]:SetPoint("TOPLEFT",AS.mainframe.frame,"TOPLEFT",8,(i-1)*-20-8)
@@ -141,7 +140,7 @@ function AScreatemainframe()
     AS.mainframe.frame.list[i].name:SetSize(200-16-8,20) -- full width-icon-padding(both sides)
     AS.mainframe.frame.list[i].name:SetJustifyV("CENTER") -- center text vertically
     AS.mainframe.frame.list[i].name:SetJustifyH("LEFT") -- we'll anchor it in update]]
-  end
+    end
 
   --AS.mainframe.frame:Hide() -- we'll show it when we open a tradeskill
 
@@ -354,113 +353,117 @@ end
 
 function AScreateoptionframe(self)
 
-AS.optionframe = CreateFrame("Frame","ASoptionframe",UIParent)
+    AS.optionframe = CreateFrame("Frame","ASoptionframe",UIParent)
    --AS.optionframe:SetPoint("TOP",AS.mainframe,"Bottomright")
    --AS.optionframe:SetHeight((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE )* 4) --4 buttons
-   AS.optionframe:SetHeight((AS_BUTTON_HEIGHT* 5) + (AS_FRAMEWHITESPACE * 2))  --4 buttons
-   AS.optionframe:SetWidth(200)
+    AS.optionframe:SetHeight((AS_BUTTON_HEIGHT* 5) + (AS_FRAMEWHITESPACE * 2))  --4 buttons
+    AS.optionframe:SetWidth(200)
    --AS.optionframe:Hide()
-   AS.optionframe:SetBackdrop({
-                 bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-                 edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                 tile = true, tileSize = 32, edgeSize = 32,
-                 insets = { left = 9, right = 9, top = 9, bottom = 9}
-                  })
-   AS.optionframe:SetBackdropColor(0,0,0,2)
+    AS.optionframe:SetBackdrop({    bgFile = C.media.backdrop,
+                                    edgeFile = C.media.backdrop,--"Interface/Tooltips/UI-Tooltip-Border",
+                                    tile = true, tileSize = 32, edgeSize = 1,
+                                    insets = { left = 0, right = 0, top = 0, bottom = 1}
+    })
+    AS.optionframe:SetBackdropColor(0,0,0,0.8)
+    AS.optionframe:SetBackdropBorderColor(1,1,1,0.2)
+    --AS.optionframe:SetToplevel(true)
+    AS.optionframe:SetFrameStrata("TOOLTIP") -- TODO: Review why it doesn't appear on top of AS.prompt
    --AS.optionframe:SetMovable(true)
-   AS.optionframe:EnableMouse(true)
-   AS.optionframe:SetScript("OnMouseDown",function(self)
-
-                      end)
-   AS.optionframe:SetScript("OnMouseUp",function(self)
-
-                    end)
-   AS.optionframe:SetScript("OnShow",function(self)
+    AS.optionframe:EnableMouse(true)
+    AS.optionframe:SetScript("OnMouseDown", function(self)
+    end)
+    AS.optionframe:SetScript("OnMouseUp", function(self)
+    end)
+    AS.optionframe:SetScript("OnShow", function(self)
       --AS.optionframe:SetFrameLevel(6)--AS.optionframe:GetParent():GetFrameLevel()+1)
-      ASprint("Showing the 2 buttons.:?")
-      AS.optionframe.resetignorebutton:Show()
-      AS.optionframe.deleterowbutton:Show()
-   end)
+        ASprint("Showing the 2 buttons.:?")
+        AS.optionframe.resetignorebutton:Show()
+        AS.optionframe.deleterowbutton:Show()
+    end)
    --AS.optionframe:SetScript("OnEnter",function(self)     end)
-   AS.optionframe:SetScript("OnLeave",function(self)
+    AS.optionframe:SetScript("OnLeave", function(self)
        --AS.optionframe:Hide()--bah doesnt work right
-       local x,y = GetCursorScaledPosition()
-       ASprint("Cursor x,y="..x..","..y.."  Left, right, bottom, top="..AS.optionframe:GetLeft()..","..AS.optionframe:GetRight()..","..AS.optionframe:GetBottom()..","..AS.optionframe:GetTop())
-       if(x < AS.optionframe:GetLeft() or x > AS.optionframe:GetRight() or y < AS.optionframe:GetBottom() or y > AS.optionframe:GetTop()) then
+        local x,y = GetCursorScaledPosition()
+        ASprint("Cursor x,y="..x..","..y.."  Left, right, bottom, top="..AS.optionframe:GetLeft()..","..AS.optionframe:GetRight()..","..AS.optionframe:GetBottom()..","..AS.optionframe:GetTop())
+        if(x < AS.optionframe:GetLeft() or x > AS.optionframe:GetRight() or y < AS.optionframe:GetBottom() or y > AS.optionframe:GetTop()) then
             AS.optionframe:Hide()
-       end
-   end)
+        end
+    end)
 
-   AS.optionframe.resetignorebutton = CreateFrame("Button",nil,AS.optionframe)
-   AS.optionframe.resetignorebutton:SetHeight(AS_BUTTON_HEIGHT)
-   AS.optionframe.resetignorebutton:SetWidth(AS.optionframe:GetWidth())
-   AS.optionframe.resetignorebutton:SetPoint("top",0,-AS_FRAMEWHITESPACE)
-   AS.optionframe.resetignorebutton:SetNormalFontObject("gamefontnormal")
-   AS.optionframe.resetignorebutton:SetText("Erase Ignore Conditions")
-   AS.optionframe.resetignorebutton:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestLogTitleHighlight")
-   AS.optionframe.resetignorebutton:SetFrameStrata("DIALOG")
+
+    AS.optionframe.manualpricebutton = CreateFrame("Button",nil,AS.optionframe)
+    AS.optionframe.manualpricebutton:SetHeight(AS_BUTTON_HEIGHT)
+    AS.optionframe.manualpricebutton:SetWidth(AS.optionframe:GetWidth())
+    AS.optionframe.manualpricebutton:SetPoint("top",0,-AS_FRAMEWHITESPACE)
+    AS.optionframe.manualpricebutton:SetNormalFontObject("gamefontnormal")
+    AS.optionframe.manualpricebutton:SetText("Modify manual price")
+    AS.optionframe.manualpricebutton:SetHighlightTexture(C.media.backdrop)
+    AS.optionframe.manualpricebutton:GetHighlightTexture():SetVertexColor(r, b,g, .2)
+    AS.optionframe.manualpricebutton:SetFrameStrata("DIALOG")
    --AS.optionframe.resetignorebutton:SetBackdropColor(0,0,0,.2)
-   AS.optionframe.resetignorebutton:SetScript("OnClick",function(self)
-      ASresetignore(self)
-   end)
+    AS.optionframe.manualpricebutton:SetScript("OnClick",function(self)
+        ASresetpriceignore(self)
+    end)
+
+    AS.optionframe.resetignorebutton = CreateFrame("Button",nil,AS.optionframe)
+    AS.optionframe.resetignorebutton:SetHeight(AS_BUTTON_HEIGHT)
+    AS.optionframe.resetignorebutton:SetWidth(AS.optionframe:GetWidth())
+    AS.optionframe.resetignorebutton:SetPoint("top",AS.optionframe.manualpricebutton,"bottom")
+    AS.optionframe.resetignorebutton:SetNormalFontObject("gamefontnormal")
+    AS.optionframe.resetignorebutton:SetText("Erase Ignore Conditions")
+    AS.optionframe.resetignorebutton:SetHighlightTexture(C.media.backdrop)
+    AS.optionframe.resetignorebutton:GetHighlightTexture():SetVertexColor(r, b,g, .2)
+    AS.optionframe.resetignorebutton:SetFrameStrata("DIALOG")
+   --AS.optionframe.resetignorebutton:SetBackdropColor(0,0,0,.2)
+    AS.optionframe.resetignorebutton:SetScript("OnClick",function(self)
+        ASresetignore(self)
+    end)
    --AS.optionframe.resetignorebutton:SetMovable(true)
 
 
-   AS.optionframe.manualpricebutton = CreateFrame("Button",nil,AS.optionframe)
-   AS.optionframe.manualpricebutton:SetHeight(AS_BUTTON_HEIGHT)
-   AS.optionframe.manualpricebutton:SetWidth(AS.optionframe:GetWidth())
-   AS.optionframe.manualpricebutton:SetPoint("top",ASoptionframe.resetignorebutton,"bottom")
-   AS.optionframe.manualpricebutton:SetNormalFontObject("gamefontnormal")
-   AS.optionframe.manualpricebutton:SetText("Modify manual price")
-   AS.optionframe.manualpricebutton:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestLogTitleHighlight")
-   AS.optionframe.manualpricebutton:SetFrameStrata("DIALOG")
-   --AS.optionframe.resetignorebutton:SetBackdropColor(0,0,0,.2)
-   AS.optionframe.manualpricebutton:SetScript("OnClick",function(self)
-    ASresetpriceignore(self)
-   end)
-
-
-   AS.optionframe.deleterowbutton = CreateFrame("Button",nil,AS.optionframe)
-   AS.optionframe.deleterowbutton:SetHeight(AS_BUTTON_HEIGHT)
-   AS.optionframe.deleterowbutton:SetWidth(AS.optionframe:GetWidth())
-   AS.optionframe.deleterowbutton:SetPoint("top",AS.optionframe.manualpricebutton,"bottom")
-   AS.optionframe.deleterowbutton:SetNormalFontObject("gamefontnormal")
-   AS.optionframe.deleterowbutton:SetText("Delete Row?")
-   AS.optionframe.deleterowbutton:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestLogTitleHighlight")
-   AS.optionframe.deleterowbutton:SetFrameStrata("DIALOG")
+    AS.optionframe.deleterowbutton = CreateFrame("Button",nil,AS.optionframe)
+    AS.optionframe.deleterowbutton:SetHeight(AS_BUTTON_HEIGHT)
+    AS.optionframe.deleterowbutton:SetWidth(AS.optionframe:GetWidth())
+    AS.optionframe.deleterowbutton:SetPoint("top",AS.optionframe.resetignorebutton,"bottom")
+    AS.optionframe.deleterowbutton:SetNormalFontObject("gamefontnormal")
+    AS.optionframe.deleterowbutton:SetText("Delete entry")
+    AS.optionframe.deleterowbutton:SetHighlightTexture(C.media.backdrop)
+    AS.optionframe.deleterowbutton:GetHighlightTexture():SetVertexColor(r, b,g, .2)
+    AS.optionframe.deleterowbutton:SetFrameStrata("DIALOG")
    --AS.optionframe.deleterowbutton:SetBackdropColor(0,0,0,1)
-   AS.optionframe.deleterowbutton:SetScript("OnClick",function(self)
+    AS.optionframe.deleterowbutton:SetScript("OnClick",function(self)
         ASdeleterow(self)
     end)
 
-   AS.optionframe.movetotopbutton = CreateFrame("Button",nil,AS.optionframe)
-   AS.optionframe.movetotopbutton:SetHeight(AS_BUTTON_HEIGHT)
-   AS.optionframe.movetotopbutton:SetWidth(AS.optionframe:GetWidth())
-   AS.optionframe.movetotopbutton:SetPoint("top",ASoptionframe.deleterowbutton,"bottom")
-   AS.optionframe.movetotopbutton:SetNormalFontObject("gamefontnormal")
-   AS.optionframe.movetotopbutton:SetText("Move to top?")
-   AS.optionframe.movetotopbutton:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestLogTitleHighlight")
-   AS.optionframe.movetotopbutton:SetFrameStrata("DIALOG")
+    AS.optionframe.movetotopbutton = CreateFrame("Button",nil,AS.optionframe)
+    AS.optionframe.movetotopbutton:SetHeight(AS_BUTTON_HEIGHT)
+    AS.optionframe.movetotopbutton:SetWidth(AS.optionframe:GetWidth())
+    AS.optionframe.movetotopbutton:SetPoint("top",ASoptionframe.deleterowbutton,"bottom")
+    AS.optionframe.movetotopbutton:SetNormalFontObject("gamefontnormal")
+    AS.optionframe.movetotopbutton:SetText("Move to top")
+    AS.optionframe.movetotopbutton:SetHighlightTexture(C.media.backdrop)
+    AS.optionframe.movetotopbutton:GetHighlightTexture():SetVertexColor(r, b,g, .2)
+    AS.optionframe.movetotopbutton:SetFrameStrata("DIALOG")
    --AS.optionframe.movetotopbutton:SetBackdropColor(0,0,0,1)
-   AS.optionframe.movetotopbutton:SetScript("OnClick",function(self)
+    AS.optionframe.movetotopbutton:SetScript("OnClick",function(self)
         local listnum = ASbuttontolistnum(self)
         ASmovelistbutton(listnum,1)
     end)
 
-   AS.optionframe.movetobottombutton = CreateFrame("Button",nil,AS.optionframe)
-   AS.optionframe.movetobottombutton:SetHeight(AS_BUTTON_HEIGHT)
-   AS.optionframe.movetobottombutton:SetWidth(AS.optionframe:GetWidth())
-   AS.optionframe.movetobottombutton:SetPoint("top",ASoptionframe.movetotopbutton,"bottom")
-   AS.optionframe.movetobottombutton:SetNormalFontObject("gamefontnormal")
-   AS.optionframe.movetobottombutton:SetText("Move to bottom?")
-   AS.optionframe.movetobottombutton:SetHighlightTexture("Interface\\QuestFrame\\UI-QuestLogTitleHighlight")
-   AS.optionframe.movetobottombutton:SetFrameStrata("DIALOG")
+    AS.optionframe.movetobottombutton = CreateFrame("Button",nil,AS.optionframe)
+    AS.optionframe.movetobottombutton:SetHeight(AS_BUTTON_HEIGHT)
+    AS.optionframe.movetobottombutton:SetWidth(AS.optionframe:GetWidth())
+    AS.optionframe.movetobottombutton:SetPoint("top",ASoptionframe.movetotopbutton,"bottom")
+    AS.optionframe.movetobottombutton:SetNormalFontObject("gamefontnormal")
+    AS.optionframe.movetobottombutton:SetText("Move to bottom")
+    AS.optionframe.movetobottombutton:SetHighlightTexture(C.media.backdrop)
+    AS.optionframe.movetobottombutton:GetHighlightTexture():SetVertexColor(r, b,g, .2)
+    AS.optionframe.movetobottombutton:SetFrameStrata("DIALOG")
    --AS.optionframe.movetobottombutton:SetBackdropColor(0,0,0,1)
-   AS.optionframe.movetobottombutton:SetScript("OnClick",function(self)
+    AS.optionframe.movetobottombutton:SetScript("OnClick",function(self)
         local listnum = ASbuttontolistnum(self)
         ASmovelistbutton(listnum,table.maxn(AS.item))
     end)
-
 end  --end func
 
 function ASresetignore(self)
@@ -523,210 +526,211 @@ end
 function AScreatemanualprompt(item, listnumber)
     local buttonnames
 
-    ASprint("|c004499FF creating prompt frame")
+    ASprint("|c004499FF creating manual prompt frame")
+
     if AS.manualprompt then
         AS.manualprompt:Hide()
     end
+
     if AS.prompt then
         AS.prompt:Hide()
     end
+
     if item then
         AS.item['ASmanualitem'] = {}
         AS.item['ASmanualitem'].name = item.name
         AS.item['ASmanualitem'].listnumber = listnumber
     end
 
-    AS.manualprompt = CreateFrame("Frame", "ASmanualpromptframe", UIParent)
-    AS.manualprompt:SetPoint("TOPLEFT", AS.mainframe, "TOPRIGHT", 3,0)
-    AS.manualprompt:SetHeight(150)  --some addons change font size, so this will be overridden in ASinitialize
-    AS.manualprompt:SetWidth(200)
-    AS.manualprompt:SetBackdrop({
-            bgFile = "Interface/Tooltips/UI-Background",
-            edgeFile = nil,
-            tile = false, tileSize = 32, edgeSize = 32,
-            insets = { left = 0, right = 0, top = 0, bottom = 0 }
-         })
-   AS.manualprompt:SetBackdropColor(0,0,0,.8)
-   AS.manualprompt:SetMovable(true)
-   AS.manualprompt:EnableMouse(true)
-   AS.manualprompt:SetFrameStrata("DIALOG")
-   AS.manualprompt:SetScript("OnMouseDown",function(self)
-            AS.manualprompt:StartMoving()
-               end)
-   AS.manualprompt:SetScript("OnMouseUp",function(self)
-          AS.manualprompt:StopMovingOrSizing()
-             end)
+    ------ MANUAL PROMPT FRAME
+        -------------- STYLE ----------------
+            AS.manualprompt = CreateFrame("Frame", "ASmanualpromptframe", UIParent)
+            AS.manualprompt:SetPoint("TOPLEFT", AS.mainframe, "TOPRIGHT", 3,0)
+            AS.manualprompt:SetHeight(150)  --some addons change font size, so this will be overridden in ASinitialize
+            AS.manualprompt:SetWidth(200)
+            AS.manualprompt:SetBackdrop({   bgFile = "Interface/Tooltips/UI-Background",
+                                            edgeFile = nil,
+                                            tile = false, tileSize = 32, edgeSize = 32,
+                                            insets = { left = 0, right = 0, top = 0, bottom = 0 }
+            })
+            AS.manualprompt:SetBackdropColor(0,0,0,.8)
+            AS.manualprompt:SetMovable(true)
+            AS.manualprompt:EnableMouse(true)
+        -------------- SCRIPT ----------------
+            AS.manualprompt:SetScript("OnMouseDown", function(self)
+                AS.manualprompt:StartMoving()
+            end)
+            AS.manualprompt:SetScript("OnMouseUp", function(self)
+                AS.manualprompt:StopMovingOrSizing()
+            end)
+            AS.manualprompt:SetScript("OnShow",function(self)
+                ASprint("|c0055ffffManual Prompt is shown.")
+            end)
+            AS.manualprompt:SetScript("OnHide",function(self)
+                ASprint("|c0055ffffManual Prompt is Hidden.")
+            end)
 
-   AS.manualprompt:SetScript("OnShow",function(self)
-      ASprint("|c0055ffffManual Prompt is shown.")
-   end)
-   AS.manualprompt:SetScript("OnHide",function(self)
-      ASprint("|c0055ffffManual Prompt is Hidden.")
-   end)
+    ------ CLOSE BUTTON
+        -------------- STYLE ----------------
+            AS.manualprompt.closebutton = CreateFrame("Button", nil, AS.manualprompt)
+            AS.manualprompt.closebutton:SetWidth(15)
+            AS.manualprompt.closebutton:SetHeight(15)
+            AS.manualprompt.closebutton:SetPoint("TOPRIGHT", AS.manualprompt, -2, -2)
+        -------------- SCRIPT ----------------
+            AS.manualprompt.closebutton:SetScript("OnClick", function(self)
+                AS.manualprompt:Hide()
+            end)
+            F.ReskinClose(AS.manualprompt.closebutton) -- Aurora
 
------- CLOSE BUTTON
-    -------------- STYLE ----------------
-    AS.manualprompt.closebutton = CreateFrame("Button", nil, AS.manualprompt)
-    AS.manualprompt.closebutton:SetWidth(15)
-    AS.manualprompt.closebutton:SetHeight(15)
-    AS.manualprompt.closebutton:SetPoint("TOPRIGHT", AS.manualprompt, -2, -2)
-    -------------- SCRIPT ----------------
-    AS.manualprompt.closebutton:SetScript("OnClick", function(self)
-        AS[AS_BUTTONCLOSE]()
-    end)
-    F.ReskinClose(AS.manualprompt.closebutton) -- Aurora
+    ------ ICON
+        -------------- STYLE ----------------
+            AS.manualprompt.icon = CreateFrame("Button", nil, AS.manualprompt)
+            AS.manualprompt.icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
+            AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+            AS.manualprompt.icon:SetPoint("TOPLEFT", AS.manualprompt, "TOPLEFT", 18, -15)
+            AS.manualprompt.icon:SetHeight(37)
+            AS.manualprompt.icon:SetWidth(37)
+            if item then
+                AS.manualprompt.icon:SetNormalTexture(item.icon)
+            end
+        -------------- SCRIPT ----------------
+            AS.manualprompt.icon:SetScript("OnEnter", function(self)
+                local link = item.link
 
------- ICON
-    -------------- STYLE ----------------
-    AS.manualprompt.icon = CreateFrame("Button", nil, AS.manualprompt)
-    AS.manualprompt.icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
-    AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
-    AS.manualprompt.icon:SetPoint("TOPLEFT", AS.manualprompt, "TOPLEFT", 18, -15)
-    AS.manualprompt.icon:SetHeight(37)
-    AS.manualprompt.icon:SetWidth(37)
-    if item then
-        AS.manualprompt.icon:SetNormalTexture(item.icon)
-    end
-    -------------- SCRIPT ----------------
-    AS.manualprompt.icon:SetScript("OnEnter", function(self)
-        local link = item.link
+                if link then
+                    --if (item.id and item.id > 0) then
+                    GameTooltip:SetOwner(AuctionFrameCloseButton, "ANCHOR_NONE")
+                    -- Check the link type:   http://www.wowinterface.com/forums/archive/index.php/t-48939.html
+                    if strmatch(link, "|Hbattlepet:") then
+                        -- Battle pet link
+                        local _, speciesID, level, breedQuality, maxHealth, power, speed, name = strsplit(":", link)
+                        BattlePetToolTip_Show(tonumber(speciesID), tonumber(level), tonumber(breedQuality), tonumber(maxHealth), tonumber(power), tonumber(speed), name)
+                    else
+                        -- Other kind of link, OK to use GameTooltip
+                        GameTooltip:SetHyperlink(link)
+                    end
+                    GameTooltip:ClearAllPoints()
+                    GameTooltip:SetPoint("TOPRIGHT", AS.manualprompt.icon, "TOPLEFT", -10, -20)
+                    if (EnhTooltip) then
+                        EnhTooltip.TooltipCall(GameTooltip, name, link, -1, count, buyout)
+                    end
+                    GameTooltip:ClearAllPoints()
+                    GameTooltip:SetPoint("TOPRIGHT", AS.manualprompt.icon, "TOPLEFT", -10, -20)
+                    GameTooltip:Show()
+                    --    end
+                end
+            end)
+            AS.manualprompt.icon:SetScript("OnLeave", function(self)
+                GameTooltip:Hide()
+            end)
 
-        if link then
-            --if (item.id and item.id > 0) then
-            GameTooltip:SetOwner(AuctionFrameCloseButton, "ANCHOR_NONE")
-            -- Check the link type:   http://www.wowinterface.com/forums/archive/index.php/t-48939.html
-            if strmatch(link, "|Hbattlepet:") then
-                -- Battle pet link
-                local _, speciesID, level, breedQuality, maxHealth, power, speed, name = strsplit(":", link)
-                BattlePetToolTip_Show(tonumber(speciesID), tonumber(level), tonumber(breedQuality), tonumber(maxHealth), tonumber(power), tonumber(speed), name)
+    ------ ITEM LABEL
+        -------------- STYLE ----------------
+            AS.manualprompt.upperstring= AS.manualprompt:CreateFontString(nil, "OVERLAY", "gamefontnormal")
+            AS.manualprompt.upperstring:SetJustifyH("CENTER")
+            AS.manualprompt.upperstring:SetWidth(AS.manualprompt:GetWidth() - (AS.manualprompt.icon:GetWidth() + 2*AS_FRAMEWHITESPACE)  )
+            AS.manualprompt.upperstring:SetHeight(AS.manualprompt.icon:GetHeight())
+            AS.manualprompt.upperstring:SetPoint("LEFT", AS.manualprompt.icon, "RIGHT")
+            if item then
+                _,_,_,hexcolor = GetItemQualityColor(item.rarity)
+                AS.manualprompt.upperstring:SetText("|c"..hexcolor..tostring(item.name))
+            end
+
+    ------ CUTOFF PRICE
+        -------------- STYLE ----------------
+            AS.manualprompt.lowerstring= AS.manualprompt:CreateFontString(nil, "OVERLAY","gamefontnormal")
+            AS.manualprompt.lowerstring:SetJustifyH("Left")
+            AS.manualprompt.lowerstring:SetJustifyV("Top")
+            AS.manualprompt.lowerstring:SetWidth(AS.manualprompt:GetWidth() - (2*AS_FRAMEWHITESPACE))
+            AS.manualprompt.lowerstring:SetPoint("TOPRIGHT",AS.manualprompt.upperstring,"BOTTOMRIGHT", 2)
+            if item and item.ignoretable then
+                AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n"..ASGSC(tonumber(item.priceoverride)))
             else
-                -- Other kind of link, OK to use GameTooltip
-                GameTooltip:SetHyperlink(link)
+                AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":")
             end
-            GameTooltip:ClearAllPoints()
-            GameTooltip:SetPoint("TOPRIGHT", AS.manualprompt.icon, "TOPLEFT", -10, -20)
-            if (EnhTooltip) then
-                EnhTooltip.TooltipCall(GameTooltip, name, link, -1, count, buyout)
-            end
-            GameTooltip:ClearAllPoints()
-            GameTooltip:SetPoint("TOPRIGHT", AS.manualprompt.icon, "TOPLEFT", -10, -20)
-            GameTooltip:Show()
-            --    end
-        end
-    end)
-    AS.manualprompt.icon:SetScript("OnLeave", function(self)
-        GameTooltip:Hide()
-    end)
 
------- ITEM LABEL
-    -------------- STYLE ----------------
-    AS.manualprompt.upperstring= AS.manualprompt:CreateFontString(nil, "OVERLAY", "gamefontnormal")
-    AS.manualprompt.upperstring:SetJustifyH("CENTER")
-    AS.manualprompt.upperstring:SetWidth(AS.manualprompt:GetWidth() - (AS.manualprompt.icon:GetWidth() + 2*AS_FRAMEWHITESPACE)  )
-    AS.manualprompt.upperstring:SetHeight(AS.manualprompt.icon:GetHeight())
-    AS.manualprompt.upperstring:SetPoint("LEFT", AS.manualprompt.icon, "RIGHT")
-    ASprint(item)
-    if item then
-        _,_,_,hexcolor = GetItemQualityColor(item.rarity)
-        AS.manualprompt.upperstring:SetText("|c"..hexcolor..tostring(item.name))
-    end
+    ------ IGNORE BUTTON
+        -------------- STYLE ----------------
+            AS.manualprompt.ignorebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
+            AS.manualprompt.ignorebutton:SetText(AS_BUTTONIGNOREMANUAL)
+            AS.manualprompt.ignorebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
+            AS.manualprompt.ignorebutton:SetHeight(AS_BUTTON_HEIGHT)
+            AS.manualprompt.ignorebutton:SetPoint("BOTTOMLEFT",AS.manualprompt,"BOTTOMLEFT",18,12)
+        -------------- SCRIPT ----------------
+            AS.manualprompt.ignorebutton:SetScript("OnClick", function(self)
+                AS[AS_BUTTONIGNOREMANUAL]()
+            end)
+            AS.manualprompt.ignorebutton:SetScript("OnEnter",function(self)
+                ASshowtooltip(AS.manualprompt.ignorebutton, AS_BUTTONTEXT3)
+            end)
+            AS.manualprompt.ignorebutton:SetScript("OnLeave",function(self)
+                AShidetooltip()
+            end)
+            F.Reskin(AS.manualprompt.ignorebutton)
 
------- CUTOFF PRICE
-    -------------- STYLE ----------------
-    AS.manualprompt.lowerstring= AS.manualprompt:CreateFontString(nil, "OVERLAY","gamefontnormal")
-    AS.manualprompt.lowerstring:SetJustifyH("Left")
-    AS.manualprompt.lowerstring:SetJustifyV("Top")
-    AS.manualprompt.lowerstring:SetWidth(AS.manualprompt:GetWidth() - (2*AS_FRAMEWHITESPACE))
-    AS.manualprompt.lowerstring:SetPoint("TOPRIGHT",AS.manualprompt.upperstring,"BOTTOMRIGHT", 2)
-    if item and item.ignoretable then
-        AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
-    else
-        AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":")
-    end
+    ------ SAVE BUTTON
+        -------------- STYLE ----------------
+            AS.manualprompt.savebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
+            AS.manualprompt.savebutton:SetText(AS_BUTTONEXPENSIVEMANUAL)
+            AS.manualprompt.savebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
+            AS.manualprompt.savebutton:SetHeight(AS_BUTTON_HEIGHT)
+            AS.manualprompt.savebutton:SetPoint("BOTTOMRIGHT",AS.manualprompt,"BOTTOMRIGHT",-18,12)
+        -------------- SCRIPT ----------------
+            AS.manualprompt.savebutton:SetScript("OnClick", function(self)
+                AS[AS_BUTTONEXPENSIVEMANUAL]()
+            end)
+            AS.manualprompt.savebutton:SetScript("OnEnter",function(self)
+                ASshowtooltip(AS.manualprompt.savebutton, AS_BUTTONTEXT8)
+            end)
+            AS.manualprompt.savebutton:SetScript("OnLeave", function(self)
+                AShidetooltip()
+            end)
+            F.Reskin(AS.manualprompt.savebutton)
 
------- IGNORE BUTTON
-    -------------- STYLE ----------------
-    AS.manualprompt.ignorebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
-    AS.manualprompt.ignorebutton:SetText(AS_BUTTONIGNOREMANUAL)
-    AS.manualprompt.ignorebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
-    AS.manualprompt.ignorebutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.manualprompt.ignorebutton:SetPoint("BOTTOMLEFT",AS.manualprompt,"BOTTOMLEFT",18,12)
-    -------------- SCRIPT ----------------
-    AS.manualprompt.ignorebutton:SetScript("OnClick", function(self)
-        AS[AS_BUTTONIGNOREMANUAL]()
-    end)
-    AS.manualprompt.ignorebutton:SetScript("OnEnter",function(self)
-        ASshowtooltip(AS.manualprompt.ignorebutton, AS_BUTTONTEXT3)
-    end)
-    AS.manualprompt.ignorebutton:SetScript("OnLeave",function(self)
-        AShidetooltip()
-    end)
-    F.Reskin(AS.manualprompt.ignorebutton)
+    ------ INPUT BOX
+        -------------- STYLE ----------------
+            AS.manualprompt.priceoverride = CreateFrame("EditBox", nil, AS.manualprompt, "InputBoxTemplate")
+            AS.manualprompt.priceoverride:SetPoint("BOTTOMRIGHT", AS.manualprompt.savebutton, "TOPRIGHT", 0, 5)
+            AS.manualprompt.priceoverride:SetHeight(25)
+            AS.manualprompt.priceoverride:SetWidth(45)
+            AS.manualprompt.priceoverride:SetNumeric(true)
+            AS.manualprompt.priceoverride:SetAutoFocus(false)
+        -------------- SCRIPT ----------------
+            AS.manualprompt.priceoverride:SetScript("OnEscapePressed", function(self)
+                AS.manualprompt.priceoverride:ClearFocus()
+            end)
+            AS.manualprompt.priceoverride:SetScript("OnTextChanged", function(self)
+                local messagestring
 
------- SAVE BUTTON
-    -------------- STYLE ----------------
-    AS.manualprompt.savebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
-    AS.manualprompt.savebutton:SetText(AS_BUTTONEXPENSIVEMANUAL)
-    AS.manualprompt.savebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
-    AS.manualprompt.savebutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.manualprompt.savebutton:SetPoint("BOTTOMRIGHT",AS.manualprompt,"BOTTOMRIGHT",-18,12)
-    -------------- SCRIPT ----------------
-    AS.manualprompt.savebutton:SetScript("OnClick", function(self)
-        AS[AS_BUTTONEXPENSIVEMANUAL]()
-    end)
-    AS.manualprompt.savebutton:SetScript("OnEnter",function(self)
-        ASshowtooltip(AS.manualprompt.savebutton, AS_BUTTONTEXT8)
-    end)
-    AS.manualprompt.savebutton:SetScript("OnLeave", function(self)
-        AShidetooltip()
-    end)
-    F.Reskin(AS.manualprompt.savebutton)
+                if AS.manualprompt.priceoverride:GetText() == "" then
+                    return--AS.item["ASmanualitem"].priceoverride = nil
+                elseif ASsavedtable and ASsavedtable.copperoverride then
+                    AS.item["ASmanualitem"].priceoverride = tonumber(AS.manualprompt.priceoverride:GetText())
+                else
+                    AS.item["ASmanualitem"].priceoverride = AS.manualprompt.priceoverride:GetText() * COPPER_PER_GOLD
+                end
 
------- INPUT BOX
-    -------------- STYLE ----------------
-    AS.manualprompt.priceoverride = CreateFrame("EditBox", nil, AS.manualprompt, "InputBoxTemplate")
-    AS.manualprompt.priceoverride:SetPoint("BOTTOMRIGHT", AS.manualprompt.savebutton, "TOPRIGHT", 0, 5)
-    AS.manualprompt.priceoverride:SetHeight(25)
-    AS.manualprompt.priceoverride:SetWidth(45)
-    AS.manualprompt.priceoverride:SetNumeric(true)
-    AS.manualprompt.priceoverride:SetAutoFocus(false)
-    -------------- SCRIPT ----------------
-    AS.manualprompt.priceoverride:SetScript("OnEscapePressed", function(self)
-        AS.manualprompt.priceoverride:ClearFocus()
-    end)
-    AS.manualprompt.priceoverride:SetScript("OnTextChanged", function(self)
-        local messagestring
+                if AS.item["ASmanualitem"].priceoverride and (tonumber(AS.item["ASmanualitem"].priceoverride) > 0) then
+                    messagestring = "\n"..AS_CUTOFF..":\n"
+                    messagestring = messagestring..ASGSC(tonumber(AS.item["ASmanualitem"].priceoverride))
+                    AS.manualprompt.lowerstring:SetText(messagestring)
+                else
+                    ASprint("|c00ffaaaaNo Cutoff price found!")
+                end
+            end)
+            AS.manualprompt.priceoverride:SetScript("OnEnter", function(self)
+                if ASsavedtable and ASsavedtable.copperoverride then
+                    ASshowtooltip(self,"A value here, in COPPER, overrides all other ignore conditions")
+                else
+                    ASshowtooltip(self,"A value here, in gold, overrides all other ignore conditions")
+                end
+            end)
+            AS.manualprompt.priceoverride:SetScript("OnLeave", function(self)
+                AShidetooltip()
+            end)
+            F.ReskinInput(AS.manualprompt.priceoverride) -- Aurora
 
-        if AS.manualprompt.priceoverride:GetText() == "" then
-            return--AS.item["ASmanualitem"].priceoverride = nil
-        elseif ASsavedtable and ASsavedtable.copperoverride then
-            AS.item["ASmanualitem"].priceoverride = tonumber(AS.manualprompt.priceoverride:GetText())
-        else
-            AS.item["ASmanualitem"].priceoverride = AS.manualprompt.priceoverride:GetText() * COPPER_PER_GOLD
-        end
-
-        if AS.item["ASmanualitem"].priceoverride and (tonumber(AS.item["ASmanualitem"].priceoverride) > 0) then
-            messagestring = "\n"..AS_CUTOFF..":\n"
-            messagestring = messagestring..ASGSC(tonumber(AS.item["ASmanualitem"].priceoverride))
-            AS.manualprompt.lowerstring:SetText(messagestring)
-        else
-            ASprint("|c00ffaaaaNo Cutoff price found!")
-        end
-    end)
-    AS.manualprompt.priceoverride:SetScript("OnEnter", function(self)
-        if ASsavedtable and ASsavedtable.copperoverride then
-            ASshowtooltip(self,"A value here, in COPPER, overrides all other ignore conditions")
-        else
-            ASshowtooltip(self,"A value here, in gold, overrides all other ignore conditions")
-        end
-    end)
-    AS.manualprompt.priceoverride:SetScript("OnLeave", function(self)
-        AShidetooltip()
-    end)
-    F.ReskinInput(AS.manualprompt.priceoverride) -- Aurora
-
-
-    ASprint("Done creating manual prompt frame")
+    ASprint("|c004499FF manual prompt frame created")
 end
 
 function AScreateprompt()
@@ -757,7 +761,8 @@ function AScreateprompt()
     end
 
    AS.prompt=CreateFrame("Frame","ASpromptframe",UIParent)
-   AS.prompt:SetPoint("bottom",0,200)  --its got to be bottom so one can just spam buttons without them moving around
+   AS.prompt:SetPoint("TOPLEFT", AS.mainframe, "TOPRIGHT", 3,0)
+   --AS.prompt:SetPoint("bottom",0,200)  --its got to be bottom so one can just spam buttons without them moving around
    AS.prompt:SetHeight(420)  --some addons change font size, so this will be overridden in ASinitialize
    AS.prompt:SetWidth(200)
    AS.prompt:SetBackdrop({
@@ -789,17 +794,28 @@ function AScreateprompt()
    AS.prompt.drag = CreateFrame("Button", nil, AS.prompt)
    AS.prompt.drag:SetPoint("TOPLEFT", AS.prompt, "TOPLEFT", 10,-5)
    AS.prompt.drag:SetPoint("TOPRIGHT", AS.prompt, "TOPRIGHT", -10,-5)
-   AS.prompt.drag:SetHeight(6)
+   AS.prompt.drag:SetHeight(3)
    AS.prompt.drag:SetHighlightTexture("Interface\\FriendsFrame\\UI-FriendsFrame-HighlightBar")
    AS.prompt.drag:SetScript("OnMouseDown", function(self) AS.prompt:StartMoving() end)
    AS.prompt.drag:SetScript("OnMouseUp", function(self) AS.prompt:StopMovingOrSizing() end)
 
-
+   ------ CLOSE BUTTON
+    -------------- STYLE ----------------
+    AS.prompt.closebutton = CreateFrame("Button", nil, AS.prompt)
+    AS.prompt.closebutton:SetWidth(15)
+    AS.prompt.closebutton:SetHeight(15)
+    AS.prompt.closebutton:SetPoint("TOPRIGHT", AS.prompt, -2, -2)
+    -------------- SCRIPT ----------------
+    AS.prompt.closebutton:SetScript("OnClick", function(self)
+        AS.mainframe.headerframe.stopsearchbutton:Disable()
+        AS.prompt:Hide()
+    end)
+    F.ReskinClose(AS.prompt.closebutton) -- Aurora
 
 
    AS.prompt.icon = CreateFrame("Button", nil, AS.prompt)
-   AS.prompt.icon:SetNormalTexture("Interface\\Buttons\\UI-Slot-Background")
-   AS.prompt.icon:GetNormalTexture():SetTexCoord(0,0.640625, 0,0.640625)
+   AS.prompt.icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
+    AS.prompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
    AS.prompt.icon:SetPoint("TOPLEFT", AS.prompt, "TOPLEFT", AS_FRAMEWHITESPACE, -AS_FRAMEWHITESPACE)
    AS.prompt.icon:SetHeight(37)
    AS.prompt.icon:SetWidth(37)
@@ -1098,6 +1114,8 @@ function AScreatelistbutton(i)
    ----------------------------- the highlight mouseover
    buttontemplate:SetHighlightTexture(AShighlighttexture)  --this ones a little softer on the eyes
 
+   --F.Reskin(buttontemplate)
+
    ------------------------------the text
    --cant use button text because button text cant be left justified
    buttontemplate.leftstring = buttontemplate:CreateFontString(nil,"OVERLAY","gamefontnormal")
@@ -1168,15 +1186,17 @@ function createAStexture(ourbutton)
    normaltexture:SetPoint("left",30,0)
    normaltexture:SetPoint("right",-12,0)
    normaltexture:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
-   normaltexture:SetTexCoord(.75,.75,0,1)
+   normaltexture:SetTexCoord(.75,.75,0,0.5)
+
    --center highlight
    highlighttexture=ourbutton:CreateTexture()
-   highlighttexture:SetHeight(AS_BUTTON_HEIGHT)
+   highlighttexture:SetHeight(AS_BUTTON_HEIGHT-1)
    highlighttexture:SetWidth(1) --10 is the gap between text and anything else
-   highlighttexture:SetPoint("left",normaltexture,-4,1)
+   highlighttexture:SetPoint("left",normaltexture,0,-1)
    highlighttexture:SetPoint("right",normaltexture)
-   highlighttexture:SetTexture("Interface\\HelpFrame\\HelpFrameButton-Highlight")
-   highlighttexture:SetTexCoord(0,1,.1,.1)
+   highlighttexture:SetTexture(C.media.backdrop)
+   highlighttexture:SetVertexColor(0.945, 0.847, 0.152,0.3)
+   --highlighttexture:SetTexCoord(0,1,.1,.1)
 
 
    return normaltexture,highlighttexture

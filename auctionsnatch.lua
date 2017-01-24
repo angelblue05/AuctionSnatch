@@ -836,13 +836,10 @@ function ASevaluate()
    local showprompt
    local bid, buyout, cutoffprice, budget, priceperitembid, priceperitembuyout
 
-
-
    batch,total = GetNumAuctionItems("list")
    while(true) do
         AScurrentahresult=AScurrentahresult+1  --next!!
          --reset stuff
-
         --processing-wise, this here is a very expensive hit
         --so i'm only gonna do it (and similar stuff) here, ONCE, and pass everything in as parametners
         name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner=GetAuctionItemInfo("list",AScurrentahresult);
@@ -1426,9 +1423,6 @@ function AScreatebuttonhandlers()
                     ASscrollbar_Update()
                  end
               end
-    AS[AS_BUTTONCLOSE] = function()  --close manual price override
-            AS.manualprompt:Hide()
-    end
 end
 
 function AS_ContainerFrameItemButton_OnModifiedClick(self)
