@@ -12,9 +12,7 @@ function AScreatemainframe()
 -------------------------------------------------------------------------------
    --this is the main listing frame and its children/buttons
    -------------------------------------------------------------------------------
-
     ASprint("|c00229977 creating mainframe")
-
 
 ----- MAIN FRAME
     -------------- STYLE ----------------
@@ -353,125 +351,119 @@ end
 
 function AScreateoptionframe(self)
 
-    AS.optionframe = CreateFrame("Frame","ASoptionframe",UIParent)
-   --AS.optionframe:SetPoint("TOP",AS.mainframe,"Bottomright")
-   --AS.optionframe:SetHeight((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE )* 4) --4 buttons
-    AS.optionframe:SetHeight((AS_BUTTON_HEIGHT* 5) + (AS_FRAMEWHITESPACE * 2))  --4 buttons
-    AS.optionframe:SetWidth(200)
-   --AS.optionframe:Hide()
-    AS.optionframe:SetBackdrop({    bgFile = C.media.backdrop,
-                                    edgeFile = C.media.backdrop,--"Interface/Tooltips/UI-Tooltip-Border",
-                                    tile = true, tileSize = 32, edgeSize = 1,
-                                    insets = { left = 0, right = 0, top = 0, bottom = 1}
-    })
-    AS.optionframe:SetBackdropColor(0,0,0,0.8)
-    AS.optionframe:SetBackdropBorderColor(1,1,1,0.2)
-    --AS.optionframe:SetToplevel(true)
-    AS.optionframe:SetFrameStrata("TOOLTIP") -- TODO: Review why it doesn't appear on top of AS.prompt
-   --AS.optionframe:SetMovable(true)
-    AS.optionframe:EnableMouse(true)
-    AS.optionframe:SetScript("OnMouseDown", function(self)
-    end)
-    AS.optionframe:SetScript("OnMouseUp", function(self)
-    end)
-    AS.optionframe:SetScript("OnShow", function(self)
-      --AS.optionframe:SetFrameLevel(6)--AS.optionframe:GetParent():GetFrameLevel()+1)
-        ASprint("Showing the 2 buttons.:?")
-        AS.optionframe.resetignorebutton:Show()
-        AS.optionframe.deleterowbutton:Show()
-    end)
-   --AS.optionframe:SetScript("OnEnter",function(self)     end)
-    AS.optionframe:SetScript("OnLeave", function(self)
-       --AS.optionframe:Hide()--bah doesnt work right
-        local x,y = GetCursorScaledPosition()
-        ASprint("Cursor x,y="..x..","..y.."  Left, right, bottom, top="..AS.optionframe:GetLeft()..","..AS.optionframe:GetRight()..","..AS.optionframe:GetBottom()..","..AS.optionframe:GetTop())
-        if(x < AS.optionframe:GetLeft() or x > AS.optionframe:GetRight() or y < AS.optionframe:GetBottom() or y > AS.optionframe:GetTop()) then
-            AS.optionframe:Hide()
-        end
-    end)
+    ------ OPTION FRAME
+        -------------- STYLE ----------------
+            AS.optionframe = CreateFrame("Frame", "ASoptionframe", UIParent)
+            AS.optionframe:SetHeight((AS_BUTTON_HEIGHT* 5) + (AS_FRAMEWHITESPACE * 2))  --5 buttons
+            AS.optionframe:SetWidth(200)
+            AS.optionframe:SetBackdrop({    bgFile = C.media.backdrop,
+                                            edgeFile = C.media.backdrop,--"Interface/Tooltips/UI-Tooltip-Border",
+                                            tile = true, tileSize = 32, edgeSize = 1,
+                                            insets = { left = 0, right = 0, top = 0, bottom = 1}
+            })
+            AS.optionframe:SetBackdropColor(0,0,0,0.8)
+            AS.optionframe:SetBackdropBorderColor(1,1,1,0.2)
+            AS.optionframe:SetToplevel(true)
+            AS.optionframe:EnableMouse(true)
+        -------------- SCRIPT ----------------
+            AS.optionframe:SetScript("OnLeave", function(self)
+                --AS.optionframe:Hide()--bah doesnt work right
+                local x,y = GetCursorScaledPosition()
+                --ASprint("Cursor x,y="..x..","..y.."  Left, right, bottom, top="..AS.optionframe:GetLeft()..","..AS.optionframe:GetRight()..","..AS.optionframe:GetBottom()..","..AS.optionframe:GetTop())
+                if(x < AS.optionframe:GetLeft() or x > AS.optionframe:GetRight() or y < AS.optionframe:GetBottom() or y > AS.optionframe:GetTop()) then
+                    AS.optionframe:Hide()
+                end
+            end)
 
+    ------ MANUAL PRICE
+        -------------- STYLE ----------------
+            AS.optionframe.manualpricebutton = CreateFrame("Button", nil, AS.optionframe)
+            AS.optionframe.manualpricebutton:SetHeight(AS_BUTTON_HEIGHT)
+            AS.optionframe.manualpricebutton:SetWidth(AS.optionframe:GetWidth())
+            AS.optionframe.manualpricebutton:SetPoint("TOP", 0, -AS_FRAMEWHITESPACE)
+            AS.optionframe.manualpricebutton:SetNormalFontObject("GameFontNormal")
+            AS.optionframe.manualpricebutton:SetText("Modify manual price")
+            AS.optionframe.manualpricebutton:SetHighlightTexture(C.media.backdrop)
+            AS.optionframe.manualpricebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
+            AS.optionframe.manualpricebutton:SetFrameStrata("TOOLTIP")
+        -------------- SCRIPT ----------------
+            AS.optionframe.manualpricebutton:SetScript("OnClick", function(self)
+                ASresetpriceignore(self)
+            end)
 
-    AS.optionframe.manualpricebutton = CreateFrame("Button",nil,AS.optionframe)
-    AS.optionframe.manualpricebutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.optionframe.manualpricebutton:SetWidth(AS.optionframe:GetWidth())
-    AS.optionframe.manualpricebutton:SetPoint("top",0,-AS_FRAMEWHITESPACE)
-    AS.optionframe.manualpricebutton:SetNormalFontObject("gamefontnormal")
-    AS.optionframe.manualpricebutton:SetText("Modify manual price")
-    AS.optionframe.manualpricebutton:SetHighlightTexture(C.media.backdrop)
-    AS.optionframe.manualpricebutton:GetHighlightTexture():SetVertexColor(r, b,g, .2)
-    AS.optionframe.manualpricebutton:SetFrameStrata("DIALOG")
-   --AS.optionframe.resetignorebutton:SetBackdropColor(0,0,0,.2)
-    AS.optionframe.manualpricebutton:SetScript("OnClick",function(self)
-        ASresetpriceignore(self)
-    end)
+    ------ RESET FILTERS
+        -------------- STYLE ----------------
+            AS.optionframe.resetignorebutton = CreateFrame("Button", nil, AS.optionframe)
+            AS.optionframe.resetignorebutton:SetHeight(AS_BUTTON_HEIGHT)
+            AS.optionframe.resetignorebutton:SetWidth(AS.optionframe:GetWidth())
+            AS.optionframe.resetignorebutton:SetPoint("TOP", AS.optionframe.manualpricebutton, "BOTTOM")
+            AS.optionframe.resetignorebutton:SetNormalFontObject("GameFontNormal")
+            AS.optionframe.resetignorebutton:SetText("Erase Ignore Conditions")
+            AS.optionframe.resetignorebutton:SetHighlightTexture(C.media.backdrop)
+            AS.optionframe.resetignorebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
+            --AS.optionframe.resetignorebutton:SetFrameStrata("DIALOG")
+        -------------- SCRIPT ----------------
+            AS.optionframe.resetignorebutton:SetScript("OnClick", function(self)
+                ASresetignore(self)
+            end)
 
-    AS.optionframe.resetignorebutton = CreateFrame("Button",nil,AS.optionframe)
-    AS.optionframe.resetignorebutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.optionframe.resetignorebutton:SetWidth(AS.optionframe:GetWidth())
-    AS.optionframe.resetignorebutton:SetPoint("top",AS.optionframe.manualpricebutton,"bottom")
-    AS.optionframe.resetignorebutton:SetNormalFontObject("gamefontnormal")
-    AS.optionframe.resetignorebutton:SetText("Erase Ignore Conditions")
-    AS.optionframe.resetignorebutton:SetHighlightTexture(C.media.backdrop)
-    AS.optionframe.resetignorebutton:GetHighlightTexture():SetVertexColor(r, b,g, .2)
-    AS.optionframe.resetignorebutton:SetFrameStrata("DIALOG")
-   --AS.optionframe.resetignorebutton:SetBackdropColor(0,0,0,.2)
-    AS.optionframe.resetignorebutton:SetScript("OnClick",function(self)
-        ASresetignore(self)
-    end)
-   --AS.optionframe.resetignorebutton:SetMovable(true)
+    ------ DELETE ENTRY
+        -------------- STYLE ----------------
+            AS.optionframe.deleterowbutton = CreateFrame("Button", nil, AS.optionframe)
+            AS.optionframe.deleterowbutton:SetHeight(AS_BUTTON_HEIGHT)
+            AS.optionframe.deleterowbutton:SetWidth(AS.optionframe:GetWidth())
+            AS.optionframe.deleterowbutton:SetPoint("TOP", AS.optionframe.resetignorebutton, "BOTTOM")
+            AS.optionframe.deleterowbutton:SetNormalFontObject("GameFontNormal")
+            AS.optionframe.deleterowbutton:SetText("Delete entry")
+            AS.optionframe.deleterowbutton:SetHighlightTexture(C.media.backdrop)
+            AS.optionframe.deleterowbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
+            --AS.optionframe.deleterowbutton:SetFrameStrata("DIALOG")
+        -------------- SCRIPT ----------------
+            AS.optionframe.deleterowbutton:SetScript("OnClick", function(self)
+                ASdeleterow(self)
+            end)
 
+    ------ MOVE ENTRY TO TOP
+        -------------- STYLE ----------------
+            AS.optionframe.movetotopbutton = CreateFrame("Button", nil, AS.optionframe)
+            AS.optionframe.movetotopbutton:SetHeight(AS_BUTTON_HEIGHT)
+            AS.optionframe.movetotopbutton:SetWidth(AS.optionframe:GetWidth())
+            AS.optionframe.movetotopbutton:SetPoint("TOP",ASoptionframe.deleterowbutton,"BOTTOM")
+            AS.optionframe.movetotopbutton:SetNormalFontObject("GameFontNormal")
+            AS.optionframe.movetotopbutton:SetText("Move to top")
+            AS.optionframe.movetotopbutton:SetHighlightTexture(C.media.backdrop)
+            AS.optionframe.movetotopbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
+            --AS.optionframe.movetotopbutton:SetFrameStrata("DIALOG")
+        -------------- SCRIPT ----------------
+            AS.optionframe.movetotopbutton:SetScript("OnClick", function(self)
+                local listnum = ASbuttontolistnum(self)
+                ASmovelistbutton(listnum, 1)
+            end)
 
-    AS.optionframe.deleterowbutton = CreateFrame("Button",nil,AS.optionframe)
-    AS.optionframe.deleterowbutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.optionframe.deleterowbutton:SetWidth(AS.optionframe:GetWidth())
-    AS.optionframe.deleterowbutton:SetPoint("top",AS.optionframe.resetignorebutton,"bottom")
-    AS.optionframe.deleterowbutton:SetNormalFontObject("gamefontnormal")
-    AS.optionframe.deleterowbutton:SetText("Delete entry")
-    AS.optionframe.deleterowbutton:SetHighlightTexture(C.media.backdrop)
-    AS.optionframe.deleterowbutton:GetHighlightTexture():SetVertexColor(r, b,g, .2)
-    AS.optionframe.deleterowbutton:SetFrameStrata("DIALOG")
-   --AS.optionframe.deleterowbutton:SetBackdropColor(0,0,0,1)
-    AS.optionframe.deleterowbutton:SetScript("OnClick",function(self)
-        ASdeleterow(self)
-    end)
+    ------ MOVE ENTRY TO BOTTOM
+        -------------- STYLE ----------------
+            AS.optionframe.movetobottombutton = CreateFrame("Button", nil, AS.optionframe)
+            AS.optionframe.movetobottombutton:SetHeight(AS_BUTTON_HEIGHT)
+            AS.optionframe.movetobottombutton:SetWidth(AS.optionframe:GetWidth())
+            AS.optionframe.movetobottombutton:SetPoint("TOP",ASoptionframe.movetotopbutton,"BOTTOM")
+            AS.optionframe.movetobottombutton:SetNormalFontObject("GameFontNormal")
+            AS.optionframe.movetobottombutton:SetText("Move to bottom")
+            AS.optionframe.movetobottombutton:SetHighlightTexture(C.media.backdrop)
+            AS.optionframe.movetobottombutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
+            --AS.optionframe.movetobottombutton:SetFrameStrata("DIALOG")
+        -------------- SCRIPT ----------------
+            AS.optionframe.movetobottombutton:SetScript("OnClick", function(self)
+                local listnum = ASbuttontolistnum(self)
+                ASmovelistbutton(listnum, table.maxn(AS.item))
+            end)
+end
 
-    AS.optionframe.movetotopbutton = CreateFrame("Button",nil,AS.optionframe)
-    AS.optionframe.movetotopbutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.optionframe.movetotopbutton:SetWidth(AS.optionframe:GetWidth())
-    AS.optionframe.movetotopbutton:SetPoint("top",ASoptionframe.deleterowbutton,"bottom")
-    AS.optionframe.movetotopbutton:SetNormalFontObject("gamefontnormal")
-    AS.optionframe.movetotopbutton:SetText("Move to top")
-    AS.optionframe.movetotopbutton:SetHighlightTexture(C.media.backdrop)
-    AS.optionframe.movetotopbutton:GetHighlightTexture():SetVertexColor(r, b,g, .2)
-    AS.optionframe.movetotopbutton:SetFrameStrata("DIALOG")
-   --AS.optionframe.movetotopbutton:SetBackdropColor(0,0,0,1)
-    AS.optionframe.movetotopbutton:SetScript("OnClick",function(self)
-        local listnum = ASbuttontolistnum(self)
-        ASmovelistbutton(listnum,1)
-    end)
-
-    AS.optionframe.movetobottombutton = CreateFrame("Button",nil,AS.optionframe)
-    AS.optionframe.movetobottombutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.optionframe.movetobottombutton:SetWidth(AS.optionframe:GetWidth())
-    AS.optionframe.movetobottombutton:SetPoint("top",ASoptionframe.movetotopbutton,"bottom")
-    AS.optionframe.movetobottombutton:SetNormalFontObject("gamefontnormal")
-    AS.optionframe.movetobottombutton:SetText("Move to bottom")
-    AS.optionframe.movetobottombutton:SetHighlightTexture(C.media.backdrop)
-    AS.optionframe.movetobottombutton:GetHighlightTexture():SetVertexColor(r, b,g, .2)
-    AS.optionframe.movetobottombutton:SetFrameStrata("DIALOG")
-   --AS.optionframe.movetobottombutton:SetBackdropColor(0,0,0,1)
-    AS.optionframe.movetobottombutton:SetScript("OnClick",function(self)
-        local listnum = ASbuttontolistnum(self)
-        ASmovelistbutton(listnum,table.maxn(AS.item))
-    end)
-end  --end func
 
 function ASresetignore(self)
-    ASprint("Click reset")
-
     local listnum = ASbuttontolistnum(self)
-    if(listnum) then
-        ASprint("Deleteing table.  Table = ")
+
+    if listnum then
+        ASprint("|c00449955 reset filters for")
         ASprint(AS.item[listnum].ignoretable)
         AS.item[listnum].ignoretable = nil
         AS.item[listnum].priceoverride = nil
@@ -480,46 +472,30 @@ function ASresetignore(self)
     end
 end
 
+
 function ASresetpriceignore(self) -- manual price menu option
     local listnum = ASbuttontolistnum(self)
-    ASprint("Click manual price override")
 
     if listnum then
-        ASprint("Modify price. Showing input for listnum: "..listnum)
+        ASprint("|c00449955 reset manual price for "..listnum)
         AScreatemanualprompt(AS.item[listnum], listnum)
         AS.optionframe:Hide()
     end
 end
 
+
 function ASdeleterow(self)
     local listnum = ASbuttontolistnum(self)
-    ASprint(listnum)
-    if(listnum) then
-        if(AS.item[listnum]) then
-            if(AS.item[listnum].name) then
-                --AS.mainframe.listframe.itembutton[table.maxn(AS.item)]:Hide()
-                --AS.mainframe.listframe.scrollMax = AS.mainframe.listframe.scrollMax - AS_BUTTON_HEIGHT
-                table.remove(AS.item,listnum)
-                --hide the delete button if theres nothing else to delete
-                if(table.maxn(AS.item) < listnum) then
-                     AS.optionframe:Hide()
 
-                    ASprint("hiding self.  whatever self is.")
-                end
-                ASscrollbar_Update()
-            else
-                ASprint("|c00ff0000error.  |ritem.[buttonnumber]name "..listnum.." doesnt exist.")
-                table.remove(AS.item,listnum)
-                --hide the delete button if theres nothing else to delete
-                if(table.maxn(AS.item) < listnum) then
-                     AS.optionframe:Hide()
-
-                    ASprint("hiding self.  whatever self is.")
-                end
-            end
+    if listnum and AS.item[listnum] then
+        if not AS.item[listnum].name then
+            ASprint("|c00ff0000 error.  |ritem.[buttonnumber]name "..listnum.." doesn't exist.")
         end
+        table.remove(AS.item, listnum)
+        ASscrollbar_Update()
     end
-    ASscrollbar_Update()
+    AS.optionframe:Hide()
+    ASscrollbar_Update() -- Necessary to remove empty gap
 end
 
 
@@ -644,7 +620,7 @@ function AScreatemanualprompt(item, listnumber)
             AS.manualprompt.lowerstring:SetWidth(AS.manualprompt:GetWidth() - (2*AS_FRAMEWHITESPACE))
             AS.manualprompt.lowerstring:SetPoint("TOPRIGHT",AS.manualprompt.upperstring,"BOTTOMRIGHT", 2)
             if item and item.ignoretable then
-                AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n"..ASGSC(tonumber(item.priceoverride)))
+                AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
             else
                 AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":")
             end
@@ -703,7 +679,7 @@ function AScreatemanualprompt(item, listnumber)
                 local messagestring
 
                 if AS.manualprompt.priceoverride:GetText() == "" then
-                    return--AS.item["ASmanualitem"].priceoverride = nil
+                    AS.item["ASmanualitem"].priceoverride = nil
                 elseif ASsavedtable and ASsavedtable.copperoverride then
                     AS.item["ASmanualitem"].priceoverride = tonumber(AS.manualprompt.priceoverride:GetText())
                 else
@@ -729,8 +705,6 @@ function AScreatemanualprompt(item, listnumber)
                 AShidetooltip()
             end)
             F.ReskinInput(AS.manualprompt.priceoverride) -- Aurora
-
-    ASprint("|c004499FF manual prompt frame created")
 end
 
 function AScreateprompt()
@@ -774,7 +748,7 @@ function AScreateprompt()
    AS.prompt:SetBackdropColor(0,0,0,.8)
    AS.prompt:SetMovable(true)
    AS.prompt:EnableMouse(true)
-   AS.prompt:SetFrameStrata("DIALOG")
+   --AS.prompt:SetFrameStrata("DIALOG")
    AS.prompt:SetScript("OnMouseDown",function(self)
                       AS.prompt:StartMoving()
                        end)
@@ -783,6 +757,7 @@ function AScreateprompt()
                      end)
 
    AS.prompt:SetScript("OnShow",function(self)
+    ASprint(AS.prompt:GetFrameLevel())
       ASprint("|c0055ffffPrompt is shown.  AS.status = "..tostring(AS.status))
    end)
    AS.prompt:SetScript("OnHide",function(self)
@@ -1042,7 +1017,7 @@ function AScreatelistbutton(i)
 
    buttontemplate:SetScript("OnEnter",
       function(self)
-      local ignoreprice,messagestring,quality
+      local ignoreprice,messagestring,quality, current_item
          local mainfunc = AS.mainframe:GetScript("OnEnter")
          if(buttontemplate.leftstring:GetText()) then
            --show tooltip indicating you can double click this
@@ -1050,9 +1025,10 @@ function AScreatelistbutton(i)
               messagestring = AS_INFO
               --show all cutoff prices
               local scrollvalue=FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+              current_item = AS.item[i + scrollvalue]
 
-              if (AS and AS.item and AS.item[i+scrollvalue] and AS.item[i+scrollvalue].priceoverride) then
-                  messagestring = messagestring.."\nManual Override: "..ASGSC(tonumber(AS.item[i+scrollvalue].priceoverride))
+              if (AS and AS.item and current_item and current_item.ignoretable) then
+                  messagestring = messagestring.."\nManual Override: "..ASGSC(tonumber(current_item.ignoretable[current_item.name].cutoffprice))
               elseif (AS and AS.item and AS.item[i+scrollvalue] and AS.item[i+scrollvalue].ignoretable) then
                    --loop through each entry in the ignore list
                     messagestring = messagestring.."\n"..AS_IGNORECONDITIONS..":"

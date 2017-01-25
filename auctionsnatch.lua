@@ -214,12 +214,24 @@ end
 -- ONLOAD, duh
 function AS_OnLoad(self)
 
-   -- Register for events
-   --  this:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+   ------- REGISTER FOR EVENTS
    self:RegisterEvent("AUCTION_ITEM_LIST_UPDATE")
    self:RegisterEvent("AUCTION_HOUSE_SHOW")
    self:RegisterEvent("AUCTION_HOUSE_CLOSED")
    self:RegisterEvent("VARIABLES_LOADED")
+
+    ------ CHAT HOOKS
+        -------------- THANK YOU TINY PAD ----------------
+        self:RegisterEvent("ADDON_LOADED") -- tradeskill and achievement hooks need to wait for LoD bits
+        local old_ChatEdit_InsertLink = ChatEdit_InsertLink
+        function ChatEdit_InsertLink(text)
+            if AS.mainframe.headerframe.editbox:HasFocus() then
+                AS.mainframe.headerframe.editbox:Insert(text)
+                return true -- prevents the stacksplit frame from showing
+            else
+                return old_ChatEdit_InsertLink(text)
+            end
+        end
 
    DEFAULT_CHAT_FRAME:AddMessage(AS_LOADTEXT)
 
@@ -269,6 +281,8 @@ function AS_OnLoad(self)
 
    AS.prompt:Hide()
    AS.manualprompt:Hide()
+
+
 end
 ---------------------------------------------------------------------------
 
@@ -1383,14 +1397,11 @@ function AScreatebuttonhandlers()
             if not AS.item[listnumber].ignoretable then
                AS.item[listnumber].ignoretable = {}
             end
-            if not AS.item['ASmanualitem'].priceoverride then return false end
 
             AS.item[listnumber].ignoretable[name] = {}
             AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualitem'].priceoverride
             AS.item[listnumber].ignoretable[name].quality = quality  --used when showing whats ignored, makes it look better
-            AS.item[listnumber].priceoverride = AS.item['ASmanualitem'].priceoverride
-            ASprint("TESTING OVERRIDE")
-            ASprint(AS.item[listnumber])
+            AS.item[listnumber].priceoverride = nil
             AS.item['ASmanualitem'] = nil
             ASsavevariables()
             AS.manualprompt:Hide()
