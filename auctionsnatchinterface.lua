@@ -509,6 +509,12 @@ function AScreatemanualprompt(item, listnumber)
         AS.prompt:Hide()
     end
 
+    if item then
+        AS.item['ASmanualitem'] = {}
+        AS.item['ASmanualitem'].name = item.name
+        AS.item['ASmanualitem'].listnumber = listnumber
+    end
+
     if AS.manualprompt == nil then
 
         ------ MANUAL PROMPT FRAME
@@ -649,7 +655,6 @@ function AScreatemanualprompt(item, listnumber)
             -------------- SCRIPT ----------------
                 AS.manualprompt.savebutton:SetScript("OnClick", function(self)
                     AS[AS_BUTTONEXPENSIVEMANUAL]()
-                    AS.manualprompt.priceoverride:SetText("")
                 end)
                 AS.manualprompt.savebutton:SetScript("OnEnter",function(self)
                     ASshowtooltip(AS.manualprompt.savebutton, AS_BUTTONTEXT8)
@@ -705,10 +710,6 @@ function AScreatemanualprompt(item, listnumber)
     end
 
     if item then
-        AS.item['ASmanualitem'] = {}
-        AS.item['ASmanualitem'].name = item.name
-        AS.item['ASmanualitem'].listnumber = listnumber
-
         AS.manualprompt.icon:SetNormalTexture(item.icon)
         _,_,_,hexcolor = GetItemQualityColor(item.rarity)
         AS.manualprompt.upperstring:SetText("|c"..hexcolor..tostring(item.name))
@@ -716,7 +717,8 @@ function AScreatemanualprompt(item, listnumber)
         if item.ignoretable then
             AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
         end
-        
+
+        AS.manualprompt.priceoverride:SetText("")
         AS.manualprompt:Show()
     end
 end
