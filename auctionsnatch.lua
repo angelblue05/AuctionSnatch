@@ -214,11 +214,11 @@ end
 -- ONLOAD, duh
 function AS_OnLoad(self)
 
-   ------- REGISTER FOR EVENTS
-   self:RegisterEvent("AUCTION_ITEM_LIST_UPDATE")
-   self:RegisterEvent("AUCTION_HOUSE_SHOW")
-   self:RegisterEvent("AUCTION_HOUSE_CLOSED")
-   self:RegisterEvent("VARIABLES_LOADED")
+    ----- REGISTER FOR EVENTS
+        self:RegisterEvent("AUCTION_ITEM_LIST_UPDATE")
+        self:RegisterEvent("AUCTION_HOUSE_SHOW")
+        self:RegisterEvent("AUCTION_HOUSE_CLOSED")
+        self:RegisterEvent("VARIABLES_LOADED")
 
     ------ CHAT HOOKS
         -------------- THANK YOU TINY PAD ----------------
@@ -233,23 +233,23 @@ function AS_OnLoad(self)
             end
         end
 
-   DEFAULT_CHAT_FRAME:AddMessage(AS_LOADTEXT)
+    DEFAULT_CHAT_FRAME:AddMessage(AS_LOADTEXT)
 
-   -- create our slash commands
-   SLASH_AS1 = "/AS";
-   SLASH_AS2 = "/as";
-   SLASH_AS3 = "/As";
-   SLASH_AS4 = "/aS";
-   SLASH_AS5 = "/Auctionsnatch";
-   SLASH_AS6 = "/AuctionSnatch";
-   SLASH_AS7 = "/AUCTIONSNATCH";
-   SLASH_AS8 = "/auctionsnatch";
+    ------ SLASH COMMANDS
+        SLASH_AS1 = "/AS";
+        SLASH_AS2 = "/as";
+        SLASH_AS3 = "/As";
+        SLASH_AS4 = "/aS";
+        SLASH_AS5 = "/Auctionsnatch";
+        SLASH_AS6 = "/AuctionSnatch";
+        SLASH_AS7 = "/AUCTIONSNATCH";
+        SLASH_AS8 = "/auctionsnatch";
 
-   SlashCmdList["AS"] = ASmain;
+        SlashCmdList["AS"] = ASmain;
 
-   AScreatemainframe()
-   AScreateprompt()
-   AScreatemanualprompt()
+    AScreatemainframe()
+    AScreateprompt()
+    AScreatemanualprompt()
    --   AScreateauctiontab()  --cant.  auction ui doesnt get created until after all mods are created
 
 
@@ -702,19 +702,23 @@ function AS_OnEvent(self,event)
             ASmain()
         end
 
-   elseif (event=="AUCTION_HOUSE_CLOSED") then
+   elseif event=="AUCTION_HOUSE_CLOSED" then
 
-      AS.prompt:Hide()
-      AS.manualprompt:Hide()
-      if (ASopenedwithah) then  --in case i do a manual /as prompt for testing purposes
-         if(AS.mainframe) then
+        AS.mainframe.headerframe.editbox:SetText("")
+        AS.prompt:Hide()
+        AS.manualprompt:Hide()
+        
+        if ASopenedwithah then  --in case i do a manual /as prompt for testing purposes
+            if AS.mainframe then
+                AS.mainframe:Hide()
+            end
+            ASopenedwithah = false
+        else
             AS.mainframe:Hide()
-         end
-         ASopenedwithah=false
-      else
-        AS.mainframe:Hide()
-      end
-      AS.status=nil
+        end
+        
+        AS.status = nil
+    
     elseif  (string.match("AUCTION",event)) then
         ASprint(event)
    end
@@ -842,16 +846,21 @@ end
 
 
 function ASevaluate()
+    local batch,total
+    local name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner
+    local messagestring,cutoffprice
+    local showprompt
+    local bid, buyout, cutoffprice, budget, priceperitembid, priceperitembuyout
 
     ASprint("|c000055ee Evaluate() reached")
-   local batch,total
-   local name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner
-   local messagestring,cutoffprice
-   local showprompt
-   local bid, buyout, cutoffprice, budget, priceperitembid, priceperitembuyout
 
-   batch,total = GetNumAuctionItems("list")
-   while(true) do
+    batch,total = GetNumAuctionItems("list")
+
+    if AS.manualprompt:IsShown() then
+        AS.manualprompt:Hide()
+    end
+
+    while(true) do
         AScurrentahresult=AScurrentahresult+1  --next!!
          --reset stuff
         --processing-wise, this here is a very expensive hit
@@ -888,7 +897,12 @@ function ASevaluate()
             end
 
             -- Set the title and icon
-            AS.prompt.upperstring:SetText(name)
+            if quality then
+                _,_,_,hexcolor = GetItemQualityColor(quality)
+                AS.prompt.upperstring:SetText("|c"..hexcolor..tostring(name))
+            else
+                AS.prompt.upperstring:SetText(name)
+            end
             AS.prompt.icon:SetNormalTexture(texture)
 
             messagestring = AScreatemessagestring(cutoffprice,name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner)
@@ -1189,7 +1203,7 @@ function AScreatemessagestring(cutoffprice, name, texture, count, quality, canUs
 
     if (cutoffprice and tonumber(cutoffprice) > 0) then
 
-           messagestring=messagestring.."\n\n"..AS_CUTOFF..":"
+           messagestring=messagestring.."\n\n"..AS_CUTOFF..":\n"
            messagestring=messagestring..ASGSC(tonumber(cutoffprice))
     else
         ASprint("|c00ffaaaaNo Cutoff price found!")
