@@ -403,27 +403,12 @@ function AScreateoptionframe(self)
                 ASresetignore(self)
             end)
 
-    ------ DELETE ENTRY
-        -------------- STYLE ----------------
-            AS.optionframe.deleterowbutton = CreateFrame("Button", nil, AS.optionframe)
-            AS.optionframe.deleterowbutton:SetHeight(AS_BUTTON_HEIGHT)
-            AS.optionframe.deleterowbutton:SetWidth(AS.optionframe:GetWidth())
-            AS.optionframe.deleterowbutton:SetPoint("TOP", AS.optionframe.resetignorebutton, "BOTTOM")
-            AS.optionframe.deleterowbutton:SetNormalFontObject("GameFontNormal")
-            AS.optionframe.deleterowbutton:SetText(AS_BUTTONDELETE)
-            AS.optionframe.deleterowbutton:SetHighlightTexture(C.media.backdrop)
-            AS.optionframe.deleterowbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
-        -------------- SCRIPT ----------------
-            AS.optionframe.deleterowbutton:SetScript("OnClick", function(self)
-                ASdeleterow(self)
-            end)
-
     ------ MOVE ENTRY TO TOP
         -------------- STYLE ----------------
             AS.optionframe.movetotopbutton = CreateFrame("Button", nil, AS.optionframe)
             AS.optionframe.movetotopbutton:SetHeight(AS_BUTTON_HEIGHT)
             AS.optionframe.movetotopbutton:SetWidth(AS.optionframe:GetWidth())
-            AS.optionframe.movetotopbutton:SetPoint("TOP",ASoptionframe.deleterowbutton,"BOTTOM")
+            AS.optionframe.movetotopbutton:SetPoint("TOP", AS.optionframe.resetignorebutton,"BOTTOM")
             AS.optionframe.movetotopbutton:SetNormalFontObject("GameFontNormal")
             AS.optionframe.movetotopbutton:SetText("Move to top")
             AS.optionframe.movetotopbutton:SetHighlightTexture(C.media.backdrop)
@@ -448,6 +433,21 @@ function AScreateoptionframe(self)
             AS.optionframe.movetobottombutton:SetScript("OnClick", function(self)
                 local listnum = ASbuttontolistnum(self)
                 ASmovelistbutton(listnum, table.maxn(AS.item))
+            end)
+
+    ------ DELETE ENTRY
+        -------------- STYLE ----------------
+            AS.optionframe.deleterowbutton = CreateFrame("Button", nil, AS.optionframe)
+            AS.optionframe.deleterowbutton:SetHeight(AS_BUTTON_HEIGHT)
+            AS.optionframe.deleterowbutton:SetWidth(AS.optionframe:GetWidth())
+            AS.optionframe.deleterowbutton:SetPoint("TOP", AS.optionframe.movetobottombutton, "BOTTOM")
+            AS.optionframe.deleterowbutton:SetNormalFontObject("GameFontNormal")
+            AS.optionframe.deleterowbutton:SetText(AS_BUTTONDELETE)
+            AS.optionframe.deleterowbutton:SetHighlightTexture(C.media.backdrop)
+            AS.optionframe.deleterowbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
+        -------------- SCRIPT ----------------
+            AS.optionframe.deleterowbutton:SetScript("OnClick", function(self)
+                ASdeleterow(self)
             end)
 end
 
@@ -535,6 +535,7 @@ function AScreatemanualprompt(item, listnumber)
                 end)
                 AS.manualprompt:SetScript("OnShow",function(self)
                     ASprint("|c0055ffffManual prompt is shown")
+                    AS.manualprompt.priceoverride:SetFocus()
                 end)
                 AS.manualprompt:SetScript("OnHide",function(self)
                     ASprint("|c0055ffffManual prompt is hidden")
@@ -562,7 +563,7 @@ function AScreatemanualprompt(item, listnumber)
                 AS.manualprompt.icon:SetWidth(37)
             -------------- SCRIPT ----------------
                 AS.manualprompt.icon:SetScript("OnEnter", function(self)
-                    local link = item.link
+                    local link = AS.item[AS.item.LastListButtonClicked].link
 
                     if link then
                         --if (item.id and item.id > 0) then
@@ -593,20 +594,20 @@ function AScreatemanualprompt(item, listnumber)
 
         ------ ITEM LABEL
             -------------- STYLE ----------------
-                AS.manualprompt.upperstring= AS.manualprompt:CreateFontString(nil, "OVERLAY", "gamefontnormal")
+                AS.manualprompt.upperstring = AS.manualprompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")
                 AS.manualprompt.upperstring:SetJustifyH("CENTER")
-                AS.manualprompt.upperstring:SetWidth(AS.manualprompt:GetWidth() - (AS.manualprompt.icon:GetWidth() + 2*AS_FRAMEWHITESPACE)  )
+                AS.manualprompt.upperstring:SetWidth(AS.manualprompt:GetWidth() - (AS.manualprompt.icon:GetWidth() + (2*AS_FRAMEWHITESPACE)))
                 AS.manualprompt.upperstring:SetHeight(AS.manualprompt.icon:GetHeight())
                 AS.manualprompt.upperstring:SetPoint("LEFT", AS.manualprompt.icon, "RIGHT", 7, 0)
-                AS.manualprompt.upperstring:SetPoint("RIGHT", AS.manualprompt.icon, "RIGHT", -15, 0)
+                AS.manualprompt.upperstring:SetPoint("RIGHT", AS.manualprompt, "RIGHT", -15, 0)
 
         ------ CUTOFF PRICE
             -------------- STYLE ----------------
-                AS.manualprompt.lowerstring= AS.manualprompt:CreateFontString(nil, "OVERLAY","gamefontnormal")
+                AS.manualprompt.lowerstring = AS.manualprompt:CreateFontString(nil, "OVERLAY","gamefontnormal")
                 AS.manualprompt.lowerstring:SetJustifyH("Left")
                 AS.manualprompt.lowerstring:SetJustifyV("Top")
                 AS.manualprompt.lowerstring:SetWidth(AS.manualprompt:GetWidth() - (2*AS_FRAMEWHITESPACE))
-                AS.manualprompt.lowerstring:SetPoint("TOPRIGHT",AS.manualprompt.upperstring,"BOTTOMRIGHT", 2)
+                AS.manualprompt.lowerstring:SetPoint("TOPLEFT", AS.manualprompt.icon, "BOTTOMLEFT", 0, 2)
                 AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":")
 
         ------ IGNORE BUTTON
@@ -661,6 +662,9 @@ function AScreatemanualprompt(item, listnumber)
                 AS.manualprompt.priceoverride:SetScript("OnEscapePressed", function(self)
                     AS.manualprompt.priceoverride:ClearFocus()
                 end)
+                AS.manualprompt.priceoverride:SetScript("OnEnterPressed", function(self)
+                    AS.manualprompt.savebutton:Click()
+                end)
                 AS.manualprompt.priceoverride:SetScript("OnTextChanged", function(self)
                     local messagestring
 
@@ -705,6 +709,8 @@ function AScreatemanualprompt(item, listnumber)
         
         if item.ignoretable then
             AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
+        else
+            AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n")
         end
 
         AS.manualprompt.priceoverride:SetText("")

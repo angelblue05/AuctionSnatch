@@ -1441,7 +1441,7 @@ function AScreatebuttonhandlers()
             AS.manualprompt:Hide()
     end
 
-   AS[AS_BUTTONEXPENSIVE] = function()  --too expensive
+   --[[AS[AS_BUTTONEXPENSIVE] = function()  --too expensive
                 if not (AS.item[AScurrentauctionsnatchitem].ignoretable) then
                    ASprint("creating ignore table for item#"..AScurrentauctionsnatchitem.." ,result#"..AScurrentahresult)
                    AS.item[AScurrentauctionsnatchitem].ignoretable = {}
@@ -1460,11 +1460,16 @@ function AScreatebuttonhandlers()
                  AS.status=EVALUATING
                 ASsavevariables()
                 --AScurrentahresult=AScurrentahresult  --redo this item, to bid, this time :)
-             end
+             end]]
 
     AS[AS_BUTTONEXPENSIVEMANUAL] = function()  --too expensive
             local name = AS.item['ASmanualitem'].name
             local listnumber = AS.item['ASmanualitem'].listnumber
+
+            if AS.item['ASmanualitem'].priceoverride == nil then
+                AS.manualprompt:Hide()
+                return
+            end
 
             if not AS.item[listnumber].ignoretable then
                AS.item[listnumber].ignoretable = {}
