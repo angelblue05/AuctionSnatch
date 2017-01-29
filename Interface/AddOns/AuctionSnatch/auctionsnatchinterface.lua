@@ -277,9 +277,6 @@ function AScreatemainframe()
     AS.mainframe.headerframe.editbox:SetScript("OnEscapePressed", function(self)
         AS.mainframe.headerframe.editbox:ClearFocus()
     end)
-    AS.mainframe.headerframe.editbox:SetScript("OnEnter", function(self)
-        AS.mainframe.headerframe.editbox:SetFocus()
-    end)
     AS.mainframe.headerframe.editbox:SetScript("OnEnterPressed", function(self)
         AS.mainframe.headerframe.additembutton:Click()
     end)
@@ -1210,9 +1207,9 @@ function AScreatelistbutton(i)
 
 
    ---------------------------------- the quantity
-   buttontemplate.rightstring = buttontemplate:CreateFontString(nil,"OVERLAY","gamefontnormal")
+   --[[buttontemplate.rightstring = buttontemplate:CreateFontString(nil,"OVERLAY","gamefontnormal")
    buttontemplate.rightstring:SetJustifyH("Right")
-   buttontemplate.rightstring:SetPoint("Right",ASnormaltexture,-5,0)
+   buttontemplate.rightstring:SetPoint("Right",ASnormaltexture,-5,0)]]
 
 
    ---------------the little icon on the left

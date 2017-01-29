@@ -1,43 +1,53 @@
---&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
---&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
---ASdebug = true
+--[[
 
-ASprintstack = -1
+    HELPER FUNCTIONS
+
+    Anything that needs repetitive actions or calculations
+    Tips: 
+        -- Multiplication are faster than division
+        -- Local is faster than global. Re-assign global as a new local if used a lot
+
+]]
+
+local ASprintstack = -1
 local messagestring = ""
-function ASprint(message)
-   if(ASdebug) then
-		if(ASprintstack == -1) then
-			messagestring=""
-		end
-      local stack, filler
-      if not message then
-	  	 DEFAULT_CHAT_FRAME:AddMessage(messagestring..tostring(message))
-		 return false 
-      end
-      ASprintstack=ASprintstack+1
-      
-	  filler=string.rep(". . ",ASprintstack)
-      
-      if (type(message) == "table") then
-	  	-- DEFAULT_CHAT_FRAME:AddMessage("its a table.  length="..AS_tcount(message))
-	 	
-		DEFAULT_CHAT_FRAME:AddMessage(messagestring.."{table} --> ")
-		
-	 	for k,v in pairs(message) do
-			messagestring = filler.."["..k.."] = "
-	    	ASprint(v)
-	 	end
-      elseif (type(message) == "userdata") then
 
-      elseif (type(message) == "function") then
-        DEFAULT_CHAT_FRAME:AddMessage(messagestring.." A function(self)")
-      elseif (type(message) == "boolean") then
+function ASprint(message)
+
+    if ASdebug then
+
+        if ASprintstack == -1 then
+            messagestring = MSG_C.DEFAULT.."AuctionSnatch: |r"
+        end
+
+        if not message then
             DEFAULT_CHAT_FRAME:AddMessage(messagestring..tostring(message))
-      else
-	  	 	DEFAULT_CHAT_FRAME:AddMessage(messagestring..tostring(message))
-      end
-      ASprintstack=ASprintstack-1
+            return false 
+        end
+
+        ASprintstack = ASprintstack + 1
+
+        if (type(message) == "table") then
+            local filler=string.rep(". . ", ASprintstack)
+
+            DEFAULT_CHAT_FRAME:AddMessage(messagestring.."{table} --> ")
+            for k, v in pairs(message) do
+                messagestring = filler.."["..k.."] = "
+                ASprint(v)
+            end
+        
+        elseif (type(message) == "userdata") then
+
+        elseif (type(message) == "function") then
+            DEFAULT_CHAT_FRAME:AddMessage(messagestring.." A function(self)")
+        elseif (type(message) == "boolean") then
+            DEFAULT_CHAT_FRAME:AddMessage(messagestring..tostring(message))
+        else
+            DEFAULT_CHAT_FRAME:AddMessage(messagestring..tostring(message))
+        end
+        
+        ASprintstack = ASprintstack - 1
    end
 end
 
@@ -49,15 +59,16 @@ end
 
 
 ASGetGSC = function (money)
-	      if (money == nil) then money = 0 end
-	      local g = math.floor(money / 10000)
-	      local s = math.floor((money - (g*10000)) / 100)
-	      local c = math.ceil(money - (g*10000) - (s*100))
-	      return g,s,c
-	   end
+          if (money == nil) then money = 0 end
+          local g = math.floor(money / 10000)
+          local s = math.floor((money - (g*10000)) / 100)
+          local c = math.ceil(money - (g*10000) - (s*100))
+          return g,s,c
+       end
 
 -- formats money text by color for gold, silver, copper
 function ASGSC(money, exact, dontUseColorCodes)
+    -------------- THANK YOU BOTTOMSCANNER ----------------
    --if not (exact) then exact = true end;
    if (type(money) ~= "number") then return end
    
@@ -83,48 +94,54 @@ function ASGSC(money, exact, dontUseColorCodes)
    
    return gsc
 end
---THANK YOU BOTTOMSCANNER!
+
 
 -- tcopy: recursively copy contents of one table to another.  from wowwiki
-function AS_tcopy(to, from)   -- "to" must be a table (possibly empty)
-   for k,v in pairs(from) do
-      if(type(v)=="table") then
-	 	to[k] = {}
-	 	AS_tcopy(to[k], v);
-      else
-	 	to[k] = v;
-      end
-   end
+function AS_tcopy(to, from)
+    -- "to" must be a table (possibly empty)
+    for k, v in pairs(from) do
+
+        if type(v) == "table" then
+            to[k] = {}
+            AS_tcopy(to[k], v)
+        else
+            to[k] = v
+        end
+    end
 end
 
 -- tcount: count table members even if they're not indexed by numbers
 function AS_tcount(tab)
-   local n=0;
-   for _ in pairs(tab) do
-      n=n+1;
-   end
-   return n;
+    local n = 0
+    
+    for _ in pairs(tab) do
+        n = n + 1
+    end
+    return n
 end
 
 
 
 
-function ASshowtooltip(frame,notes)
-   if(frame) then
-      if frame:GetRight() >= (GetScreenWidth() / 2) then
-	 GameTooltip:SetOwner(frame, "ANCHOR_LEFT")
-      else
-	 GameTooltip:SetOwner(frame, "ANCHOR_RIGHT")
-      end
-      if(notes) then
-	 GameTooltip:SetText(notes, 0, 1, 1, 1, 1)
-	 GameTooltip:Show()
-      end
+function ASshowtooltip(frame, notes)
+    
+    if frame then
+        
+        if frame:GetRight() >= (GetScreenWidth() * 0.5) then
+            GameTooltip:SetOwner(frame, "ANCHOR_LEFT")
+        else
+            GameTooltip:SetOwner(frame, "ANCHOR_RIGHT")
+        end
+        
+        if notes then
+            GameTooltip:SetText(notes, 0, 1, 1, 1, 1)
+            GameTooltip:Show()
+        end
    end
 end
 
 function AShidetooltip()
-   GameTooltip:Hide()
+    GameTooltip:Hide()
 end
 
 
@@ -136,15 +153,15 @@ function ASrowsthatcanfit()  --i dunno.  i don't see anything wrong with this
 --lolol on debugging, ourheight is 299.9999999999999552965            thats messed up
    if(AS) then
       if AS.mainframe then
-		 if AS.mainframe.listframe then
-			local ourheight = math.ceil(AS.mainframe.listframe:GetHeight()) - AS_FRAMEWHITESPACE
-		--	ASprint("Listframe height = "..ourheight)
---			ASprint("AS_BUTTON_HEIGHT = "..AS_BUTTON_HEIGHT)
-			--ASprint("math.floor(ourheight / AS_BUTTON_HEIGHT) = "..math.floor(ourheight / AS_BUTTON_HEIGHT))
-			
---			math.floor(ourheight / AS_BUTTON_HEIGHT)
-			return math.floor(ourheight / AS_BUTTON_HEIGHT)
-		end
+         if AS.mainframe.listframe then
+            local ourheight = math.ceil(AS.mainframe.listframe:GetHeight()) - AS_FRAMEWHITESPACE
+        --  ASprint("Listframe height = "..ourheight)
+--          ASprint("AS_BUTTON_HEIGHT = "..AS_BUTTON_HEIGHT)
+            --ASprint("math.floor(ourheight / AS_BUTTON_HEIGHT) = "..math.floor(ourheight / AS_BUTTON_HEIGHT))
+            
+--          math.floor(ourheight / AS_BUTTON_HEIGHT)
+            return math.floor(ourheight / AS_BUTTON_HEIGHT)
+        end
       end
    end
    return 10--default
@@ -254,49 +271,50 @@ end
 function ASbuttontolistnum(button)
 
     if AS.item.LastListButtonClicked then
+        ASprint(MSG_C.INFO.."Activated button: "..AS.item.LastListButtonClicked)
         return AS.item.LastListButtonClicked
     end
-	--see the 'setparent()' call in the onclick handler below
-	if (button:GetParent() and button:GetParent():GetParent()) then
-		local optionframeparent = button:GetParent():GetParent()
-	   if(optionframeparent.buttonnumber) then
-		  local value
-		  value=ASscrollbar:GetValue()
-		  local buttonnumber=tonumber(optionframeparent.buttonnumber)
-		  ASprint("buttonnumber="..buttonnumber)
-		  value=ASscrollbar:GetValue()
-		  
-		  return buttonnumber
-		end
-	end
+    --see the 'setparent()' call in the onclick handler below
+    if (button:GetParent() and button:GetParent():GetParent()) then
+        local optionframeparent = button:GetParent():GetParent()
+       if(optionframeparent.buttonnumber) then
+          local value
+          value=ASscrollbar:GetValue()
+          local buttonnumber=tonumber(optionframeparent.buttonnumber)
+          ASprint("buttonnumber="..buttonnumber)
+          value=ASscrollbar:GetValue()
+          
+          return buttonnumber
+        end
+    end
 end
 function ASremoveduplicates(ASlist)
 
-	local newlist = {}
-	local ASexists = false
+    local newlist = {}
+    local ASexists = false
 
-	for i = 1,#ASlist do
-		ASexists = false
-		if not (newlist[1]) then
-			ASprint("Newlist is empty.")
-		end
-		
-		for j = 1,#newlist do
-			ASprint("Does ASlist["..i.."] ("..ASlist[i].." = newlist["..j.."] ("..newlist[j].." ? ")	
-			if (ASlist[i] == newlist[j]) then --it exists in the new list already
-				ASexists  = true
-				break
-			end
-		end
-		if(ASexists == false) then
-			ASprint("Inserting: "..ASlist[i])
-			tinsert(newlist,ASlist[i])
-		else
-			ASprint("NOT Inserting: "..ASlist[i])
-		end
-	end
+    for i = 1,#ASlist do
+        ASexists = false
+        if not (newlist[1]) then
+            ASprint("Newlist is empty.")
+        end
+        
+        for j = 1,#newlist do
+            ASprint("Does ASlist["..i.."] ("..ASlist[i].." = newlist["..j.."] ("..newlist[j].." ? ")    
+            if (ASlist[i] == newlist[j]) then --it exists in the new list already
+                ASexists  = true
+                break
+            end
+        end
+        if(ASexists == false) then
+            ASprint("Inserting: "..ASlist[i])
+            tinsert(newlist,ASlist[i])
+        else
+            ASprint("NOT Inserting: "..ASlist[i])
+        end
+    end
 
-	return newlist
+    return newlist
 end
 
 

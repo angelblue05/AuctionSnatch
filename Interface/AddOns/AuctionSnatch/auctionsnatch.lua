@@ -1,43 +1,64 @@
--- BrowseNextPageButton.
--- AuctionFrameBrowse.page
----------------------------------------------------------------------------------
--------------------------------------------------------------------------------
--------------------- DATA STRUCTURES EXPLAINED ------------------------------
+
 --[[
---i'm trying something ambitious.  included in the name of my variables is
---the entire parent/child heirarchy
---every variable will be a child of 'AS' eg AS.mainframe
---anything with its parent being AS.mainframe will be AS.mainframe.whatever
---multiple items, buttons, will be AS.mainframe.button[x]
---
---so name will be very long, and looking like:
---AS.mainframe.listframe.itembutton[x].lefttexture
---
---I'm also hoping to not use the 2nd argument of any 'createframe' function
---I don't like all the global variables floating around
---maybe this heirarchial, table-centered structure will help
---
---(it also might just be a pain in the ass)
+    
+    OG DATA STRUCTURES EXPLAINED
+
+    i'm trying something ambitious.  included in the name of my variables is
+    the entire parent/child heirarchy
+    every variable will be a child of 'AS' eg AS.mainframe
+    anything with its parent being AS.mainframe will be AS.mainframe.whatever
+    multiple items, buttons, will be AS.mainframe.button[x]
+
+    so name will be very long, and looking like:
+    AS.mainframe.listframe.itembutton[x].lefttexture
+
+    I'm also hoping to not use the 2nd argument of any 'createframe' function
+    I don't like all the global variables floating around
+    maybe this heirarchial, table-centered structure will help
+
+    (it also might just be a pain in the ass)
+
+    edit.  Its a pain in the ass
 ]]
---edit.  Its a pain in the ass
+
+--[[
+    
+    ANGELBLUE05's MODIFICATIONS EXPLAINED
+    
+    I'm just trying to clean up and fix certain bugs I came across. I tried not
+    to change too much of the structure...
+
+    but was unsucessful. Modified to fit Altz UI (using Aurora)
+    http://www.wowinterface.com/downloads/info21263-AltzUIforLegion.html#info
+]]
 
 
-local FALSE=0
-local TRUE=1
-local QUERYING=1
-local WAITINGFORUPDATE=2
-local EVALUATING=3
-local WAITINGFORPROMPT=4
-local BUYING = 5
-AS_FRAMEWHITESPACE=10
-AS_BUTTON_HEIGHT=23
+STATE = {
+    ['QUERYING'] = 1,
+    ['WAITINGFORUPDATE'] = 2,
+    ['EVALUATING'] = 3,
+    ['WAITINGFORPROMPT'] = 4,
+    ['BUYING'] = 5
+}
+
+MSG_C = {
+    ['ERROR'] = "|cffF70057",
+    ['INFO'] = "|cffB5EDFF",
+    ['EVENT'] = "|cffE3FA73",
+    ['DEBUG'] = "|cffA1ED26",
+    ['DEFAULT'] = "|cffAA80FF",
+    ['BOOL'] = "|cff7AF5AF"
+}
+
+AS_FRAMEWHITESPACE = 10
+AS_BUTTON_HEIGHT = 23
 AS_GROSSHEIGHT = 420
 AS_HEADERHEIGHT = 120
 AS_LISTHEIGHT = AS_GROSSHEIGHT-AS_HEADERHEIGHT
-AS={}
+AS = {}
 AS.elapsed=0
 AS.scrollelapsed=0
-ASfirsttime=false
+ASfirsttime = false
 
 itemRarityColors = {
    [-1] = "|cffffff9a", -- all (ah: -1)
@@ -57,159 +78,6 @@ dropdown_labels = {
     ["ASignorenobuyout"] = "Ignore no buyout"
 }
 
-
-
-function ASinitialize()
-   ASprint("|c00aaffffvariables loaded.  Initializing.")
-
-    hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", AS_ContainerFrameItemButton_OnModifiedClick)
-    hooksecurefunc("ChatFrame_OnHyperlinkShow",AS_ChatFrame_OnHyperlinkShow)
-    --ChatFrame_OnHyperlinkShow(self, link, text, button)
-
-
-   local playerName = UnitName("player");
-   local serverName = GetRealmName();
-   if (playerName == nil or playerName == UNKNOWNOBJECT or playerName == UNKNOWNBEING) then
-      return;
-   end
-
-   if (SLsavedtable) then                     --old version
-      --sigh.  i had to change all names.  what a pain.
-      AS_tcopy(ASsavedtable, SLsavedtable)
-   end
-
-   AS.item={}
-    if ASsavedtable then
-        if(ASsavedtable[serverName]) then
-             --ASprint("|c00ff0000 Table found.  Copying.")
-             --ASprint(ASsavedtable)
-             AS_tcopy(AS.item, ASsavedtable[serverName])
-             --check boxes
-             if(ASsavedtable[serverName]["test"]) then
-                 ASprint("test ="..ASsavedtable[serverName]["test"])
-             end
-
-            if ASsavedtable[serverName].ASautostart ~= nil then
-                ASautostart = ASsavedtable[serverName].ASautostart
-            end
-            if ASsavedtable[serverName].ASautoopen ~= nil then
-                ASautoopen = ASsavedtable[serverName].ASautoopen
-            end
-            if ASsavedtable[serverName].ASnodoorbell ~= nil then
-                ASnodoorbell = ASsavedtable[serverName].ASnodoorbell
-                ASprint("|c00ff0000 Checkbox found, doorbell = "..tostring(ASnodoorbell))
-            end
-            if ASsavedtable[serverName].ASignorebid ~= nil then
-                ASignorebid = ASsavedtable[serverName].ASignorebid
-            end
-            if ASsavedtable[serverName].ASignorenobuyout ~= nil then
-                ASignorenobuyout = ASsavedtable[serverName].ASignorenobuyout
-            end
-
-
-          else
-             ASprint("new server found.")
-             --the very first time this happens, the old data, from the old version, has all the info stored in the base ASsaved table
-             --I want to save that.  but I don't want that old data sticking around forever.
-             --so, copy the prior version data into a temporary table, Clear all the data, then copy the data back into the correct data structure
-
-             if not (ASfirsttime) then
-                ASfirsttime=true
-                --check if there is old data (key of '1' only exists in the old version.)
-                if(ASsavedtable[1]) then
-                   DEFAULT_CHAT_FRAME:AddMessage(AS_OLDTONEW)
-                   local temptable={}
-                   AS_tcopy(temptable,ASsavedtable)
-                   ASsavedtable={}
-                   AS_tcopy(AS.item,temptable)  --hopefully anyone with the old version will get their data copied this way
-                end
-             end
-        end
-
-   else
-      ASprint("|c00ff0000nothing  saved  :(")
-   end
-   --ASprint("attempting to ASprint out loaded table.")
-   --ASprint(AS.item)
-
-   AScurrentauctionsnatchitem=1
-   AScurrentahresult=0
-   AS.queryelapsed = 3 --3 seconds, meaning the first query will happen instantly.
-   AS.status=nil
-
-   -- nowhere better to put this
-   --browsename is the auction house edit box.  hook it
-   if (BrowseName) then
-      AS.oldbrowsenamehandler=BrowseName:GetScript("OnEditFocusGained")
-      BrowseName:SetScript("OnEditFocusGained",
-               function()
-                  if (AS.status == nil) then
-                    return false  --should catch the infinate loop
-                  end
-                  AS.status=nil  --else the mod will mess up typing
-                  --         ASprint("Custome Onclick handler called.")
-                  AS.oldbrowsenamehandler() --for some reason this causes an infinate loop :(
-               end)
-   end
-
-    -- Verify settings, otherwise set default
-    if ASautostart == nil then
-        ASprint("|c0055eeaa autostart not found")
-        ASautostart = true
-    end
-    if ASautoopen == nil then
-        ASprint("|c0055eeaa autoopen not found")
-        ASautoopen = true
-    end
-    if(AS.mainframe) then
-        AS.mainframe.headerframe.autostart:SetChecked(ASautostart)
-        AS.mainframe.headerframe.autoopen:SetChecked(ASautoopen)
-    end
-    -- Other settings
-    if ASnodoorbell == nil then
-        ASprint("|c0055eeaa doorbell not found")
-        ASnodoorbell = true
-    end
-    if ASignorebid == nil then
-        ASprint("|c0055eeaa ignore bid not found")
-        ASignorebid = false
-    end
-    if ASignorenobuyout == nil then
-        ASprint("|c0055eeaa ignore buyout not found")
-        ASignorenobuyout = false
-    end
-
--- restore positioning data
-   if not (ASfirsttime) then
-      if (ASsavedposition) then
-        ASprint("loading Positiondata.")
-        ASprint(ASsavedposition.point)
-        ASprint(ASsavedposition.relativePoint)
-        ASprint(ASsavedposition.xOfs)
-        ASprint(ASsavedposition.yOfs)
-
-
-
-         if(ASsavedposition.point and ASsavedposition.relativePoint and ASsavedposition.xOfs and ASsavedposition.yOfs) then
-            AS.mainframe:ClearAllPoints()
-            AS.mainframe:SetPoint(ASsavedposition.point,UIParent,ASsavedposition.relativePoint,ASsavedposition.xOfs,ASsavedposition.yOfs)
-         end
-      end
-   end
-
-
-
-
---- font size testing and adjuting height of prompt
-   ASprint("font testing.")
-   local _,height,_=GameFontNormal:GetFont()
-   ASprint("height="..height)
-   local newheight=height*10 + (AS_BUTTON_HEIGHT+AS_FRAMEWHITESPACE)*6  -- LINES, 5 BUTTONS + 1 togrow on
-   ASprint("new height="..newheight)
-   AS.prompt:SetHeight(newheight)
-
-   ASscrollbar_Update()
-end
 
 -- ONLOAD, duh
 function AS_OnLoad(self)
@@ -234,7 +102,21 @@ function AS_OnLoad(self)
             end
         end
 
-    DEFAULT_CHAT_FRAME:AddMessage(AS_LOADTEXT)
+    ------ AUCTION HOUSE HOOKS
+        if BrowseName then
+            local old_BrowseName = BrowseName:GetScript("OnEditFocusGained")
+            BrowseName:SetScript("OnEditFocusGained", function()
+                
+                if AS.status == nil then
+                    return false  --should catch the infinate loop
+                end
+
+                AS.status = nil  --else the mod will mess up typing
+                return old_BrowseName() --for some reason this causes an infinate loop :( > Can't seem to trigger infinite loop...
+            end)
+        end
+
+    DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT..AS_LOADTEXT)
 
     ------ SLASH COMMANDS
         SLASH_AS1 = "/AS";
@@ -251,40 +133,118 @@ function AS_OnLoad(self)
     AScreatemainframe()
     AScreateprompt()
     AScreatemanualprompt()
-   --   AScreateauctiontab()  --cant.  auction ui doesnt get created until after all mods are created
 
+    tinsert(UISpecialFrames,AS.mainframe:GetName());
+    tinsert(UISpecialFrames,AS.prompt:GetName());
+    tinsert(UISpecialFrames,AS.manualprompt:GetName());
 
-   ------------------------------------------------------------------------
-   --------------------------------- now to make the header region
-   ------------------------------------------------------------------------
-   --what does a header region need?
-   --an edit box to type in queries
-   -- an 'add item' button?  ASsavedtable=1
-   -- an icon?  right clicking an item/dragging it will make it pop up here?
-   -- then maybe one can choose to discard or accept this selection into the list?
-
-   ---------------------------------------create a title frame here
-   --   ourtitle=AS.mainframe:CreateTitleRegion() --??
-   --   ourtitle:SetAllPoints()
-   --make a button or maybe a texture or frame will do?  something clickableon
-   --set the width, height
-   --center it at the top +30 up or something
-   --set the border, the background, the color, the edgefile, the onmousedown handler
-   --mousedown on the title will make the mainframe moveable
-
-
-   tinsert(UISpecialFrames,AS.mainframe:GetName());
-   tinsert(UISpecialFrames,AS.prompt:GetName());
-   tinsert(UISpecialFrames,AS.manualprompt:GetName());
-
-
-   ASprint("|c00449955 end onload ")
-
-   AS.prompt:Hide()
-   AS.manualprompt:Hide()
-
-
+    AS.prompt:Hide()
+    AS.manualprompt:Hide()
 end
+
+
+function ASinitialize()
+    local playerName = UnitName("player")
+    local serverName = GetRealmName()
+
+    hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", AS_ContainerFrameItemButton_OnModifiedClick)
+    hooksecurefunc("ChatFrame_OnHyperlinkShow",AS_ChatFrame_OnHyperlinkShow)
+
+    if (playerName == nil) or (playerName == UNKNOWNOBJECT) or (playerName == UNKNOWNBEING) then
+        return
+    end
+
+    AS.item = {}
+
+    if ASsavedtable then
+        if ASsavedtable[serverName] then
+
+            AS_tcopy(AS.item, ASsavedtable[serverName])
+
+            if ASsavedtable[serverName]["test"] then
+                ASprint("test = "..ASsavedtable[serverName]["test"])
+            end
+
+            if ASsavedtable[serverName].ASautostart ~= nil then
+                ASautostart = ASsavedtable[serverName].ASautostart
+                --ASprint("Auto start = "..MSG_C.BOOL..""..tostring(ASautostart))
+            end
+            if ASsavedtable[serverName].ASautoopen ~= nil then
+                ASautoopen = ASsavedtable[serverName].ASautoopen
+                --ASprint("Auto open = "..MSG_C.BOOL..""..tostring(ASautoopen))
+            end
+            if ASsavedtable[serverName].ASnodoorbell ~= nil then
+                ASnodoorbell = ASsavedtable[serverName].ASnodoorbell
+                --ASprint("Doorbell sound = "..MSG_C.BOOL..""..tostring(ASnodoorbell))
+            end
+            if ASsavedtable[serverName].ASignorebid ~= nil then
+                ASignorebid = ASsavedtable[serverName].ASignorebid
+                --ASprint("Ignore bid = "..MSG_C.BOOL..""..tostring(ASignorebid))
+            end
+            if ASsavedtable[serverName].ASignorenobuyout ~= nil then
+                ASignorenobuyout = ASsavedtable[serverName].ASignorenobuyout
+                --ASprint("Ignore no buyout = "..MSG_C.BOOL..""..tostring(ASignorenobuyout))
+            end
+
+        else
+            ASprint(MSG_C.EVENT.."New server found")
+
+            if not ASfirsttime then
+                ASfirsttime = true
+            end
+        end
+
+    else
+        ASprint(MSG_C.ERROR.."Nothing saved :(")
+    end
+
+   AScurrentauctionsnatchitem=1
+   AScurrentahresult=0
+   AS.queryelapsed = 3 --3 seconds, meaning the first query will happen instantly.
+   AS.status=nil
+
+
+
+    -- Verify settings, otherwise set default
+    if ASautostart == nil then
+        ASprint(MSG_C.EVENT.."Auto start not found")
+        ASautostart = true
+    end
+    if ASautoopen == nil then
+        ASprint(MSG_C.EVENT.."Auto open not found")
+        ASautoopen = true
+    end
+    if AS.mainframe then
+        AS.mainframe.headerframe.autostart:SetChecked(ASautostart)
+        AS.mainframe.headerframe.autoopen:SetChecked(ASautoopen)
+    end
+    -- Other settings
+    if ASnodoorbell == nil then
+        ASprint(MSG_C.EVENT.."Doorbell not found")
+        ASnodoorbell = true
+    end
+    if ASignorebid == nil then
+        ASprint(MSG_C.EVENT.."Ignore bid not found")
+        ASignorebid = false
+    end
+    if ASignorenobuyout == nil then
+        ASprint(MSG_C.EVENT.."Ignore no buyout not found")
+        ASignorenobuyout = false
+    end
+
+
+
+--- font size testing and adjuting height of prompt
+   ASprint("font testing.")
+   local _,height,_=GameFontNormal:GetFont()
+   ASprint("height="..height)
+   local newheight=height*10 + (AS_BUTTON_HEIGHT+AS_FRAMEWHITESPACE)*6  -- LINES, 5 BUTTONS + 1 togrow on
+   ASprint("new height="..newheight)
+   AS.prompt:SetHeight(newheight)
+
+   ASscrollbar_Update()
+end
+
 ---------------------------------------------------------------------------
 
 function ASdropDownMenu_Initialise(self, level)
@@ -381,7 +341,7 @@ function ASdropDownMenuItem_OnClick(self)
 
     if not (self.value == serverName) then  --dont import ourself
       --table.insert doesnt work.. grrrrrr!!!
-        local index,temptable
+        local index,temptable -- TODO: To be reviewed to may create more lists and just switch between them (per server).
         for index,temptable in pairs(ASsavedtable[self.value]) do
             if type(temptable) == "table" then
                 if temptable["name"] then  --just some redundancy checking
@@ -458,7 +418,7 @@ function ASscrollbar_Update()
    currentscrollbarvalue=offset
 
 
-   ASprint("scrollbarvalue = "..currentscrollbarvalue.."  #of items="..ASnumberofitems)
+   --ASprint("scrollbarvalue = "..currentscrollbarvalue.."  #of items="..ASnumberofitems)
 
 
    if(AS) then
@@ -528,14 +488,14 @@ function ASscrollbar_Update()
 
            end
         else
-           ASprint("no .item.  index= "..x)
+           --ASprint("no .item.  index= "..x)
            --if theres no item, then clear the text
            AS.mainframe.listframe.itembutton[x].leftstring:SetText("")
            -- clear icon, link
            AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
             AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
            AS.mainframe.listframe.itembutton[x].link = nil
-           AS.mainframe.listframe.itembutton[x].rightstring:SetText("")
+           --AS.mainframe.listframe.itembutton[x].rightstring:SetText("")
            AS.mainframe.listframe.itembutton[x]:Hide()
 
         end
@@ -560,7 +520,6 @@ end
 function ASmain(input)
 
    ASprint("someone did a /AS")
-
 
    -- this is called when we type /AS
    if AS.mainframe then
@@ -665,21 +624,24 @@ end
 
 ------------>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ----------<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-function AS_OnEvent(self,event)
+function AS_OnEvent(self, event)
 
    --local timestamp, event, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags = CombatLogGetCurrentEntry()  --for documentation purposes
-   if (event == "VARIABLES_LOADED") then
+    if event == "VARIABLES_LOADED" then
+        ASprint(MSG_C.EVENT.."Variables loaded. Initializing...")
+        ASinitialize()
 
-      ASinitialize()
+    elseif event == "AUCTION_ITEM_LIST_UPDATE" then
+        ASprint(MSG_C.EVENT..""..event)
+      
 
-   elseif (event == "AUCTION_ITEM_LIST_UPDATE") then
-        ASprint("EVENT |c00ff3333"..event)
-      if (AS.status==BUYING) then
-         AS.status=EVALUATING
+
+      if (AS.status==STATE.BUYING) then
+         AS.status=STATE.EVALUATING
       end
 
-      if (AS.status==WAITINGFORUPDATE) then
-         AS.status=EVALUATING
+      if (AS.status==STATE.WAITINGFORUPDATE) then
+         AS.status=STATE.EVALUATING
       end
 
    elseif (event=="AUCTION_HOUSE_SHOW") then
@@ -688,15 +650,15 @@ function AS_OnEvent(self,event)
             AScreateauctiontab()
         end
 
-        if ASautostart == TRUE and not ASautoopen then
+        if ASautostart and not ASautoopen then
             -- do nothing
-        elseif ASautostart == TRUE then
+        elseif ASautostart then
             if not IsShiftKeyDown() then  -- do the opposite if shift is held
-                AS.status = QUERYING
+                AS.status = STATE.QUERYING
                 ASmain()
             end
         elseif IsShiftKeyDown() then
-                AS.status = QUERYING
+                AS.status = STATE.QUERYING
                 ASmain()
         elseif ASautoopen then
             -- Automatically display frame, just don't auto start
@@ -768,18 +730,18 @@ function AS_OnUpdate(self,elapsed)
          if (AS.elapsed > .1) then     --a tenth of a second?
             AS.elapsed=0
 
-            if( AS.status==QUERYING) then
+            if( AS.status==STATE.QUERYING) then
                --AS.status=WAITINGFORUPDATE
                ASqueryah()
-            elseif (AS.status==WAITINGFORUPDATE) then
+            elseif (AS.status==STATE.WAITINGFORUPDATE) then
                --nothing to do
              ASprint("Waiting for Update event....")
              AuctionFrameBrowse_Search()  --spam me and see what happens
-            elseif (AS.status==EVALUATING) then
+            elseif (AS.status==STATE.EVALUATING) then
               ASevaluate()
-            elseif (AS.status==WAITINGFORPROMPT) then
+            elseif (AS.status==STATE.WAITINGFORPROMPT) then
                --the prompt buttons will change the status accordingly
-            elseif (AS.status==BUYING) then
+            elseif (AS.status==STATE.BUYING) then
 
             end
          end --end if elapsed > .5
@@ -825,11 +787,12 @@ function ASqueryah()
 
             if (AS.item[AScurrentauctionsnatchitem].name) then
                 AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem
+                AS.mainframe.headerframe.stopsearchbutton:Enable()
                 BrowseResetButton:Click()
                BrowseName:SetText(ASsanitize(AS.item[AScurrentauctionsnatchitem].name))
                AuctionFrameBrowse_Search()
                AScurrentahresult=0
-               AS.status=WAITINGFORUPDATE
+               AS.status=STATE.WAITINGFORUPDATE
                return true
             else
                AS.status=nil
@@ -940,7 +903,7 @@ function ASevaluate()
             end]]
             SetSelectedAuctionItem("list", AScurrentahresult)
 
-            AS.status=WAITINGFORPROMPT
+            AS.status=STATE.WAITINGFORPROMPT
             AS.prompt:Show()
             return true --exit
          end
@@ -968,7 +931,7 @@ function ASisdoublequery(name)
         ASprint("Strfind result = "..tostring(strfind(strlower(name),strlower(AS.item[AScurrentauctionsnatchitem].name))))
         AScurrentahresult=0
         --AS.status = WAITINGFORUPDATE --?
-        AS.status=QUERYING
+        AS.status=STATE.QUERYING
         return true
     end
     return false
@@ -988,7 +951,7 @@ function ASisendofpage(total)
 
 
          AScurrentahresult=0
-         AS.status = WAITINGFORUPDATE
+         AS.status = STATE.WAITINGFORUPDATE
          ASprint("Waiting for update")
          return true
       end
@@ -1007,7 +970,7 @@ function ASisendoflist(batch,total)
             AS.status_override = nil
         else
             AScurrentauctionsnatchitem=AScurrentauctionsnatchitem+1
-            AS.status=QUERYING
+            AS.status=STATE.QUERYING
         end
         return true
       end
@@ -1307,14 +1270,14 @@ function ASsavevariables()
         --ASprint("|c00ee00eesaving nodoorbell="..tostring(ASsavedtable[serverName].ASnodoorbell))
 
          -- save any movement of position :)
-         local point, relativeTo, relativePoint, xOfs, yOfs = AS.mainframe:GetPoint(1)
+         --[[local point, relativeTo, relativePoint, xOfs, yOfs = AS.mainframe:GetPoint(1)
          if not (ASsavedposition) then
             ASsavedposition={}
          end
          ASsavedposition.point=point
          ASsavedposition.relativePoint=relativePoint
          ASsavedposition.xOfs=xOfs
-         ASsavedposition.yOfs=yOfs
+         ASsavedposition.yOfs=yOfs]]
 
        else
          ASprint("error.  check box not found to save.")
@@ -1380,7 +1343,7 @@ function AScreatebuttonhandlers()
                  AScurrentahresult = AScurrentahresult - 1
                  ASprint("result index: "..AScurrentahresult)
                  AS.prompt:Hide()
-                 AS.status=BUYING
+                 AS.status=STATE.BUYING
 
               end
    AS[AS_BUTTONBID] = function() --bid
@@ -1395,7 +1358,7 @@ function AScreatebuttonhandlers()
 
                  --AS.status=EVALUATING --OMG here's the bug.  why would this be different from the buying button???!?!?!?   im dumb?
                  AS.prompt:Hide()
-                 AS.status=BUYING
+                 AS.status=STATE.BUYING
 
               end
   AS[AS_BUTTONNEXTAH] = function()  --next in ah
@@ -1403,15 +1366,15 @@ function AScreatebuttonhandlers()
                 ASprint("you clicked skip.")
 
                  AS.prompt:Hide()
-                 AS.status=EVALUATING
+                 AS.status=STATE.EVALUATING
               end
   AS[AS_BUTTONNEXTLIST] = function()  --next in list
                 AScurrentauctionsnatchitem=AScurrentauctionsnatchitem+1
                 AScurrentahresult=0
-                AS.status=QUERYING
+                AS.status=STATE.QUERYING
                 AS.prompt:Hide()
              end
-  AS[AS_BUTTONIGNORE] = function()  --ignore this item
+  --[[AS[AS_BUTTONIGNORE] = function()  --ignore this item
                 if not (AS.item[AScurrentauctionsnatchitem].ignoretable) then
                   ASprint("creating ignore table for item#"..AScurrentauctionsnatchitem.." ,result#"..AScurrentahresult)
                    AS.item[AScurrentauctionsnatchitem].ignoretable = {}
@@ -1423,7 +1386,7 @@ function AScreatebuttonhandlers()
                 AS.item[AScurrentauctionsnatchitem].ignoretable[name].quality=quality  --used when showing whats ignored, makes it look better
                 AS.status=EVALUATING
                 ASsavevariables()
-             end
+             end]]
 
     AS[AS_BUTTONIGNOREMANUAL] = function()  --ignore this item
             local name = AS.item["ASmanualitem"].name
@@ -1486,7 +1449,7 @@ function AScreatebuttonhandlers()
 
    AS[AS_BUTTONDELETE] = function()  --delete
                  table.remove(AS.item,AScurrentauctionsnatchitem)
-                 AS.status=QUERYING
+                 AS.status=STATE.QUERYING
                  ASscrollbar_Update()
               end
    AS[AS_BUTTONDELETEALL] = function()  --delete all
@@ -1498,23 +1461,26 @@ function AScreatebuttonhandlers()
                end
             end
 
-   AS[AS_BUTTONUPDATE] = function()  --update
-                 local  name, texture, _, quality, _, _, _, _, _, _, _, _=GetAuctionItemInfo("list",AScurrentahresult);
-                 local link = GetAuctionItemLink("list", AScurrentahresult)
-                 if(AS.item[AScurrentauctionsnatchitem]) then
-                    AS.item[AScurrentauctionsnatchitem].name = name
-                    AS.item[AScurrentauctionsnatchitem].icon = texture
-                    AS.item[AScurrentauctionsnatchitem].link = link
-                    AS.item[AScurrentauctionsnatchitem].rarity = quality
-                    AScurrentahresult=AScurrentahresult-1  --redo this item :)
-                    AS.status=EVALUATING
-                    ASscrollbar_Update()
-                 end
-              end
+    AS[AS_BUTTONUPDATE] = function()  -- update saved item with prompt item
+            local  name, texture, _, quality, _, _, _, _, _, _, _, _ = GetAuctionItemInfo("list", AScurrentahresult);
+            local link = GetAuctionItemLink("list", AScurrentahresult)
+            
+            if AS.item[AScurrentauctionsnatchitem] then
+
+                AS.item[AScurrentauctionsnatchitem].name = name
+                AS.item[AScurrentauctionsnatchitem].icon = texture
+                AS.item[AScurrentauctionsnatchitem].link = link
+                AS.item[AScurrentauctionsnatchitem].rarity = quality
+                AScurrentahresult = AScurrentahresult - 1  --redo this item :)
+                AS.status = STATE.EVALUATING
+                ASscrollbar_Update()
+            end
+    end
 
     AS[AS_BUTTONFILTERS] = function()  -- Open filters
-        AS.prompt:Hide()
-        AS.optionframe.manualpricebutton:Click()
+            ASprint("|cff725AE8Opening manual filters")
+            AS.prompt:Hide()
+            AS.optionframe.manualpricebutton:Click()
     end
 end
 
