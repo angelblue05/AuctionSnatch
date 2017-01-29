@@ -1287,28 +1287,25 @@ function AScreateauctiontab()
 
     if AuctionFrame then
         -------------- STYLE ----------------
-        ASauctiontab = CreateFrame("Button","ASauctiontab",AuctionFrame,"AuctionTabTemplate")
-        ASauctiontab:SetText("AS")
-        PanelTemplates_TabResize(ASauctiontab, 50, 70, 70);
-        PanelTemplates_DeselectTab(ASauctiontab)
+            ASauctiontab = CreateFrame("Button", "ASauctiontab", AuctionFrame, "AuctionTabTemplate")
+            ASauctiontab:SetText("AS")
+            PanelTemplates_TabResize(ASauctiontab, 50, 70, 70);
+            PanelTemplates_DeselectTab(ASauctiontab)
         -------------- SCRIPT ----------------
-        local origfunc = ASauctiontab:GetScript("OnClick")
-        ASauctiontab:SetScript("OnClick",
-        function(...)
-        -- origfunc(...)  --hides the browse/bid stuff, sets the ID - nothing important
-            if AS.mainframe:IsShown() then
-                AS.mainframe:Hide()
-            else
-                ASopenedwithah = true
-                if ASautostart == true then
-                    AS.status = QUERYING
+            ASauctiontab:SetScript("OnClick", function()
+                if AS.mainframe:IsShown() then
+                    AS.mainframe:Hide()
+                else
+                    ASopenedwithah = true
+                    if ASautostart == true then
+                        AS.status = QUERYING
+                    end
+                    ASmain()
                 end
-                ASmain()
-            end
-        end)
-        F.ReskinTab(ASauctiontab) -- Aurora
+            end)
+            F.ReskinTab(ASauctiontab) -- Aurora
 
-        --*********************************************
+        -------------- THANK YOU IGORS MASS AUCTION ----------------
         local index = 1
         -- Find the first unused tab.
         while getglobal("AuctionFrameTab" .. index) do
@@ -1323,27 +1320,8 @@ function AScreateauctiontab()
         PanelTemplates_SetNumTabs(AuctionFrame, index);
 
         -- Set geometry
-        ASauctiontab:SetPoint("TOPLEFT", getglobal("AuctionFrameTab"..(index-1)), "TOPRIGHT", -8, 0);
-        -- thank you igors mass auction!!
-        --**********************************************
+        ASauctiontab:SetPoint("TOPLEFT", getglobal("AuctionFrameTab"..(index - 1)), "TOPRIGHT", -8, 0)
     end
-   --------------------------------------------------------------------------------------
-   --from igor
---  <Button name="IMA_AuctionFrameTab" inherits="AuctionTabTemplate"  parent="AuctionFrame" text="IMA_MASS_AUCTION">
---      <Scripts>
---          <OnLoad>IMA_InitAuctionFrameTab(this);</OnLoad>
---      </Scripts>
---  </Button>
-
---from addons/auctionui
---  <Button name="AuctionTabTemplate" inherits="CharacterFrameTabButtonTemplate" virtual="true">
---      <Scripts>
---          <OnClick>
---              AuctionFrameTab_OnClick();
---          </OnClick>
---      </Scripts>
---  </Button>
---------------------------------------------------------------------------------
 end
 
 

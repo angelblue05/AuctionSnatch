@@ -102,7 +102,7 @@ function AS_OnLoad(self)
             end
         end
 
-    ------ AUCTION HOUSE HOOKS
+    ------ AUCTION HOUSE HOOKS // TODO: Is this necessary?
         if BrowseName then
             local old_BrowseName = BrowseName:GetScript("OnEditFocusGained")
             BrowseName:SetScript("OnEditFocusGained", function()
@@ -134,16 +134,16 @@ function AS_OnLoad(self)
     AScreateprompt()
     AScreatemanualprompt()
 
-    tinsert(UISpecialFrames,AS.mainframe:GetName());
-    tinsert(UISpecialFrames,AS.prompt:GetName());
-    tinsert(UISpecialFrames,AS.manualprompt:GetName());
+    table.insert(UISpecialFrames, AS.mainframe:GetName())
+    table.insert(UISpecialFrames, AS.prompt:GetName())
+    table.insert(UISpecialFrames, AS.manualprompt:GetName())
 
     AS.prompt:Hide()
     AS.manualprompt:Hide()
 end
 
 
-function ASinitialize()
+function AS_Initialize()
     local playerName = UnitName("player")
     local serverName = GetRealmName()
 
@@ -629,24 +629,18 @@ function AS_OnEvent(self, event)
    --local timestamp, event, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags = CombatLogGetCurrentEntry()  --for documentation purposes
     if event == "VARIABLES_LOADED" then
         ASprint(MSG_C.EVENT.."Variables loaded. Initializing...")
-        ASinitialize()
+        AS_Initialize()
 
     elseif event == "AUCTION_ITEM_LIST_UPDATE" then
         ASprint(MSG_C.EVENT..""..event)
-      
 
+        if (AS.status == STATE.BUYING) or (AS.status == STATE.WAITINGFORUPDATE) then
+            AS.status = STATE.EVALUATING
+        end
 
-      if (AS.status==STATE.BUYING) then
-         AS.status=STATE.EVALUATING
-      end
-
-      if (AS.status==STATE.WAITINGFORUPDATE) then
-         AS.status=STATE.EVALUATING
-      end
-
-   elseif (event=="AUCTION_HOUSE_SHOW") then
+    elseif event == "AUCTION_HOUSE_SHOW" then
         --AUTO START
-        if not (ASauctiontab) then
+        if not ASauctiontab then
             AScreateauctiontab()
         end
 
