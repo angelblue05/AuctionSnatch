@@ -597,7 +597,8 @@ function AScreatemanualprompt(item, listnumber)
                 AS.manualprompt.upperstring:SetJustifyH("CENTER")
                 AS.manualprompt.upperstring:SetWidth(AS.manualprompt:GetWidth() - (AS.manualprompt.icon:GetWidth() + 2*AS_FRAMEWHITESPACE)  )
                 AS.manualprompt.upperstring:SetHeight(AS.manualprompt.icon:GetHeight())
-                AS.manualprompt.upperstring:SetPoint("LEFT", AS.manualprompt.icon, "RIGHT")
+                AS.manualprompt.upperstring:SetPoint("LEFT", AS.manualprompt.icon, "RIGHT", 7, 0)
+                AS.manualprompt.upperstring:SetPoint("RIGHT", AS.manualprompt.icon, "RIGHT", -15, 0)
 
         ------ CUTOFF PRICE
             -------------- STYLE ----------------
@@ -730,7 +731,7 @@ function AScreateprompt()
    --this is the prompt frame and its children
    -------------------------------------------------------------------------------
 
-    ASprint("|c004499FFcreating prompt frame")
+    ASprint("|c004499ffCreating prompt frame")
 
     ------ MANUAL PROMPT FRAME
         -------------- STYLE ----------------
@@ -747,6 +748,12 @@ function AScreateprompt()
             AS.prompt:SetMovable(true)
             AS.prompt:EnableMouse(true)
         -------------- SCRIPT ----------------
+            AS.prompt:SetScript("OnMouseDown", function(self)
+                AS.prompt:StartMoving()
+            end)
+            AS.prompt:SetScript("OnMouseUp", function(self)
+                AS.prompt:StopMovingOrSizing()
+            end)
             AS.prompt:SetScript("OnShow", function(self)
                 ASprint("|c0055ffffPrompt is shown.  AS.status = "..tostring(AS.status))
             end)
@@ -756,21 +763,6 @@ function AScreateprompt()
                 if AS.status == nil then
                     AS.mainframe.headerframe.stopsearchbutton:Click()
                 end
-            end)
-
-    ------ DRAG BAR
-        -------------- STYLE ----------------
-            AS.prompt.drag = CreateFrame("Button", nil, AS.prompt)
-            AS.prompt.drag:SetPoint("TOPLEFT", AS.prompt, "TOPLEFT", 10,-6)
-            AS.prompt.drag:SetPoint("TOPRIGHT", AS.prompt, "TOPRIGHT", -10,-6)
-            AS.prompt.drag:SetHeight(3)
-            AS.prompt.drag:SetHighlightTexture("Interface\\FriendsFrame\\UI-FriendsFrame-HighlightBar")
-        -------------- SCRIPT ----------------
-            AS.prompt.drag:SetScript("OnMouseDown", function(self)
-                AS.prompt:StartMoving()
-            end)
-            AS.prompt.drag:SetScript("OnMouseUp", function(self)
-                AS.prompt:StopMovingOrSizing()
             end)
 
     ------ CLOSE BUTTON
@@ -828,9 +820,10 @@ function AScreateprompt()
         -------------- STYLE ----------------
             AS.prompt.upperstring = AS.prompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")
             AS.prompt.upperstring:SetJustifyH("CENTER")
-            AS.prompt.upperstring:SetWidth(AS.prompt:GetWidth() - (AS.prompt.icon:GetWidth() + 2*AS_FRAMEWHITESPACE))
+            AS.prompt.upperstring:SetWidth(AS.prompt:GetWidth() - (AS.prompt.icon:GetWidth() + (2*AS_FRAMEWHITESPACE)))
             AS.prompt.upperstring:SetHeight(AS.prompt.icon:GetHeight())
-            AS.prompt.upperstring:SetPoint("LEFT", AS.prompt.icon, "RIGHT")
+            AS.prompt.upperstring:SetPoint("LEFT", AS.prompt.icon, "RIGHT", 7, 0)
+            AS.prompt.upperstring:SetPoint("RIGHT", AS.prompt, "RIGHT", -15, 0)
 
     ------ ITEM QUANTITY
         -------------- STYLE ----------------
