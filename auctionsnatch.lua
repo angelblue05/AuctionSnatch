@@ -225,6 +225,7 @@ function AS_OnLoad(self)
         self:RegisterEvent("ADDON_LOADED") -- tradeskill and achievement hooks need to wait for LoD bits
         local old_ChatEdit_InsertLink = ChatEdit_InsertLink
         function ChatEdit_InsertLink(text)
+
             if AS.mainframe.headerframe.editbox:HasFocus() then
                 AS.mainframe.headerframe.editbox:Insert(text)
                 return true -- prevents the stacksplit frame from showing
@@ -823,6 +824,8 @@ function ASqueryah()
             end
 
             if (AS.item[AScurrentauctionsnatchitem].name) then
+                AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem
+                BrowseResetButton:Click()
                BrowseName:SetText(ASsanitize(AS.item[AScurrentauctionsnatchitem].name))
                AuctionFrameBrowse_Search()
                AScurrentahresult=0
@@ -855,28 +858,45 @@ function ASevaluate()
     ASprint("|c000055ee Evaluate() reached")
 
     batch,total = GetNumAuctionItems("list")
-
+    --ASprint("batch "..batch.." total "..total)
     if AS.manualprompt:IsShown() then
         AS.manualprompt:Hide()
     end
+
+    --[[local criterion, reverse = GetAuctionSort("list", 2)
+    ASprint("Criterion: "..tostring(criterion).." reversed? "..tostring(reverse))
+    -- clear any existing criteria
+    --SortAuctionClearSort("list")
+
+    --SortAuctionSetSort("list", "name")
+    SortAuctionSetSort("list", "minbidbuyout")
+
+    -- apply the criteria to the server query
+    SortAuctionApplySort("list")]]
 
     while(true) do
         AScurrentahresult=AScurrentahresult+1  --next!!
          --reset stuff
         --processing-wise, this here is a very expensive hit
         --so i'm only gonna do it (and similar stuff) here, ONCE, and pass everything in as parametners
-        name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner=GetAuctionItemInfo("list",AScurrentahresult);
+        name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, highBidderFullName, owner, ownerFullName, saleStatus, itemId, hasAllInfo = GetAuctionItemInfo("list",AScurrentahresult);
+        --name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner=GetAuctionItemInfo("list",AScurrentahresult);
+        --ASprint("INDEX: "..tostring(AScurrentahresult).."Name: "..tostring(name).." Count: "..tostring(count).." buyoutPrice: "..tostring(buyoutPrice).." minbid: "..tostring(minBid).." ownertest: "..tostring(ownerFullName).." owner: "..tostring(owner).." all info? "..tostring(hasAllInfo))
+
 
 
 
         if (ASisendofpage(total)) then
+            ASprint("End of listing for: "..tostring(name))
             return false
         end
         if(ASisendoflist(batch,total)) then
+            ASprint("End of batch: "..tostring(batch).."-"..tostring(total))
             return false
         end
 
         if (ASisdoublequery(name)) then
+            ASprint("Double query: "..tostring(name))
             return false
         end
 
@@ -909,7 +929,7 @@ function ASevaluate()
             ASprint("Im through the good ol |c00eeaaff Messagestring |r :(")
             AS.prompt.lowerstring:SetText(messagestring)
 
-            if (AS.item[AScurrentauctionsnatchitem].priceoverride) then
+            --[[if (AS.item[AScurrentauctionsnatchitem].priceoverride) then
                 if(ASsavedtable and ASsavedtable.copperoverride) then
                     AS.prompt.priceoverride:SetText(AS.item[AScurrentauctionsnatchitem].priceoverride)
                 else
@@ -917,8 +937,8 @@ function ASevaluate()
                 end
             else
                 AS.prompt.priceoverride:SetText("")
-            end
-
+            end]]
+            SetSelectedAuctionItem("list", AScurrentahresult)
 
             AS.status=WAITINGFORPROMPT
             AS.prompt:Show()
@@ -1033,7 +1053,7 @@ function ASisshowprompt(cutoffprice,name, texture, count, quality, canUse, level
      end
 
      if ((tonumber(buyoutPrice) <= 0) and (ASignorebid)) then  --no buyout.. ignore bid.. nothing to do!
-        ASprint("returning false in isshowprompt Buyoutpr5ice = "..buyoutPrice.."     ignorebid = "..tostring(ASignorebid))
+        ASprint("returning false in isshowprompt Buyoutprice = "..buyoutPrice.."     ignorebid = "..tostring(ASignorebid))
         return false
      end
 
@@ -1164,23 +1184,56 @@ function AScreatemessagestring(cutoffprice, name, texture, count, quality, canUs
         ASprint("quality = nonexistent")
      end
 
-    messagestring="\n"..AS_INTERESTEDIN..":"
-    messagestring=messagestring..itemRarityColors[quality]
-    messagestring=messagestring.."\n"..name.."|r"
-    if ( count > 1) then
-       messagestring=messagestring.." x"..count
-    end
-    if (owner) then
-       messagestring=messagestring.."\n"..AS_BY.." "..owner
-    end
-    messagestring=messagestring.." "..AS_FOR
 
-    ASprint("button "..AS_BUTTONBUYOUT.." is enabled")
-      messagestring=messagestring.."\n\n"..ASGSC(buyout).." "..AS_BUYOUT
-      if(count>1) then
-           messagestring=messagestring.."\n("..ASGSC(peritembuyout).." "..AS_EACH..")"
-     end
+    AS.prompt.quantity:SetText(count)
+    AS.prompt.vendor:SetText(AS_BY..": "..(owner or "Unavailable"))
 
+    if ASignorebid then
+        AS.prompt.buyoutonly:Show()
+
+        if AS.prompt.bidbuyout:IsShown() then
+            AS.prompt.bidbuyout:Hide()
+        end
+
+        AS.prompt.buyoutonly.buyout.total:SetText(ASGSC(buyout))
+
+        if count > 1 then
+            AS.prompt.buyoutonly.buyout.single:SetText(ASGSC(peritembuyout).." "..AS_EACH)
+        else
+            AS.prompt.buyoutonly.buyout.single:SetText("")
+        end
+    else
+        AS.prompt.bidbuyout:Show()
+
+        if AS.prompt.buyoutonly:IsShown() then
+            AS.prompt.buyoutonly:Hide()
+        end
+
+        if cutoffprice and tonumber(cutoffprice) < tonumber(peritembuyout) then
+            AS.prompt.bidbuyout.bid:SetTextColor(0,1,0,1)
+            AS.prompt.bidbuyout.buyout:SetTextColor(1,1,1,1)
+        else
+            AS.prompt.bidbuyout.buyout:SetTextColor(0,1,0,1)
+            AS.prompt.bidbuyout.bid:SetTextColor(1,1,1,1)
+        end
+
+        AS.prompt.bidbuyout.bid.total:SetText(ASGSC(bid))
+        AS.prompt.bidbuyout.buyout.total:SetText(ASGSC(buyout))
+
+        if count > 1 then
+            AS.prompt.bidbuyout.each:Show()
+            AS.prompt.bidbuyout.bid.single:SetText(ASGSC(peritembid))
+            AS.prompt.bidbuyout.buyout.single:SetText(ASGSC(peritembuyout))
+        else
+            AS.prompt.bidbuyout.each:Hide()
+            AS.prompt.bidbuyout.bid.single:SetText("")
+            AS.prompt.bidbuyout.buyout.single:SetText("")
+        end
+    end
+
+
+      messagestring=""
+--[[
 --check if a buyout is available
     if (AS.prompt[AS_BUTTONBUYOUT]:IsEnabled() == 1) then
        ASprint("button "..AS_BUTTONBUYOUT.." is enabled")
@@ -1199,11 +1252,11 @@ function AScreatemessagestring(cutoffprice, name, texture, count, quality, canUs
            messagestring=messagestring.."\n            ("..ASGSC(peritembid).." "..AS_EACH..")"
     --             lines=lines+1
         end
-    end
+    end]]
 
     if (cutoffprice and tonumber(cutoffprice) > 0) then
 
-           messagestring=messagestring.."\n\n"..AS_CUTOFF..":\n"
+           messagestring=messagestring..""..AS_CUTOFF.."\n"
            messagestring=messagestring..ASGSC(tonumber(cutoffprice))
     else
         ASprint("|c00ffaaaaNo Cutoff price found!")
@@ -1311,16 +1364,21 @@ end
 
 
 function AScreatebuttonhandlers()
-------------------------------------------------------------------
-   --create all the script handlers for the buttons
-   --------------------------------------------------------------------
+    ------------------------------------------------------------------
+    --create all the script handlers for the buttons
+    ------------------------------------------------------------------
 
    AS[AS_BUTTONBUYOUT] = function()  --buyout
                  local bid,buyout
                  _,buyout=ASgetcost(AScurrentahresult)
-                 PlaceAuctionBid("list",AScurrentahresult,buyout)  --the actual buying call.  Requires a hardware event?
+                 selected_auction = GetSelectedAuctionItem("list")
+                 ASprint("Index: "..selected_auction)
+                 --ASprint("should buy index: "..selected_auction)
+                 --ASprint("Buyout: "..buyout.." index: "..AScurrentahresult)
+                 PlaceAuctionBid("list",selected_auction,buyout)  --the actual buying call.  Requires a hardware event?
                  --the next item will be the same location as what was just bought, so no need to increment
                  AScurrentahresult = AScurrentahresult - 1
+                 ASprint("result index: "..AScurrentahresult)
                  AS.prompt:Hide()
                  AS.status=BUYING
 
@@ -1328,11 +1386,11 @@ function AScreatebuttonhandlers()
    AS[AS_BUTTONBID] = function() --bid
 
                 ASprint("AS.bid called.  current ah result="..tostring(AScurrentahresult))
-
+                selected_auction = GetSelectedAuctionItem("list")
                  local bid,buyout
-                 bid,_=ASgetcost(AScurrentahresult)
+                 bid,_=ASgetcost(selected_auction)
 
-                 PlaceAuctionBid("list",AScurrentahresult,bid)  --the actual buying call.  Requires a hardware event?
+                 PlaceAuctionBid("list",selected_auction,bid)  --the actual buying call.  Requires a hardware event?
 
 
                  --AS.status=EVALUATING --OMG here's the bug.  why would this be different from the buying button???!?!?!?   im dumb?
@@ -1448,6 +1506,11 @@ function AScreatebuttonhandlers()
                     ASscrollbar_Update()
                  end
               end
+
+    AS[AS_BUTTONFILTERS] = function()  -- Open filters
+        AS.prompt:Hide()
+        AS.optionframe.manualpricebutton:Click()
+    end
 end
 
 function AS_ContainerFrameItemButton_OnModifiedClick(self)
@@ -1467,6 +1530,7 @@ function AS_ContainerFrameItemButton_OnModifiedClick(self)
             local link = GetContainerItemLink(bag,item)
             ASprint(link)
             AS.mainframe.headerframe.editbox:SetText(link)
+            BrowseName:SetText(link)
         end
     end
 end

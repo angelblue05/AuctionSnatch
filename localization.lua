@@ -47,6 +47,8 @@ AS_ALWAYS = "Always"
 AS_BUTTONCLOSEMANUAL = "Close"
 AS_BUTTONEXPENSIVEMANUAL = "Save"
 AS_BUTTONIGNOREMANUAL = "Ignore"
+AS_BUTTONFILTERS = "Filters"
+AS_BUTTONTEXT11 = "Change cutoff price or ignore item"
 
 --I cannot do these.  someone else will have to translate
 if ( GetLocale() == "esES" ) then
