@@ -472,7 +472,9 @@ function ASdropDownMenu_Initialise(self, level)
 
                     info.text = key
                     info.value = key
-                    if key ~= serverName then -- indicate which list isn't being used
+                    if key == serverName then -- indicate which list is being used
+                        info.checked = true
+                    else
                         info.checked = false
                     end
                     info.hasArrow = false
