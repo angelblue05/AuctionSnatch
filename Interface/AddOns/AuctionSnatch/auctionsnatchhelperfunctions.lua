@@ -13,12 +13,12 @@
 local ASprintstack = -1
 local messagestring = ""
 
-function ASprint(message)
+function ASprint(message, level)
 
-    if ASdebug then
+    if ASdebug or (level == 1) then
 
         if ASprintstack == -1 then
-            messagestring = MSG_C.DEFAULT.."AuctionSnatch: |r"
+            messagestring = MSG_C.DEFAULT.."AuctionSnatch|r: "
         end
 
         if not message then

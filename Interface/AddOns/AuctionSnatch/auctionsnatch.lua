@@ -1,6 +1,6 @@
 
---[[
-    
+--[[//////////////////////////////////////////////////
+
     OG DATA STRUCTURES EXPLAINED
 
     i'm trying something ambitious.  included in the name of my variables is
@@ -19,18 +19,17 @@
     (it also might just be a pain in the ass)
 
     edit.  Its a pain in the ass
-]]
+    _________________________________________________
 
---[[
-    
     ANGELBLUE05's MODIFICATIONS EXPLAINED
-    
+
     I'm just trying to clean up and fix certain bugs I came across. I tried not
     to change too much of the structure...
 
     but was unsucessful. Modified to fit Altz UI (using Aurora)
     http://www.wowinterface.com/downloads/info21263-AltzUIforLegion.html#info
-]]
+
+    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
 
 
 STATE = {
@@ -42,12 +41,12 @@ STATE = {
 }
 
 MSG_C = {
-    ['ERROR'] = "|cffF70057",
+    ['ERROR'] = "|cffFC357C",
     ['INFO'] = "|cffB5EDFF",
-    ['EVENT'] = "|cffE3FA73",
-    ['DEBUG'] = "|cffA1ED26",
-    ['DEFAULT'] = "|cffAA80FF",
-    ['BOOL'] = "|cff7AF5AF"
+    ['EVENT'] = "|cff35FCB5",
+    ['DEBUG'] = "|cffE0FC35",
+    ['DEFAULT'] = "|cff765EFF",
+    ['BOOL'] = "|cff2BED48"
 }
 
 AS_FRAMEWHITESPACE = 10
@@ -78,8 +77,13 @@ dropdown_labels = {
     ["ASignorenobuyout"] = "Ignore no buyout"
 }
 
+--[[//////////////////////////////////////////////////
 
--- ONLOAD, duh
+    FUNCTIONS TRIGGERED VIA XML
+    auctionsnatch.xml
+
+    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
+
 function AS_OnLoad(self)
 
     ----- REGISTER FOR EVENTS
@@ -112,7 +116,7 @@ function AS_OnLoad(self)
                 end
 
                 AS.status = nil  --else the mod will mess up typing
-                return old_BrowseName() --for some reason this causes an infinate loop :( > Can't seem to trigger infinite loop...
+                return old_BrowseName() --for some reason this causes an infinate loop :( > Can't seem to trigger infinite loop -AB5
             end)
         end
 
@@ -128,7 +132,7 @@ function AS_OnLoad(self)
         SLASH_AS7 = "/AUCTIONSNATCH";
         SLASH_AS8 = "/auctionsnatch";
 
-        SlashCmdList["AS"] = ASmain;
+        SlashCmdList["AS"] = AS_Main;
 
     AScreatemainframe()
     AScreateprompt()
@@ -142,19 +146,123 @@ function AS_OnLoad(self)
     AS.manualprompt:Hide()
 end
 
+function AS_OnEvent(self, event)
+
+    if event == "VARIABLES_LOADED" then
+        ASprint(MSG_C.EVENT.."Variables loaded. Initializing.")
+        ASprint(MSG_C.INFO.."Running version: "..GetAddOnMetadata("Auctionsnatch", "Version"), 1)
+        
+        AS_Initialize()
+
+    elseif event == "AUCTION_ITEM_LIST_UPDATE" then
+        ASprint(MSG_C.INFO..event)
+
+        if AS.status == STATE.BUYING then
+            AS.status = STATE.EVALUATING
+        end
+
+    elseif event == "AUCTION_HOUSE_SHOW" then
+
+        if not ASauctiontab then
+            AScreateauctiontab()
+        end
+
+        if ASautostart and not ASautoopen then
+            -- Do nothing
+        elseif ASautostart and not IsShiftKeyDown() then -- Auto start
+            AS.status = STATE.QUERYING
+            AS_Main()
+        elseif IsShiftKeyDown() then -- Auto start
+            AS.status = STATE.QUERYING
+            AS_Main()
+        elseif ASautoopen then
+            -- Automatically display frame, just don't auto start
+            AS_Main()
+        end
+
+    elseif event == "AUCTION_HOUSE_CLOSED" then
+
+        AS.mainframe.headerframe.editbox:SetText("")
+        AS.prompt:Hide()
+        AS.manualprompt:Hide()
+        AS.status = nil
+        
+        if ASopenedwithah then  --in case i do a manual /as prompt for testing purposes
+            if AS.mainframe then
+                AS.mainframe:Hide()
+            end
+            ASopenedwithah = false
+        else
+            AS.mainframe:Hide()
+        end
+    
+    elseif string.match("AUCTION", event) then
+        ASprint(MSG_C.INFO..event)
+    end
+end
+
+function AS_OnUpdate(self, elapsed)
+    -- This is the Blizzard Update, called every computer clock cycle ~millisecond
+    
+    if not elapsed then -- Otherwise it will infinite loop
+        return 
+    end
+
+    -- This is needed because sometimes a query completes,
+    -- and the results are sent back - but the ah will not accept a query right away.
+    -- there is no event that fires when a query is possible, so i just have to spam requests
+
+    if AS.status then
+        AS.elapsed = AS.elapsed + elapsed
+
+        if AS.elapsed > 0.1 then
+            AS.elapsed = 0
+
+            if AS.status == STATE.QUERYING then
+                ASprint(MSG_C.EVENT.."[ Start querying ]")
+                AS_QueryAH()
+            elseif AS.status == STATE.WAITINGFORUPDATE then
+                ASprint(MSG_C.EVENT.."[ Waiting for update event ]")
+                
+                canQuery, canQueryAll = CanSendAuctionQuery("list")
+                if canQuery then
+                    ASprint(MSG_C.BOOL.."[ Server ready for query ]")
+                    AS.status = STATE.EVALUATING
+                end
+            elseif AS.status == STATE.EVALUATING then
+                ASprint(MSG_C.EVENT.."[ Start evaluating ]")
+                ASevaluate()
+            elseif AS.status == STATE.WAITINGFORPROMPT then
+                -- The prompt buttons will change the status accordingly
+            elseif AS.status == STATE.BUYING then
+                -- Nothing to do
+            end
+        end
+    end
+end
+
+
+--[[//////////////////////////////////////////////////
+
+    MAIN FUNCTIONS
+
+    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
 
 function AS_Initialize()
     local playerName = UnitName("player")
     local serverName = GetRealmName()
 
     hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", AS_ContainerFrameItemButton_OnModifiedClick)
-    hooksecurefunc("ChatFrame_OnHyperlinkShow",AS_ChatFrame_OnHyperlinkShow)
+    hooksecurefunc("ChatFrame_OnHyperlinkShow", AS_ChatFrame_OnHyperlinkShow)
 
     if (playerName == nil) or (playerName == UNKNOWNOBJECT) or (playerName == UNKNOWNBEING) then
         return
     end
 
     AS.item = {}
+    AScurrentauctionsnatchitem = 1
+    AScurrentahresult = 0
+    AS.status = nil
 
     if ASsavedtable then
         if ASsavedtable[serverName] then
@@ -198,13 +306,6 @@ function AS_Initialize()
         ASprint(MSG_C.ERROR.."Nothing saved :(")
     end
 
-   AScurrentauctionsnatchitem=1
-   AScurrentahresult=0
-   AS.queryelapsed = 3 --3 seconds, meaning the first query will happen instantly.
-   AS.status=nil
-
-
-
     -- Verify settings, otherwise set default
     if ASautostart == nil then
         ASprint(MSG_C.EVENT.."Auto start not found")
@@ -232,17 +333,92 @@ function AS_Initialize()
         ASignorenobuyout = false
     end
 
+    -- font size testing and adjuting height of prompt
+    local _, height = GameFontNormal:GetFont()
+    local new_height = (height * 10) + ((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE)*6)  -- LINES, 5 BUTTONS + 1 togrow on
+    
+    ASprint(MSG_C.INFO.."Font height: "..height)
+    ASprint(MSG_C.INFO.."New prompt height: "..new_height)
+    AS.prompt:SetHeight(new_height)
 
+    -- Generate scroll bar items
+    ASscrollbar_Update()
+end
 
---- font size testing and adjuting height of prompt
-   ASprint("font testing.")
-   local _,height,_=GameFontNormal:GetFont()
-   ASprint("height="..height)
-   local newheight=height*10 + (AS_BUTTON_HEIGHT+AS_FRAMEWHITESPACE)*6  -- LINES, 5 BUTTONS + 1 togrow on
-   ASprint("new height="..newheight)
-   AS.prompt:SetHeight(newheight)
+function AS_Main(input)
+    -- this is called when we type /AS or clicks the AS tab
+    ASprint(MSG_C.EVENT.."Excelsior!", 1)
+    if input then
+        input = string.lower(input)
+    end
+   
+    if AS.mainframe then
+        --ASprint(MSG_C.INFO.."Frame layer: "..AS.mainframe:GetFrameLevel())
 
-   ASscrollbar_Update()
+        if input == "test" then -- TODO: Rework testing to be more readable
+            ASdebug = true
+
+            if (not AStesttablenum) then
+                AStesttablenum = 1
+            end
+
+            local i,bag,numberofslots,slot,texture,itemCount,locked,quality,readable, link
+            local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemCount, itemEquipLoc, itemTexture
+            local canQuery,canQueryAll
+            local testtable
+            if(not testtable) then
+
+                testtable = {}
+
+                for bag = 0,4 do  --loop through each item in each bag
+                    numberofslots = GetContainerNumSlots(bag);
+                    if (numberofslots > 0) then
+                        for slot=1,numberofslots do
+                            link = GetContainerItemLink(bag,slot)
+                            if(link) then
+                                itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemCount, itemEquipLoc, itemTexture = GetItemInfo(link)
+                                testtable[#testtable+1] = itemName
+                            end
+
+                        end
+                    end
+                end
+                testtable = ASremoveduplicates(testtable)
+            end
+
+            if AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then  --some mods change the default AH frame name
+                
+                canQuery, canQueryAll = CanSendAuctionQuery()  --check if we can send a query
+                if canQuery and testtable[AStesttablenum] then
+
+                    local name = testtable[AStesttablenum]
+                    AStesttablenum = AStesttablenum + 1
+
+                    BrowseName:SetText(name)
+                    AuctionFrameBrowse_Search()
+
+                    --AS.status=WAITINGFORUPDATE
+                    --return true
+                end
+            end
+
+        elseif input == "debug" then
+            ASdebug = not ASdebug
+            ASprint(MSG_C.BOOL.."Debug: "..tostring(ASdebug), 1)
+            return
+        elseif input == "copperoverride" then
+            ASsavedtable.copperoverride = not ASsavedtable.copperoverride
+            ASprint(MSG_C.BOOL.."CopperOverride: "..tostring(ASsavedtable.copperoverride), 1)
+            return
+        end
+
+    else
+        ASprint(MSG_C.ERROR.."Mainframe not found!", 1)
+        return false
+    end
+
+    AS.mainframe:Show()
+    --ASbringtotop() -- TODO: Is it really needed?
 end
 
 ---------------------------------------------------------------------------
@@ -513,295 +689,47 @@ end
 
 
 
+-- STATE.QUERYING
+function AS_QueryAH()
 
---///////////////////////////////////////////////////////////////////////////
---\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
-function ASmain(input)
-
-   ASprint("someone did a /AS")
-
-   -- this is called when we type /AS
-   if AS.mainframe then
-
-      ASprint("frame layer ="..AS.mainframe:GetFrameLevel())
-
-
-
-
-      if (input == "prompt") then
-         if (AS.prompt:IsVisible()) then
-            AS.prompt:Hide()
-         else
-            AS.prompt:Show()
-         end
-
-
-
-      elseif (input == "test") then
-            ASdebug = true
-
-            if (not AStesttablenum) then
-                AStesttablenum = 1
-            end
-
-            local i,bag,numberofslots,slot,texture,itemCount,locked,quality,readable, link
-            local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemCount, itemEquipLoc, itemTexture
-            local canQuery,canQueryAll
-            local testtable
-            if(not testtable) then
-
-                testtable = {}
-
-                for bag = 0,4 do  --loop through each item in each bag
-                    numberofslots = GetContainerNumSlots(bag);
-                    if (numberofslots > 0) then
-                        for slot=1,numberofslots do
-                            link = GetContainerItemLink(bag,slot)
-                            if(link) then
-                                itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemCount, itemEquipLoc, itemTexture = GetItemInfo(link)
-                                testtable[#testtable+1] = itemName
-                            end
-
-                        end
-                    end
-                end
-                testtable = ASremoveduplicates(testtable)
-            end
-
-            if AuctionFrameBrowse then  --some mods change the default AH frame name
-                if AuctionFrameBrowse:IsVisible() then  --if we talked to the ah dude
-                    canQuery,canQueryAll = CanSendAuctionQuery()  --check if we can send a query
-                    if canQuery then
-                        if(testtable[AStesttablenum]) then
-                            local name = testtable[AStesttablenum]
-                            AStesttablenum = AStesttablenum + 1
-
-                            BrowseName:SetText(name)
-                            AuctionFrameBrowse_Search()
-
-                            --AS.status=WAITINGFORUPDATE
-                            --return true
-
-                        end
-
-                    end
-
-                end
-
-            end
-
-
-
-        elseif (input == "debug") then
-             if(ASdebug) then
-                ASdebug = not (ASdebug)
-                DEFAULT_CHAT_FRAME:AddMessage("Debug set to: "..tostring(ASdebug))
-             else
-                ASdebug = true
-                DEFAULT_CHAT_FRAME:AddMessage("Debug turned on")
-             end
-             return false
-        elseif (input == "copperoverride") then
-            if(ASsavedtable.copperoverride) then
-                ASsavedtable.copperoverride = false
-            else
-                ASsavedtable.copperoverride = true
-            end
-
-        end
-   else
-
-      ASprint("mainframe not found???")
-    return false
-
-   end
-
-    AS.mainframe:Show()
-      ASbringtotop()
-
-end
-
------------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-----------<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-function AS_OnEvent(self, event)
-
-   --local timestamp, event, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags = CombatLogGetCurrentEntry()  --for documentation purposes
-    if event == "VARIABLES_LOADED" then
-        ASprint(MSG_C.EVENT.."Variables loaded. Initializing...")
-        AS_Initialize()
-
-    elseif event == "AUCTION_ITEM_LIST_UPDATE" then
-        ASprint(MSG_C.EVENT..""..event)
-
-        if (AS.status == STATE.BUYING) or (AS.status == STATE.WAITINGFORUPDATE) then
-            AS.status = STATE.EVALUATING
-        end
-
-    elseif event == "AUCTION_HOUSE_SHOW" then
-        --AUTO START
-        if not ASauctiontab then
-            AScreateauctiontab()
-        end
-
-        if ASautostart and not ASautoopen then
-            -- do nothing
-        elseif ASautostart then
-            if not IsShiftKeyDown() then  -- do the opposite if shift is held
-                AS.status = STATE.QUERYING
-                ASmain()
-            end
-        elseif IsShiftKeyDown() then
-                AS.status = STATE.QUERYING
-                ASmain()
-        elseif ASautoopen then
-            -- Automatically display frame, just don't auto start
-            ASmain()
-        end
-
-   elseif event=="AUCTION_HOUSE_CLOSED" then
-
-        AS.mainframe.headerframe.editbox:SetText("")
-        AS.prompt:Hide()
-        AS.manualprompt:Hide()
-        
-        if ASopenedwithah then  --in case i do a manual /as prompt for testing purposes
-            if AS.mainframe then
-                AS.mainframe:Hide()
-            end
-            ASopenedwithah = false
-        else
-            AS.mainframe:Hide()
-        end
-        
-        AS.status = nil
-    
-    elseif  (string.match("AUCTION",event)) then
-        ASprint(event)
-   end
-end
-
-
-
-
-function AS_OnUpdate(self,elapsed)
-   --this is the Blizzard Update, called every computer clock cycle ~millisecond
-   --   ASprint("calling AS update "..elapsed)
-   if not elapsed then return end;  --else will infinite loop
-   if (AS.mainframe:IsVisible()) then
-      if(ASscrollup or ASscrolldown) then
-         AS.scrollelapsed=AS.scrollelapsed+elapsed
-
-         if(AS.scrollelapsed > .05) then  --this is the repeat time
-            AS.scrollelapsed=0
-            -------------------------scrolling while mouse is held down processing
-            if (AS and AS.mainframe and AS.mainframe.listframe and AS.mainframe.listframe.scrollbarframe) then
-                if ASscrolldown then
-                   local ourscrollbar
-                   ourscrollbar=getglobal(AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBar")
-                   if(ourscrollbar) then
-                        ourscrollbar:SetValue(ourscrollbar:GetValue() + 1)
-                    end
-                elseif ASscrollup then
-                   local ourscrollbar
-
-                   ourscrollbar=getglobal(AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBar")
-                   if(ourscrollbar) then
-                        ourscrollbar:SetValue(ourscrollbar:GetValue() - 1)
-
-                   end
-                end
-            end
-         end
-
-      end  --end if scrolling
-      --------------------------------------------------
-      ----this is needed because sometimes a query completes, and the results are sent back - but the ah will not accept a query right away. there is no event that fires when a query is possible, so i just have to spam requests
-
-     if AS.status then
-
-         AS.elapsed=AS.elapsed+elapsed
-         if (AS.elapsed > .1) then     --a tenth of a second?
-            AS.elapsed=0
-
-            if( AS.status==STATE.QUERYING) then
-               --AS.status=WAITINGFORUPDATE
-               ASqueryah()
-            elseif (AS.status==STATE.WAITINGFORUPDATE) then
-               --nothing to do
-             ASprint("Waiting for Update event....")
-             AuctionFrameBrowse_Search()  --spam me and see what happens
-            elseif (AS.status==STATE.EVALUATING) then
-              ASevaluate()
-            elseif (AS.status==STATE.WAITINGFORPROMPT) then
-               --the prompt buttons will change the status accordingly
-            elseif (AS.status==STATE.BUYING) then
-
-            end
-         end --end if elapsed > .5
-      end  --end if sl.status
-   end
-end
-
-
-
---*********************************************************************************
-function ASqueryah()
-        
-    if not (AS.item) then
-        ASprint("error.  AS.item not found.")
-        AS.status = nil
-        AS.mainframe.headerframe.stopsearchbutton:Disable()
-        return false
-    end
-    
-    if not (AScurrentauctionsnatchitem) then
-        AScurrentauctionsnatchitem=1
+    if not AScurrentauctionsnatchitem then
+        AScurrentauctionsnatchitem = 1
     end
     
     if (AScurrentauctionsnatchitem > table.maxn(AS.item)) or (AScurrentauctionsnatchitem < 1) then
-        ASprint("nothing to process. resetting.")
+        ASprint(MSG_C.INFO.."Nothing to process. RESET")
 
-        AS.status=nil
-        AScurrentauctionsnatchitem=1
+        AS.status = nil
+        AScurrentauctionsnatchitem = 1
         AS.mainframe.headerframe.stopsearchbutton:Disable()
         return false
     end
 
+    if AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then  --some mods change the default AH frame name
+        ASprint("called query "..AScurrentauctionsnatchitem.." = "..AS.item[AScurrentauctionsnatchitem].name)
 
-   if AuctionFrameBrowse then  --some mods change the default AH frame name
-      if AuctionFrameBrowse:IsVisible() then  --if we talked to the ah dude
-         canQuery,canQueryAll = CanSendAuctionQuery()  --check if we can send a query
-         if canQuery then
-            ASprint("called query "..AScurrentauctionsnatchitem.." = "..AS.item[AScurrentauctionsnatchitem].name)
+        if Auctioneer then
+            ASprint(MSG_C.ERROR.."Auctioneer detected")
+        end
 
-            if Auctioneer then
-               ASprint("auctioneer interfere")
-            end
+        if AS.item[AScurrentauctionsnatchitem].name then
+            AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem -- Setup in advanced for manual prompt
+            AS.mainframe.headerframe.stopsearchbutton:Enable()
+            BrowseResetButton:Click()
+            BrowseName:SetText(ASsanitize(AS.item[AScurrentauctionsnatchitem].name))
+            AuctionFrameBrowse_Search()
+            AScurrentahresult = 0
+            AS.status = STATE.WAITINGFORUPDATE
+            return true
+        else
+            ASprint(MSG_C.ERROR.."Could not find current index in AS.item")
+        end
+    else
+        ASprint(MSG_C.ERROR.."Can't find auction frame object")
+    end
 
-            if (AS.item[AScurrentauctionsnatchitem].name) then
-                AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem
-                AS.mainframe.headerframe.stopsearchbutton:Enable()
-                BrowseResetButton:Click()
-               BrowseName:SetText(ASsanitize(AS.item[AScurrentauctionsnatchitem].name))
-               AuctionFrameBrowse_Search()
-               AScurrentahresult=0
-               AS.status=STATE.WAITINGFORUPDATE
-               return true
-            else
-               AS.status=nil
-            end
-         else
-            ASprint("canquery failed.  server not ready to send")
-         end
-      else
-     AS.status=nil
-      end
-   else
-      ASprint("couldn't find the auction frame object")
-      AS.status=nil
-   end
-   return false
+    AS.status = nil
+    return false
 end
 
 
@@ -1322,12 +1250,12 @@ end
 
 function AScreatebuttonhandlers()
     ------------------------------------------------------------------
-    --create all the script handlers for the buttons
+    --  Create all the script handlers for the buttons
     ------------------------------------------------------------------
 
-   AS[AS_BUTTONBUYOUT] = function()  --buyout
-                 local bid,buyout
-                 _,buyout=ASgetcost(AScurrentahresult)
+    AS[AS_BUTTONBUYOUT] = function()  -- Buyout prompt item
+            local bid, buyout
+            _, buyout = ASgetcost(AScurrentahresult)
                  selected_auction = GetSelectedAuctionItem("list")
                  ASprint("Index: "..selected_auction)
                  --ASprint("should buy index: "..selected_auction)
@@ -1338,9 +1266,9 @@ function AScreatebuttonhandlers()
                  ASprint("result index: "..AScurrentahresult)
                  AS.prompt:Hide()
                  AS.status=STATE.BUYING
+    end
 
-              end
-   AS[AS_BUTTONBID] = function() --bid
+    AS[AS_BUTTONBID] = function() -- Bid prompt item
 
                 ASprint("AS.bid called.  current ah result="..tostring(AScurrentahresult))
                 selected_auction = GetSelectedAuctionItem("list")
@@ -1353,77 +1281,44 @@ function AScreatebuttonhandlers()
                  --AS.status=EVALUATING --OMG here's the bug.  why would this be different from the buying button???!?!?!?   im dumb?
                  AS.prompt:Hide()
                  AS.status=STATE.BUYING
+    end
 
-              end
-  AS[AS_BUTTONNEXTAH] = function()  --next in ah
+    AS[AS_BUTTONNEXTAH] = function()  -- Go to next item in AH
+            ASprint(MSG_C.INFO.."Skipping item")
 
-                ASprint("you clicked skip.")
+            AS.prompt:Hide()
+            AS.status = STATE.EVALUATING
+    end
 
-                 AS.prompt:Hide()
-                 AS.status=STATE.EVALUATING
-              end
-  AS[AS_BUTTONNEXTLIST] = function()  --next in list
-                AScurrentauctionsnatchitem=AScurrentauctionsnatchitem+1
-                AScurrentahresult=0
-                AS.status=STATE.QUERYING
-                AS.prompt:Hide()
-             end
-  --[[AS[AS_BUTTONIGNORE] = function()  --ignore this item
-                if not (AS.item[AScurrentauctionsnatchitem].ignoretable) then
-                  ASprint("creating ignore table for item#"..AScurrentauctionsnatchitem.." ,result#"..AScurrentahresult)
-                   AS.item[AScurrentauctionsnatchitem].ignoretable = {}
-                end
-                local name,_,_,quality=GetAuctionItemInfo("list",AScurrentahresult);
-                if not name then return false end
-                AS.item[AScurrentauctionsnatchitem].ignoretable[name] = {}
-                AS.item[AScurrentauctionsnatchitem].ignoretable[name].cutoffprice = 0 --zero, meaning ignore.  >1 means its got a budget
-                AS.item[AScurrentauctionsnatchitem].ignoretable[name].quality=quality  --used when showing whats ignored, makes it look better
-                AS.status=EVALUATING
-                ASsavevariables()
-             end]]
+    AS[AS_BUTTONNEXTLIST] = function()  -- Go to next item in snatch list
+            AScurrentauctionsnatchitem = AScurrentauctionsnatchitem + 1
+            AScurrentahresult = 0
+            AS.prompt:Hide()
+            AS.status = STATE.QUERYING
+    end
 
-    AS[AS_BUTTONIGNOREMANUAL] = function()  --ignore this item
-            local name = AS.item["ASmanualitem"].name
-            local listnumber = AS.item['ASmanualitem'].listnumber
+    AS[AS_BUTTONIGNORE] = function()  -- Ignore this item by setting cutoffprice to 0
+            local name = AS.item["ASmanualedit"].name
+            local listnumber = AS.item['ASmanualedit'].listnumber
             
             if not AS.item[listnumber].ignoretable then
                 AS.item[listnumber].ignoretable = {}
             end
+            
             AS.item[listnumber].ignoretable[name] = {}
             AS.item[listnumber].ignoretable[name].cutoffprice = 0
-            AS.item[listnumber].ignoretable[name].quality = quality  --used when showing whats ignored, makes it look better
+            AS.item[listnumber].ignoretable[name].quality = quality
             AS.item[listnumber].priceoverride = nil
-            AS.item['ASmanualitem'] = nil
+            AS.item['ASmanualedit'] = nil
             ASsavevariables()
             AS.manualprompt:Hide()
     end
 
-   --[[AS[AS_BUTTONEXPENSIVE] = function()  --too expensive
-                if not (AS.item[AScurrentauctionsnatchitem].ignoretable) then
-                   ASprint("creating ignore table for item#"..AScurrentauctionsnatchitem.." ,result#"..AScurrentahresult)
-                   AS.item[AScurrentauctionsnatchitem].ignoretable = {}
-                end
-                local name, count,quality
-                name,_,count,quality=GetAuctionItemInfo("list",AScurrentahresult);
-                if not name then return false end
-                bid,buyout,peritembid,peritembuyout = ASgetcost(AScurrentahresult)
-                if (AS.prompt[AS_BUTTONBUYOUT]:IsEnabled() == 0) then
-                  peritembuyout=peritembid  --the buyout button was disabled.  use the bid price.
-                end
+    AS[AS_BUTTONEXPENSIVE] = function()  -- Save price filter in manualprompt
+            local name = AS.item['ASmanualedit'].name
+            local listnumber = AS.item['ASmanualedit'].listnumber
 
-                AS.item[AScurrentauctionsnatchitem].ignoretable[name] = {}
-                AS.item[AScurrentauctionsnatchitem].ignoretable[name].cutoffprice = peritembuyout
-                AS.item[AScurrentauctionsnatchitem].ignoretable[name].quality=quality  --used when showing whats ignored, makes it look better
-                 AS.status=EVALUATING
-                ASsavevariables()
-                --AScurrentahresult=AScurrentahresult  --redo this item, to bid, this time :)
-             end]]
-
-    AS[AS_BUTTONEXPENSIVEMANUAL] = function()  --too expensive
-            local name = AS.item['ASmanualitem'].name
-            local listnumber = AS.item['ASmanualitem'].listnumber
-
-            if AS.item['ASmanualitem'].priceoverride == nil then
+            if AS.item['ASmanualedit'].priceoverride == nil then
                 AS.manualprompt:Hide()
                 return
             end
@@ -1433,30 +1328,31 @@ function AScreatebuttonhandlers()
             end
 
             AS.item[listnumber].ignoretable[name] = {}
-            AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualitem'].priceoverride
-            AS.item[listnumber].ignoretable[name].quality = quality  --used when showing whats ignored, makes it look better
+            AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualedit'].priceoverride
+            AS.item[listnumber].ignoretable[name].quality = quality
             AS.item[listnumber].priceoverride = nil
-            AS.item['ASmanualitem'] = nil
+            AS.item['ASmanualedit'] = nil
             ASsavevariables()
             AS.manualprompt:Hide()
     end
 
-   AS[AS_BUTTONDELETE] = function()  --delete
-                 table.remove(AS.item,AScurrentauctionsnatchitem)
-                 AS.status=STATE.QUERYING
-                 ASscrollbar_Update()
-              end
-   AS[AS_BUTTONDELETEALL] = function()  --delete all
-               if(IsControlKeyDown()) then
-                  AS.item={}
-                  AS.status=nil
-                  ASsavedtable=nil
-                  ASscrollbar_Update()
-               end
-            end
+    AS[AS_BUTTONDELETE] = function()  -- Delete item
+            table.remove(AS.item, AScurrentauctionsnatchitem)
+            AS.status = STATE.QUERYING
+            ASscrollbar_Update()
+    end
 
-    AS[AS_BUTTONUPDATE] = function()  -- update saved item with prompt item
-            local  name, texture, _, quality, _, _, _, _, _, _, _, _ = GetAuctionItemInfo("list", AScurrentahresult);
+    AS[AS_BUTTONDELETEALL] = function()  -- Delete list
+            if IsControlKeyDown() then
+                AS.item = {}
+                AS.status = nil
+                ASsavedtable = nil
+                ASscrollbar_Update()
+            end
+    end
+
+    AS[AS_BUTTONUPDATE] = function()  -- Update saved item with prompt item
+            local  name, texture, _, quality = GetAuctionItemInfo("list", AScurrentahresult);
             local link = GetAuctionItemLink("list", AScurrentahresult)
             
             if AS.item[AScurrentauctionsnatchitem] then
@@ -1471,8 +1367,8 @@ function AScreatebuttonhandlers()
             end
     end
 
-    AS[AS_BUTTONFILTERS] = function()  -- Open filters
-            ASprint("|cff725AE8Opening manual filters")
+    AS[AS_BUTTONFILTERS] = function()  -- Open manualprompt filters
+            ASprint(MSG_C.EVENT.."Opening manual edit filters")
             AS.prompt:Hide()
             AS.optionframe.manualpricebutton:Click()
     end

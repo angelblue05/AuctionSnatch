@@ -1,10 +1,4 @@
-local FALSE=0
-local TRUE=1
-local QUERYING=1
-local WAITINGFORUPDATE=2
-local EVALUATING=3
-local WAITINGFORPROMPT=4
-local BUYING = 5
+
 local F, C = unpack(Aurora)
 local r, g, b = C.r, C.g, C.b
 
@@ -170,7 +164,7 @@ function AScreatemainframe()
                         if not IsShiftKeyDown() then
                             AScurrentauctionsnatchitem = 1
                         end
-                        AS.status = QUERYING
+                        AS.status = STATE.QUERYING
                         AS.mainframe.headerframe.stopsearchbutton:Enable()
                         return
                     end
@@ -500,9 +494,9 @@ function AScreatemanualprompt(item, listnumber)
     end
 
     if item then
-        AS.item['ASmanualitem'] = {}
-        AS.item['ASmanualitem'].name = item.name
-        AS.item['ASmanualitem'].listnumber = listnumber
+        AS.item['ASmanualedit'] = {}
+        AS.item['ASmanualedit'].name = item.name
+        AS.item['ASmanualedit'].listnumber = listnumber
     end
 
     if AS.manualprompt == nil then
@@ -610,13 +604,13 @@ function AScreatemanualprompt(item, listnumber)
         ------ IGNORE BUTTON
             -------------- STYLE ----------------
                 AS.manualprompt.ignorebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelButtonTemplate")
-                AS.manualprompt.ignorebutton:SetText(AS_BUTTONIGNOREMANUAL)
+                AS.manualprompt.ignorebutton:SetText(AS_BUTTONIGNORE)
                 AS.manualprompt.ignorebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
                 AS.manualprompt.ignorebutton:SetHeight(AS_BUTTON_HEIGHT)
                 AS.manualprompt.ignorebutton:SetPoint("BOTTOMLEFT",AS.manualprompt,"BOTTOMLEFT",18,12)
             -------------- SCRIPT ----------------
                 AS.manualprompt.ignorebutton:SetScript("OnClick", function(self)
-                    AS[AS_BUTTONIGNOREMANUAL]()
+                    AS[AS_BUTTONIGNORE]()
                 end)
                 AS.manualprompt.ignorebutton:SetScript("OnEnter",function(self)
                     ASshowtooltip(AS.manualprompt.ignorebutton, AS_BUTTONTEXT3)
@@ -630,13 +624,13 @@ function AScreatemanualprompt(item, listnumber)
         ------ SAVE BUTTON
             -------------- STYLE ----------------
                 AS.manualprompt.savebutton = CreateFrame("Button", nil, AS.manualprompt, "UIPanelButtonTemplate")
-                AS.manualprompt.savebutton:SetText(AS_BUTTONEXPENSIVEMANUAL)
+                AS.manualprompt.savebutton:SetText(AS_BUTTONEXPENSIVE)
                 AS.manualprompt.savebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
                 AS.manualprompt.savebutton:SetHeight(AS_BUTTON_HEIGHT)
                 AS.manualprompt.savebutton:SetPoint("BOTTOMRIGHT",AS.manualprompt,"BOTTOMRIGHT",-18,12)
             -------------- SCRIPT ----------------
                 AS.manualprompt.savebutton:SetScript("OnClick", function(self)
-                    AS[AS_BUTTONEXPENSIVEMANUAL]()
+                    AS[AS_BUTTONEXPENSIVE]()
                 end)
                 AS.manualprompt.savebutton:SetScript("OnEnter",function(self)
                     ASshowtooltip(AS.manualprompt.savebutton, AS_BUTTONTEXT8)
@@ -666,16 +660,16 @@ function AScreatemanualprompt(item, listnumber)
                     local messagestring
 
                     if AS.manualprompt.priceoverride:GetText() == "" then
-                        AS.item["ASmanualitem"].priceoverride = nil
+                        AS.item["ASmanualedit"].priceoverride = nil
                     elseif ASsavedtable and ASsavedtable.copperoverride then
-                        AS.item["ASmanualitem"].priceoverride = tonumber(AS.manualprompt.priceoverride:GetText())
+                        AS.item["ASmanualedit"].priceoverride = tonumber(AS.manualprompt.priceoverride:GetText())
                     else
-                        AS.item["ASmanualitem"].priceoverride = AS.manualprompt.priceoverride:GetText() * COPPER_PER_GOLD
+                        AS.item["ASmanualedit"].priceoverride = AS.manualprompt.priceoverride:GetText() * COPPER_PER_GOLD
                     end
 
-                    if AS.item["ASmanualitem"].priceoverride and (tonumber(AS.item["ASmanualitem"].priceoverride) > 0) then
+                    if AS.item["ASmanualedit"].priceoverride and (tonumber(AS.item["ASmanualedit"].priceoverride) > 0) then
                         messagestring = "\n"..AS_CUTOFF..":\n"
-                        messagestring = messagestring..ASGSC(tonumber(AS.item["ASmanualitem"].priceoverride))
+                        messagestring = messagestring..ASGSC(tonumber(AS.item["ASmanualedit"].priceoverride))
                         AS.manualprompt.lowerstring:SetText(messagestring)
                     else
                         ASprint("|c00ffaaaaNo Cutoff price found!")
@@ -1053,73 +1047,59 @@ end
 --&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ---------------------------------------------------------------------------
 function AScreatelistbutton(i)
-   local buttontemplate,texttexture,ASfontstring,ASicon, ASnormaltexture,AShighlighttexture,buttonnumber
+    local texttexture, ASfontstring, ASicon, ASnormaltexture, AShighlighttexture
 
-   -------------------------------the actual button
-   buttontemplate = CreateFrame("Button",nil,AS.mainframe.listframe)
-   buttontemplate:SetHeight(AS_BUTTON_HEIGHT)
-   buttontemplate:SetWidth(AS.mainframe:GetWidth() - 58)
-   buttontemplate:SetPoint("top")
-   buttontemplate:SetNormalFontObject("gamefontnormal")
-   buttontemplate.buttonnumber=i
-   buttontemplate:SetMovable(true)
+    -------------- STYLE ----------------
+        local buttontemplate = CreateFrame("Button", nil, AS.mainframe.listframe)
+        buttontemplate:SetHeight(AS_BUTTON_HEIGHT)
+        buttontemplate:SetWidth(AS.mainframe:GetWidth() - 58)
+        buttontemplate:SetPoint("top")
+        buttontemplate:SetNormalFontObject("gamefontnormal")
+        buttontemplate.buttonnumber=i
+        buttontemplate:SetMovable(true)
+    -------------- SCRIPT ----------------
+        buttontemplate:SetScript("OnMouseDown", function(self) -- compensate for scroll bar
+            ASorignumber = self.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+        end)
+        buttontemplate:SetScript("OnClick", function(self, button, down)
+            ASprint("CLeeekkk!")
 
-   buttontemplate:SetScript("OnMouseDown",
-      function(self)
-        --compensate for scroll bar
-        --ASscrollbar = getglobal(AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBar")
-        --allow drag repositioning of buttons
-        ASorignumber = self.buttonnumber+FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
-      end)
-
-
-    buttontemplate:SetScript("OnClick",
-      function(self, button, down)
-        ASprint("CLeeekkk!")
-
-        if(IsShiftKeyDown()) then
-            --get the link from this row
-            ASprint("SHIIIFTTT cleeek")
-        else
-            if(AS.optionframe:IsVisible()) then
-                AS.optionframe:Hide()
+            if IsShiftKeyDown() then -- Get the link from this row
+                -- TODO: Actually get the link
+                ASprint("SHIIIFTTT cleeek")
             else
-                AS.item['LastListButtonClicked'] = self.buttonnumber+FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
-                AS.optionframe:SetParent(self)
-                AS.optionframe:SetPoint("Top",self,"bottomright")
-                AS.optionframe:Show()
-            end
-        end
-
-      end)
-
-    buttontemplate:SetScript("OnMouseUp",
-        function(self, button)
-            if button == "RightButton" then
-                if AuctionFrame then
-                    if (AuctionFrame:IsVisible()) then
-                        AuctionFrameTab1:Click()  --??
-                        if (AuctionFrameBrowse:IsVisible()) then
-                            AS.prompt:Hide()
-                            BrowseResetButton:Click()
-                            AS.item['LastListButtonClicked'] = self.buttonnumber+FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
-                            AScurrentauctionsnatchitem = self.buttonnumber+FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
-                            AS.status = QUERYING
-                            AS.status_override = true
-                            AS.mainframe.headerframe.stopsearchbutton:Enable()
-                            return
-                        end
-                    end
+                if AS.optionframe:IsVisible() then
+                    AS.optionframe:Hide()
+                else
+                    AS.item['LastListButtonClicked'] = self.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+                    AS.optionframe:SetParent(self)
+                    AS.optionframe:SetPoint("TOP", self, "BOTTOMRIGHT")
+                    AS.optionframe:Show()
                 end
-                ASprint("The Auction window is not visible.")
+            end
+        end)
+        buttontemplate:SetScript("OnMouseUp", function(self, button)
+            
+            if button == "RightButton" then
+                if AuctionFrame and AuctionFrame:IsVisible() then
+                    
+                    AuctionFrameTab1:Click() -- Focus on search tab
+                    AS.prompt:Hide()
+                    BrowseResetButton:Click()
+                    
+                    AS.item['LastListButtonClicked'] = self.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+                    AScurrentauctionsnatchitem = self.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+                    AS.status = STATE.QUERYING
+                    AS.status_override = true
+                    return
+                end
+                ASprint(MSG_C.ERROR.."Auction house is not visible")
             else
                 ASmovelistbutton(ASorignumber)
                 ASscrollbar_Update()
             end
         end)
-
-   buttontemplate:SetScript("OnEnter",
-      function(self)
+        buttontemplate:SetScript("OnEnter", function(self)
       local ignoreprice,messagestring,quality, current_item
          local mainfunc = AS.mainframe:GetScript("OnEnter")
          if(buttontemplate.leftstring:GetText()) then
@@ -1175,12 +1155,11 @@ function AScreatelistbutton(i)
       end)
 
 
-   buttontemplate:SetScript("OnDoubleClick",
-      function(self)
+        buttontemplate:SetScript("OnDoubleClick", function(self)
             if (BrowseName) then
-                 if(buttontemplate.leftstring:GetText()) then
+                 if(self.leftstring:GetText()) then
                     BrowseResetButton:Click()
-                    BrowseName:SetText(ASsanitize(buttontemplate.leftstring:GetText()))
+                    BrowseName:SetText(ASsanitize(self.leftstring:GetText()))
                     AuctionFrameBrowse_Search()
                   --search for the auction in that box
                 end
@@ -1298,9 +1277,9 @@ function AScreateauctiontab()
                 else
                     ASopenedwithah = true
                     if ASautostart == true then
-                        AS.status = QUERYING
+                        AS.status = STATE.QUERYING
                     end
-                    ASmain()
+                    AS_Main()
                 end
             end)
             F.ReskinTab(ASauctiontab) -- Aurora
