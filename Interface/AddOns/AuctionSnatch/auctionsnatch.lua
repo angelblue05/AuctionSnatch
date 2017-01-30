@@ -82,344 +82,344 @@ dropdown_labels = {
     FUNCTIONS TRIGGERED VIA XML
     auctionsnatch.xml
 
-    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
+----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
 
-function AS_OnLoad(self)
+    function AS_OnLoad(self)
 
-    ----- REGISTER FOR EVENTS
-        self:RegisterEvent("AUCTION_ITEM_LIST_UPDATE")
-        self:RegisterEvent("AUCTION_HOUSE_SHOW")
-        self:RegisterEvent("AUCTION_HOUSE_CLOSED")
-        self:RegisterEvent("VARIABLES_LOADED")
+        ----- REGISTER FOR EVENTS
+            self:RegisterEvent("AUCTION_ITEM_LIST_UPDATE")
+            self:RegisterEvent("AUCTION_HOUSE_SHOW")
+            self:RegisterEvent("AUCTION_HOUSE_CLOSED")
+            self:RegisterEvent("VARIABLES_LOADED")
 
-    ------ CHAT HOOKS
-        -------------- THANK YOU TINY PAD ----------------
-        self:RegisterEvent("ADDON_LOADED") -- tradeskill and achievement hooks need to wait for LoD bits
-        local old_ChatEdit_InsertLink = ChatEdit_InsertLink
-        function ChatEdit_InsertLink(text)
+        ------ CHAT HOOKS
+            -------------- THANK YOU TINY PAD ----------------
+            self:RegisterEvent("ADDON_LOADED") -- tradeskill and achievement hooks need to wait for LoD bits
+            local old_ChatEdit_InsertLink = ChatEdit_InsertLink
+            function ChatEdit_InsertLink(text)
 
-            if AS.mainframe.headerframe.editbox:HasFocus() then
-                AS.mainframe.headerframe.editbox:Insert(text)
-                return true -- prevents the stacksplit frame from showing
-            else
-                return old_ChatEdit_InsertLink(text)
-            end
-        end
-
-    ------ AUCTION HOUSE HOOKS // TODO: Is this necessary?
-        if BrowseName then
-            local old_BrowseName = BrowseName:GetScript("OnEditFocusGained")
-            BrowseName:SetScript("OnEditFocusGained", function()
-                
-                if AS.status == nil then
-                    return false  --should catch the infinate loop
+                if AS.mainframe.headerframe.editbox:HasFocus() then
+                    AS.mainframe.headerframe.editbox:Insert(text)
+                    return true -- prevents the stacksplit frame from showing
+                else
+                    return old_ChatEdit_InsertLink(text)
                 end
+            end
 
-                AS.status = nil  --else the mod will mess up typing
-                return old_BrowseName() --for some reason this causes an infinate loop :( > Can't seem to trigger infinite loop -AB5
-            end)
-        end
+        ------ AUCTION HOUSE HOOKS // TODO: Is this necessary?
+            if BrowseName then
+                local old_BrowseName = BrowseName:GetScript("OnEditFocusGained")
+                BrowseName:SetScript("OnEditFocusGained", function()
+                    
+                    if AS.status == nil then
+                        return false  --should catch the infinate loop
+                    end
 
-    DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT..AS_LOADTEXT)
+                    AS.status = nil  --else the mod will mess up typing
+                    return old_BrowseName() --for some reason this causes an infinate loop :( > Can't seem to trigger infinite loop -AB5
+                end)
+            end
 
-    ------ SLASH COMMANDS
-        SLASH_AS1 = "/AS";
-        SLASH_AS2 = "/as";
-        SLASH_AS3 = "/As";
-        SLASH_AS4 = "/aS";
-        SLASH_AS5 = "/Auctionsnatch";
-        SLASH_AS6 = "/AuctionSnatch";
-        SLASH_AS7 = "/AUCTIONSNATCH";
-        SLASH_AS8 = "/auctionsnatch";
+        DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT..AS_LOADTEXT)
 
-        SlashCmdList["AS"] = AS_Main;
+        ------ SLASH COMMANDS
+            SLASH_AS1 = "/AS";
+            SLASH_AS2 = "/as";
+            SLASH_AS3 = "/As";
+            SLASH_AS4 = "/aS";
+            SLASH_AS5 = "/Auctionsnatch";
+            SLASH_AS6 = "/AuctionSnatch";
+            SLASH_AS7 = "/AUCTIONSNATCH";
+            SLASH_AS8 = "/auctionsnatch";
 
-    AScreatemainframe()
-    AScreateprompt()
-    AScreatemanualprompt()
+            SlashCmdList["AS"] = AS_Main;
 
-    table.insert(UISpecialFrames, AS.mainframe:GetName())
-    table.insert(UISpecialFrames, AS.prompt:GetName())
-    table.insert(UISpecialFrames, AS.manualprompt:GetName())
+        AScreatemainframe()
+        AScreateprompt()
+        AScreatemanualprompt()
 
-    AS.prompt:Hide()
-    AS.manualprompt:Hide()
-end
+        table.insert(UISpecialFrames, AS.mainframe:GetName())
+        table.insert(UISpecialFrames, AS.prompt:GetName())
+        table.insert(UISpecialFrames, AS.manualprompt:GetName())
 
-function AS_OnEvent(self, event)
-
-    if event == "VARIABLES_LOADED" then
-        ASprint(MSG_C.EVENT.."Variables loaded. Initializing.")
-        ASprint(MSG_C.INFO.."Running version: "..GetAddOnMetadata("Auctionsnatch", "Version"), 1)
-        
-        AS_Initialize()
-
-    elseif event == "AUCTION_ITEM_LIST_UPDATE" then
-        ASprint(MSG_C.INFO..event)
-
-        if AS.status == STATE.BUYING then
-            AS.status = STATE.EVALUATING
-        end
-
-    elseif event == "AUCTION_HOUSE_SHOW" then
-
-        if not ASauctiontab then
-            AScreateauctiontab()
-        end
-
-        if ASautostart and not ASautoopen then
-            -- Do nothing
-        elseif ASautostart and not IsShiftKeyDown() then -- Auto start
-            AS.status = STATE.QUERYING
-            AS_Main()
-        elseif IsShiftKeyDown() then -- Auto start
-            AS.status = STATE.QUERYING
-            AS_Main()
-        elseif ASautoopen then
-            -- Automatically display frame, just don't auto start
-            AS_Main()
-        end
-
-    elseif event == "AUCTION_HOUSE_CLOSED" then
-
-        AS.mainframe.headerframe.editbox:SetText("")
         AS.prompt:Hide()
         AS.manualprompt:Hide()
-        AS.status = nil
-        
-        if ASopenedwithah then  --in case i do a manual /as prompt for testing purposes
-            if AS.mainframe then
+    end
+
+    function AS_OnEvent(self, event)
+
+        if event == "VARIABLES_LOADED" then
+            ASprint(MSG_C.EVENT.."Variables loaded. Initializing.")
+            ASprint(MSG_C.INFO.."Running version: "..GetAddOnMetadata("Auctionsnatch", "Version"), 1)
+            
+            AS_Initialize()
+
+        elseif event == "AUCTION_ITEM_LIST_UPDATE" then
+            ASprint(MSG_C.INFO..event)
+
+            if AS.status == STATE.BUYING then
+                AS.status = STATE.EVALUATING
+            end
+
+        elseif event == "AUCTION_HOUSE_SHOW" then
+
+            if not ASauctiontab then
+                AScreateauctiontab()
+            end
+
+            if ASautostart and not ASautoopen then
+                -- Do nothing
+            elseif ASautostart and not IsShiftKeyDown() then -- Auto start
+                AS.status = STATE.QUERYING
+                AS_Main()
+            elseif IsShiftKeyDown() then -- Auto start
+                AS.status = STATE.QUERYING
+                AS_Main()
+            elseif ASautoopen then
+                -- Automatically display frame, just don't auto start
+                AS_Main()
+            end
+
+        elseif event == "AUCTION_HOUSE_CLOSED" then
+
+            AS.mainframe.headerframe.editbox:SetText("")
+            AS.prompt:Hide()
+            AS.manualprompt:Hide()
+            AS.status = nil
+            
+            if ASopenedwithah then  --in case i do a manual /as prompt for testing purposes
+                if AS.mainframe then
+                    AS.mainframe:Hide()
+                end
+                ASopenedwithah = false
+            else
                 AS.mainframe:Hide()
             end
-            ASopenedwithah = false
-        else
-            AS.mainframe:Hide()
+        
+        elseif string.match("AUCTION", event) then
+            ASprint(MSG_C.INFO..event)
         end
-    
-    elseif string.match("AUCTION", event) then
-        ASprint(MSG_C.INFO..event)
-    end
-end
-
-function AS_OnUpdate(self, elapsed)
-    -- This is the Blizzard Update, called every computer clock cycle ~millisecond
-    
-    if not elapsed then -- Otherwise it will infinite loop
-        return 
     end
 
-    -- This is needed because sometimes a query completes,
-    -- and the results are sent back - but the ah will not accept a query right away.
-    -- there is no event that fires when a query is possible, so i just have to spam requests
+    function AS_OnUpdate(self, elapsed)
+        -- This is the Blizzard Update, called every computer clock cycle ~millisecond
+        
+        if not elapsed then -- Otherwise it will infinite loop
+            return 
+        end
 
-    if AS.status then
-        AS.elapsed = AS.elapsed + elapsed
+        -- This is needed because sometimes a query completes,
+        -- and the results are sent back - but the ah will not accept a query right away.
+        -- there is no event that fires when a query is possible, so i just have to spam requests
 
-        if AS.elapsed > 0.1 then
-            AS.elapsed = 0
+        if AS.status then
+            AS.elapsed = AS.elapsed + elapsed
 
-            if AS.status == STATE.QUERYING then
-                ASprint(MSG_C.EVENT.."[ Start querying ]")
-                AS_QueryAH()
-            elseif AS.status == STATE.WAITINGFORUPDATE then
-                ASprint(MSG_C.EVENT.."[ Waiting for update event ]")
-                
-                canQuery, canQueryAll = CanSendAuctionQuery("list")
-                if canQuery then
-                    ASprint(MSG_C.BOOL.."[ Server ready for query ]")
-                    AS.status = STATE.EVALUATING
+            if AS.elapsed > 0.1 then
+                AS.elapsed = 0
+
+                if AS.status == STATE.QUERYING then
+                    ASprint(MSG_C.EVENT.."[ Start querying ]")
+                    AS_QueryAH()
+                elseif AS.status == STATE.WAITINGFORUPDATE then
+                    ASprint(MSG_C.EVENT.."[ Waiting for update event ]")
+                    
+                    canQuery, canQueryAll = CanSendAuctionQuery("list")
+                    if canQuery then
+                        ASprint(MSG_C.BOOL.."[ Server ready for query ]")
+                        AS.status = STATE.EVALUATING
+                    end
+                elseif AS.status == STATE.EVALUATING then
+                    ASprint(MSG_C.EVENT.."[ Start evaluating ]")
+                    ASevaluate()
+                elseif AS.status == STATE.WAITINGFORPROMPT then
+                    -- The prompt buttons will change the status accordingly
+                elseif AS.status == STATE.BUYING then
+                    -- Nothing to do
                 end
-            elseif AS.status == STATE.EVALUATING then
-                ASprint(MSG_C.EVENT.."[ Start evaluating ]")
-                ASevaluate()
-            elseif AS.status == STATE.WAITINGFORPROMPT then
-                -- The prompt buttons will change the status accordingly
-            elseif AS.status == STATE.BUYING then
-                -- Nothing to do
             end
         end
     end
-end
 
 
 --[[//////////////////////////////////////////////////
 
     MAIN FUNCTIONS
 
-    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
+----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
 
-function AS_Initialize()
-    local playerName = UnitName("player")
-    local serverName = GetRealmName()
+    function AS_Initialize()
+        local playerName = UnitName("player")
+        local serverName = GetRealmName()
 
-    hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", AS_ContainerFrameItemButton_OnModifiedClick)
-    hooksecurefunc("ChatFrame_OnHyperlinkShow", AS_ChatFrame_OnHyperlinkShow)
+        hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", AS_ContainerFrameItemButton_OnModifiedClick)
+        hooksecurefunc("ChatFrame_OnHyperlinkShow", AS_ChatFrame_OnHyperlinkShow)
 
-    if (playerName == nil) or (playerName == UNKNOWNOBJECT) or (playerName == UNKNOWNBEING) then
-        return
-    end
+        if (playerName == nil) or (playerName == UNKNOWNOBJECT) or (playerName == UNKNOWNBEING) then
+            return
+        end
 
-    AS.item = {}
-    AScurrentauctionsnatchitem = 1
-    AScurrentahresult = 0
-    AS.status = nil
+        AS.item = {}
+        AScurrentauctionsnatchitem = 1
+        AScurrentahresult = 0
+        AS.status = nil
 
-    if ASsavedtable then
-        if ASsavedtable[serverName] then
+        if ASsavedtable then
+            if ASsavedtable[serverName] then
 
-            AS_tcopy(AS.item, ASsavedtable[serverName])
+                AS_tcopy(AS.item, ASsavedtable[serverName])
 
-            if ASsavedtable[serverName]["test"] then
-                ASprint("test = "..ASsavedtable[serverName]["test"])
-            end
+                if ASsavedtable[serverName]["test"] then
+                    ASprint("test = "..ASsavedtable[serverName]["test"])
+                end
 
-            if ASsavedtable[serverName].ASautostart ~= nil then
-                ASautostart = ASsavedtable[serverName].ASautostart
-                --ASprint("Auto start = "..MSG_C.BOOL..""..tostring(ASautostart))
-            end
-            if ASsavedtable[serverName].ASautoopen ~= nil then
-                ASautoopen = ASsavedtable[serverName].ASautoopen
-                --ASprint("Auto open = "..MSG_C.BOOL..""..tostring(ASautoopen))
-            end
-            if ASsavedtable[serverName].ASnodoorbell ~= nil then
-                ASnodoorbell = ASsavedtable[serverName].ASnodoorbell
-                --ASprint("Doorbell sound = "..MSG_C.BOOL..""..tostring(ASnodoorbell))
-            end
-            if ASsavedtable[serverName].ASignorebid ~= nil then
-                ASignorebid = ASsavedtable[serverName].ASignorebid
-                --ASprint("Ignore bid = "..MSG_C.BOOL..""..tostring(ASignorebid))
-            end
-            if ASsavedtable[serverName].ASignorenobuyout ~= nil then
-                ASignorenobuyout = ASsavedtable[serverName].ASignorenobuyout
-                --ASprint("Ignore no buyout = "..MSG_C.BOOL..""..tostring(ASignorenobuyout))
+                if ASsavedtable[serverName].ASautostart ~= nil then
+                    ASautostart = ASsavedtable[serverName].ASautostart
+                    --ASprint("Auto start = "..MSG_C.BOOL..""..tostring(ASautostart))
+                end
+                if ASsavedtable[serverName].ASautoopen ~= nil then
+                    ASautoopen = ASsavedtable[serverName].ASautoopen
+                    --ASprint("Auto open = "..MSG_C.BOOL..""..tostring(ASautoopen))
+                end
+                if ASsavedtable[serverName].ASnodoorbell ~= nil then
+                    ASnodoorbell = ASsavedtable[serverName].ASnodoorbell
+                    --ASprint("Doorbell sound = "..MSG_C.BOOL..""..tostring(ASnodoorbell))
+                end
+                if ASsavedtable[serverName].ASignorebid ~= nil then
+                    ASignorebid = ASsavedtable[serverName].ASignorebid
+                    --ASprint("Ignore bid = "..MSG_C.BOOL..""..tostring(ASignorebid))
+                end
+                if ASsavedtable[serverName].ASignorenobuyout ~= nil then
+                    ASignorenobuyout = ASsavedtable[serverName].ASignorenobuyout
+                    --ASprint("Ignore no buyout = "..MSG_C.BOOL..""..tostring(ASignorenobuyout))
+                end
+
+            else
+                ASprint(MSG_C.EVENT.."New server found")
+
+                if not ASfirsttime then
+                    ASfirsttime = true
+                end
             end
 
         else
-            ASprint(MSG_C.EVENT.."New server found")
-
-            if not ASfirsttime then
-                ASfirsttime = true
-            end
+            ASprint(MSG_C.ERROR.."Nothing saved :(")
         end
 
-    else
-        ASprint(MSG_C.ERROR.."Nothing saved :(")
+        -- Verify settings, otherwise set default
+        if ASautostart == nil then
+            ASprint(MSG_C.EVENT.."Auto start not found")
+            ASautostart = true
+        end
+        if ASautoopen == nil then
+            ASprint(MSG_C.EVENT.."Auto open not found")
+            ASautoopen = true
+        end
+        if AS.mainframe then
+            AS.mainframe.headerframe.autostart:SetChecked(ASautostart)
+            AS.mainframe.headerframe.autoopen:SetChecked(ASautoopen)
+        end
+        -- Other settings
+        if ASnodoorbell == nil then
+            ASprint(MSG_C.EVENT.."Doorbell not found")
+            ASnodoorbell = true
+        end
+        if ASignorebid == nil then
+            ASprint(MSG_C.EVENT.."Ignore bid not found")
+            ASignorebid = false
+        end
+        if ASignorenobuyout == nil then
+            ASprint(MSG_C.EVENT.."Ignore no buyout not found")
+            ASignorenobuyout = false
+        end
+
+        -- font size testing and adjuting height of prompt
+        local _, height = GameFontNormal:GetFont()
+        local new_height = (height * 10) + ((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE)*6)  -- LINES, 5 BUTTONS + 1 togrow on
+        
+        ASprint(MSG_C.INFO.."Font height: "..height)
+        ASprint(MSG_C.INFO.."New prompt height: "..new_height)
+        AS.prompt:SetHeight(new_height)
+
+        -- Generate scroll bar items
+        ASscrollbar_Update()
     end
 
-    -- Verify settings, otherwise set default
-    if ASautostart == nil then
-        ASprint(MSG_C.EVENT.."Auto start not found")
-        ASautostart = true
-    end
-    if ASautoopen == nil then
-        ASprint(MSG_C.EVENT.."Auto open not found")
-        ASautoopen = true
-    end
-    if AS.mainframe then
-        AS.mainframe.headerframe.autostart:SetChecked(ASautostart)
-        AS.mainframe.headerframe.autoopen:SetChecked(ASautoopen)
-    end
-    -- Other settings
-    if ASnodoorbell == nil then
-        ASprint(MSG_C.EVENT.."Doorbell not found")
-        ASnodoorbell = true
-    end
-    if ASignorebid == nil then
-        ASprint(MSG_C.EVENT.."Ignore bid not found")
-        ASignorebid = false
-    end
-    if ASignorenobuyout == nil then
-        ASprint(MSG_C.EVENT.."Ignore no buyout not found")
-        ASignorenobuyout = false
-    end
+    function AS_Main(input)
+        -- this is called when we type /AS or clicks the AS tab
+        ASprint(MSG_C.EVENT.."Excelsior!", 1)
+        if input then
+            input = string.lower(input)
+        end
+       
+        if AS.mainframe then
+            --ASprint(MSG_C.INFO.."Frame layer: "..AS.mainframe:GetFrameLevel())
 
-    -- font size testing and adjuting height of prompt
-    local _, height = GameFontNormal:GetFont()
-    local new_height = (height * 10) + ((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE)*6)  -- LINES, 5 BUTTONS + 1 togrow on
-    
-    ASprint(MSG_C.INFO.."Font height: "..height)
-    ASprint(MSG_C.INFO.."New prompt height: "..new_height)
-    AS.prompt:SetHeight(new_height)
+            if input == "test" then -- TODO: Rework testing to be more readable
+                ASdebug = true
 
-    -- Generate scroll bar items
-    ASscrollbar_Update()
-end
+                if (not AStesttablenum) then
+                    AStesttablenum = 1
+                end
 
-function AS_Main(input)
-    -- this is called when we type /AS or clicks the AS tab
-    ASprint(MSG_C.EVENT.."Excelsior!", 1)
-    if input then
-        input = string.lower(input)
-    end
-   
-    if AS.mainframe then
-        --ASprint(MSG_C.INFO.."Frame layer: "..AS.mainframe:GetFrameLevel())
+                local i,bag,numberofslots,slot,texture,itemCount,locked,quality,readable, link
+                local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemCount, itemEquipLoc, itemTexture
+                local canQuery,canQueryAll
+                local testtable
+                if(not testtable) then
 
-        if input == "test" then -- TODO: Rework testing to be more readable
-            ASdebug = true
+                    testtable = {}
 
-            if (not AStesttablenum) then
-                AStesttablenum = 1
-            end
+                    for bag = 0,4 do  --loop through each item in each bag
+                        numberofslots = GetContainerNumSlots(bag);
+                        if (numberofslots > 0) then
+                            for slot=1,numberofslots do
+                                link = GetContainerItemLink(bag,slot)
+                                if(link) then
+                                    itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemCount, itemEquipLoc, itemTexture = GetItemInfo(link)
+                                    testtable[#testtable+1] = itemName
+                                end
 
-            local i,bag,numberofslots,slot,texture,itemCount,locked,quality,readable, link
-            local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemCount, itemEquipLoc, itemTexture
-            local canQuery,canQueryAll
-            local testtable
-            if(not testtable) then
-
-                testtable = {}
-
-                for bag = 0,4 do  --loop through each item in each bag
-                    numberofslots = GetContainerNumSlots(bag);
-                    if (numberofslots > 0) then
-                        for slot=1,numberofslots do
-                            link = GetContainerItemLink(bag,slot)
-                            if(link) then
-                                itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemCount, itemEquipLoc, itemTexture = GetItemInfo(link)
-                                testtable[#testtable+1] = itemName
                             end
-
                         end
                     end
+                    testtable = ASremoveduplicates(testtable)
                 end
-                testtable = ASremoveduplicates(testtable)
+
+                if AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then  --some mods change the default AH frame name
+                    
+                    canQuery, canQueryAll = CanSendAuctionQuery()  --check if we can send a query
+                    if canQuery and testtable[AStesttablenum] then
+
+                        local name = testtable[AStesttablenum]
+                        AStesttablenum = AStesttablenum + 1
+
+                        BrowseName:SetText(name)
+                        AuctionFrameBrowse_Search()
+
+                        --AS.status=WAITINGFORUPDATE
+                        --return true
+                    end
+                end
+
+            elseif input == "debug" then
+                ASdebug = not ASdebug
+                ASprint(MSG_C.BOOL.."Debug: "..tostring(ASdebug), 1)
+                return
+            elseif input == "copperoverride" then
+                ASsavedtable.copperoverride = not ASsavedtable.copperoverride
+                ASprint(MSG_C.BOOL.."CopperOverride: "..tostring(ASsavedtable.copperoverride), 1)
+                return
             end
 
-            if AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then  --some mods change the default AH frame name
-                
-                canQuery, canQueryAll = CanSendAuctionQuery()  --check if we can send a query
-                if canQuery and testtable[AStesttablenum] then
-
-                    local name = testtable[AStesttablenum]
-                    AStesttablenum = AStesttablenum + 1
-
-                    BrowseName:SetText(name)
-                    AuctionFrameBrowse_Search()
-
-                    --AS.status=WAITINGFORUPDATE
-                    --return true
-                end
-            end
-
-        elseif input == "debug" then
-            ASdebug = not ASdebug
-            ASprint(MSG_C.BOOL.."Debug: "..tostring(ASdebug), 1)
-            return
-        elseif input == "copperoverride" then
-            ASsavedtable.copperoverride = not ASsavedtable.copperoverride
-            ASprint(MSG_C.BOOL.."CopperOverride: "..tostring(ASsavedtable.copperoverride), 1)
-            return
+        else
+            ASprint(MSG_C.ERROR.."Mainframe not found!", 1)
+            return false
         end
 
-    else
-        ASprint(MSG_C.ERROR.."Mainframe not found!", 1)
-        return false
+        AS.mainframe:Show()
+        --ASbringtotop() -- TODO: Is it really needed?
     end
-
-    AS.mainframe:Show()
-    --ASbringtotop() -- TODO: Is it really needed?
-end
 
 ---------------------------------------------------------------------------
 
@@ -472,8 +472,8 @@ function ASdropDownMenu_Initialise(self, level)
 
                     info.text = key
                     info.value = key
-                    if key == serverName then -- indicate which list is being used
-                        info.checked = true
+                    if key ~= serverName then -- indicate which list isn't being used
+                        info.checked = false
                     end
                     info.hasArrow = false
                     info.func =  ASdropDownMenuItem_OnClick
