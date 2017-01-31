@@ -1,26 +1,26 @@
 
-local F, C = unpack(Aurora)
-local r, g, b = C.r, C.g, C.b
+local F, C = unpack(Aurora) -- Aurora
+local r, g, b = C.r, C.g, C.b -- Aurora
 
 function AScreatemainframe()
--------------------------------------------------------------------------------
-   --this is the main listing frame and its children/buttons
-   -------------------------------------------------------------------------------
-    ASprint("|c00229977 creating mainframe")
+    -------------------------------------------------------------------------------
+    --this is the main listing frame and its children/buttons
+    -------------------------------------------------------------------------------
+    ASprint(MSG_C.EVENT.."Creating mainframe")
 
     ----- MAIN FRAME
         -------------- STYLE ----------------
-            AS.mainframe = CreateFrame("Frame","ASmainframe", UIParent)
-            AS.mainframe:SetPoint("right",-100,0)
-            AS.mainframe:SetHeight(AS_GROSSHEIGHT+8)
+            AS.mainframe = CreateFrame("Frame", "ASmainframe", UIParent)
+            AS.mainframe:SetPoint("RIGHT", 0, 0) -- TODO: Can we anchor to the auction house?
+            AS.mainframe:SetHeight(AS_GROSSHEIGHT + 8)
             AS.mainframe:SetWidth(280)
             AS.mainframe:Hide()
             AS.mainframe:SetBackdrop({  bgFile = "Interface/Tooltips/UI-Background",
                                         edgeFile = nil,
                                         tile = true, tileSize = 32, edgeSize = 32,
-                                        insets = { left = 0, right = 0, top = 0, bottom = 0}
+                                        insets = { left = 0, right = 0, top = 0, bottom = 0 }
             })
-            AS.mainframe:SetBackdropColor(0,0,0,.85)
+            AS.mainframe:SetBackdropColor(0, 0, 0, 0.85)
             AS.mainframe:SetMovable(true)
             AS.mainframe:EnableMouse(true)
         -------------- SCRIPT ----------------
@@ -37,7 +37,7 @@ function AScreatemainframe()
             AS.mainframe:SetScript("OnEnter", function(self)
                 ASbringtotop()
             end)
-            AS.mainframe:SetScript("OnLeave", function(self)
+            AS.mainframe:SetScript("OnLeave", function(self) -- TODO: To review
                 --check if the mouse actually left the frame
                 local x,y = GetCursorScaledPosition()
                 --[[ i decided not to check top and bottom because often i accidentaly drift up and down - only left and right seems to be when i actaully want to hide the frame
@@ -67,13 +67,13 @@ function AScreatemainframe()
 
             F.ReskinClose(AS.mainframe.closebutton) -- Aurora
 
-   ----------------------------------------------------------
-   ---------------------------------------------------------
-   -- Ive decided to make 2 frames within our main frame.
-   -- A Header Frame, that holds sorting options/editboxes
-   -- and a List frame, that contains the list of items
-   ---------------------------------------------------------
-   ----------------------------------------------------------
+    ----------------------------------------------------------
+    ---------------------------------------------------------
+    -- Ive decided to make 2 frames within our main frame.
+    -- A Header Frame, that holds sorting options/editboxes
+    -- and a List frame, that contains the list of items
+    ---------------------------------------------------------
+    ----------------------------------------------------------
 
 ------ HEADER FRAME
     -------------- STYLE ----------------
@@ -103,10 +103,6 @@ function AScreatemainframe()
         FauxScrollFrame_OnVerticalScroll(self,offset,20,AS_ScrollbarUpdate)
     end)
 
-   -- create background frame to contain list
-  --AS.mainframe.frame:SetSize(228,256)
-  --AS.mainframe.frame:SetPoint("CENTER")
-  --AS.mainframe.frame:SetBackdrop({bgFile="Interface\\DialogFrame\\UI-DialogBox-Background", insets={left=4,right=4,top=4,bottom=4}, tileSize=16, tile=true, edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", edgeSize=16})
     -- create list of 12 buttons
     AS.mainframe.listframe['itembutton'] = {}
     for i=1,ASrowsthatcanfit() do
@@ -120,47 +116,24 @@ function AScreatemainframe()
         end
         currentrow:Show()
         previousrow=currentrow
-    --[[AS.mainframe.frame.list[i] = CreateFrame("Button",nil,AS.mainframe.frame)
-    AS.mainframe.frame.list[i]:SetSize(200,20)
-    AS.mainframe.frame.list[i]:SetPoint("TOPLEFT",AS.mainframe.frame,"TOPLEFT",8,(i-1)*-20-8)
-    -- the icon
-    AS.mainframe.frame.list[i].icon = AS.mainframe.frame.list[i]:CreateTexture(nil,"ARTWORK")
-    AS.mainframe.frame.list[i].icon:SetSize(16,16)
-    AS.mainframe.frame.list[i].icon:SetPoint("LEFT",4,0)
-    -- the text label
-    AS.mainframe.frame.list[i].name = AS.mainframe.frame.list[i]:CreateFontString(nil,"ARTWORK","GameFontHighlight")
-    AS.mainframe.frame.list[i].name:SetSize(200-16-8,20) -- full width-icon-padding(both sides)
-    AS.mainframe.frame.list[i].name:SetJustifyV("CENTER") -- center text vertically
-    AS.mainframe.frame.list[i].name:SetJustifyH("LEFT") -- we'll anchor it in update]]
     end
 
-  --AS.mainframe.frame:Hide() -- we'll show it when we open a tradeskill
-
-
-  --create/find the anchor points to snap the buttons to.   Used for drag moving buttons
-
-
-
-   --AScreatescrollbar()
-
-------------------------------------------------------------
------- START BUTTON
-    -------------- STYLE ----------------
-    AS.mainframe.headerframe.startsearchbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelButtonTemplate")
-    AS.mainframe.headerframe.startsearchbutton:SetText(AS_START)
-    AS.mainframe.headerframe.startsearchbutton:SetWidth(100)
-    AS.mainframe.headerframe.startsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.mainframe.headerframe.startsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe,"TOPLEFT", 17, -25)
-    -------------- SCRIPT ----------------
-    AS.mainframe.headerframe.startsearchbutton:SetScript("OnClick",
-        function(self)
-            if AS.manualprompt then
-                AS.manualprompt:Hide()
-            end
-            if AuctionFrame then
-                if (AuctionFrame:IsVisible()) then
-                    AuctionFrameTab1:Click()  --??
-                    if (AuctionFrameBrowse:IsVisible()) then
+    ------ START BUTTON
+        -------------- STYLE ----------------
+            AS.mainframe.headerframe.startsearchbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelButtonTemplate")
+            AS.mainframe.headerframe.startsearchbutton:SetText(AS_START)
+            AS.mainframe.headerframe.startsearchbutton:SetWidth(100)
+            AS.mainframe.headerframe.startsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
+            AS.mainframe.headerframe.startsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe, "TOPLEFT", 17, -25)
+        -------------- SCRIPT ----------------
+            AS.mainframe.headerframe.startsearchbutton:SetScript("OnClick", function(self)
+                if AS.manualprompt then
+                    AS.manualprompt:Hide()
+                end
+                if AuctionFrame and AuctionFrame:IsVisible() then
+                    AuctionFrameTab1:Click()  -- Focus on search tab
+                    if AuctionFrameBrowse:IsVisible() then
+                        
                         if not IsShiftKeyDown() then
                             AScurrentauctionsnatchitem = 1
                         end
@@ -169,112 +142,102 @@ function AScreatemainframe()
                         return
                     end
                 end
-            end
-            ASprint("The Auction window is not visible.")
-        end)
-    AS.mainframe.headerframe.startsearchbutton:SetScript("OnEnter",
-        function(self)
-            tooltip="Start the search from the top of your list (You can hold 'shift' to continue where you left off from last scan)"
-            ASshowtooltip( AS.mainframe.headerframe.startsearchbutton,tooltip)
-        end)
-    AS.mainframe.headerframe.startsearchbutton:SetScript("OnLeave",
-        function(self)
-            AShidetooltip()
-        end)
-    F.Reskin(AS.mainframe.headerframe.startsearchbutton) -- Aurora
+                ASprint(MSG_C.ERROR.."Auction window is not visible")
+            end)
+            AS.mainframe.headerframe.startsearchbutton:SetScript("OnEnter", function(self)
+                tooltip="Start the search from the top of your list (You can hold 'shift' to continue where you left off from last scan)"
+                ASshowtooltip( AS.mainframe.headerframe.startsearchbutton,tooltip)
+            end)
+            AS.mainframe.headerframe.startsearchbutton:SetScript("OnLeave", function(self)
+                AShidetooltip()
+            end)
 
------- STOP BUTTON
-    -------------- STYLE ----------------
-    AS.mainframe.headerframe.stopsearchbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelButtonTemplate")
-    AS.mainframe.headerframe.stopsearchbutton:SetText(AS_STOP)
-    AS.mainframe.headerframe.stopsearchbutton:SetWidth(50)
-    AS.mainframe.headerframe.stopsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
-    AS.mainframe.headerframe.stopsearchbutton:Disable()
-    AS.mainframe.headerframe.stopsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe.startsearchbutton,"TOPRIGHT", 2, 0)
-    -------------- SCRIPT ----------------
-    AS.mainframe.headerframe.stopsearchbutton:SetScript("OnClick", function(self)
-        if AS.mainframe then
+            F.Reskin(AS.mainframe.headerframe.startsearchbutton) -- Aurora
+
+    ------ STOP BUTTON
+        -------------- STYLE ----------------
+            AS.mainframe.headerframe.stopsearchbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelButtonTemplate")
+            AS.mainframe.headerframe.stopsearchbutton:SetText(AS_STOP)
+            AS.mainframe.headerframe.stopsearchbutton:SetWidth(50)
+            AS.mainframe.headerframe.stopsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
             AS.mainframe.headerframe.stopsearchbutton:Disable()
-            AS.prompt:Hide()
-            AScurrentahresult = 0
-        else
-            ASprint("|c00ff0000error.  |r.  mainframe not found.")  --happens sometimes, not sure why
-            AS.prompt:Hide()
-        end
-        AS.status = nil
-        --ASprint("The Auction window is not visible.")
-    end)
-    AS.mainframe.headerframe.stopsearchbutton:SetScript("OnEnter", function(self)
-        tooltip = "Stop the current search. It can be resumed by shift-clicking Start Search."
-        ASshowtooltip(AS.mainframe.headerframe.stopsearchbutton,tooltip)
-    end)
-    AS.mainframe.headerframe.stopsearchbutton:SetScript("OnLeave", function(self)
-        AShidetooltip()
-    end)
-    F.Reskin(AS.mainframe.headerframe.stopsearchbutton) -- Aurora
+            AS.mainframe.headerframe.stopsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe.startsearchbutton,"TOPRIGHT", 2, 0)
+        -------------- SCRIPT ----------------
+            AS.mainframe.headerframe.stopsearchbutton:SetScript("OnClick", function(self)
+                AS.mainframe.headerframe.stopsearchbutton:Disable()
+                
+                AS.prompt:Hide()
+                AScurrentahresult = 0
+                AS.status = nil
+                AS.status_override = nil
+            end)
+            AS.mainframe.headerframe.stopsearchbutton:SetScript("OnEnter", function(self)
+                tooltip = "Stop the current search. It can be resumed by shift-clicking Start Search."
+                ASshowtooltip(AS.mainframe.headerframe.stopsearchbutton, tooltip)
+            end)
+            AS.mainframe.headerframe.stopsearchbutton:SetScript("OnLeave", function(self)
+                AShidetooltip()
+            end)
 
-------------------------------------------------------------
------- AUTOSTART CHECK BUTTON
-    -------------- STYLE ----------------
-    AS.mainframe.headerframe.autostart = CreateFrame("CheckButton", "ASautostartbutton", AS.mainframe.headerframe, "OptionsCheckButtonTemplate")
-    AS.mainframe.headerframe.autostart:SetPoint("TOPLEFT", AS.mainframe.headerframe.startsearchbutton, "BOTTOMLEFT", -4, -2)
-    -------------- SCRIPT ----------------
-    AS.mainframe.headerframe.autostart:SetScript("OnClick",
-    function(self)
-        if AS.mainframe.headerframe.autostart:GetChecked() then
-            ASautostart = true
-        else
-            ASautostart = false
-        end
-        AS_SavedVariables()
-    end)
-    AS.mainframe.headerframe.autostart:SetScript("OnEnter",
-    function(self)
-        ASshowtooltip(self,AS_SEARCHTEXT)
-    end)
-    AS.mainframe.headerframe.autostart:SetScript("OnLeave",
-    function(self)
-        AShidetooltip()
-    end)
+            F.Reskin(AS.mainframe.headerframe.stopsearchbutton) -- Aurora
 
-    getglobal(AS.mainframe.headerframe.autostart:GetName().."Text"):SetText(AS_AUTOSEARCH);
-    F.ReskinCheck(AS.mainframe.headerframe.autostart) -- Aurora
+    ------ AUTOSTART CHECK BUTTON
+        -------------- STYLE ----------------
+            AS.mainframe.headerframe.autostart = CreateFrame("CheckButton", "ASautostartbutton", AS.mainframe.headerframe, "OptionsCheckButtonTemplate")
+            AS.mainframe.headerframe.autostart:SetPoint("TOPLEFT", AS.mainframe.headerframe.startsearchbutton, "BOTTOMLEFT", -4, -2)
+            _G[AS.mainframe.headerframe.autostart:GetName().."Text"]:SetText(AS_AUTOSEARCH)
+        -------------- SCRIPT ----------------
+            AS.mainframe.headerframe.autostart:SetScript("OnClick", function(self)
+                if AS.mainframe.headerframe.autostart:GetChecked() then
+                    ASautostart = true
+                else
+                    ASautostart = false
+                end
+                AS_SavedVariables()
+            end)
+            AS.mainframe.headerframe.autostart:SetScript("OnEnter", function(self)
+                ASshowtooltip(self,AS_SEARCHTEXT)
+            end)
+            AS.mainframe.headerframe.autostart:SetScript("OnLeave", function(self)
+                AShidetooltip()
+            end)
 
------- AUTOOPEN CHECK BUTTON
-    -------------- STYLE ----------------
-    AS.mainframe.headerframe.autoopen = CreateFrame("CheckButton", "ASautoopenbutton", AS.mainframe.headerframe, "OptionsCheckButtonTemplate")
-    AS.mainframe.headerframe.autoopen:SetPoint("TOPLEFT", AS.mainframe.headerframe.autostart, "TOPRIGHT", 90, 0)
-    -------------- SCRIPT ----------------
-    AS.mainframe.headerframe.autoopen:SetScript("OnClick",
-    function(self)
-        if AS.mainframe.headerframe.autoopen:GetChecked() then
-            ASautoopen = true
-        else
-            ASautoopen = false
-        end
-        AS_SavedVariables()
-    end)
+            F.ReskinCheck(AS.mainframe.headerframe.autostart) -- Aurora
 
-    getglobal(AS.mainframe.headerframe.autoopen:GetName().."Text"):SetText(AS_AUTOOPEN);
-    F.ReskinCheck(AS.mainframe.headerframe.autoopen) -- Aurora
+    ------ AUTOOPEN CHECK BUTTON
+        -------------- STYLE ----------------
+            AS.mainframe.headerframe.autoopen = CreateFrame("CheckButton", "ASautoopenbutton", AS.mainframe.headerframe, "OptionsCheckButtonTemplate")
+            AS.mainframe.headerframe.autoopen:SetPoint("TOPLEFT", AS.mainframe.headerframe.autostart, "TOPRIGHT", 90, 0)
+            _G[AS.mainframe.headerframe.autoopen:GetName().."Text"]:SetText(AS_AUTOOPEN)
+        -------------- SCRIPT ----------------
+            AS.mainframe.headerframe.autoopen:SetScript("OnClick", function(self)
+                if AS.mainframe.headerframe.autoopen:GetChecked() then
+                    ASautoopen = true
+                else
+                    ASautoopen = false
+                end
+                AS_SavedVariables()
+            end)
 
-------------------------------------------------------------
------- INPUT SEARCH BOX
-    -------------- STYLE ----------------
-    AS.mainframe.headerframe.editbox = CreateFrame("EditBox", nil, AS.mainframe.headerframe, "InputBoxTemplate")
-    AS.mainframe.headerframe.editbox:SetPoint("BOTTOMLEFT", AS.mainframe.headerframe, "BOTTOMLEFT", 27, 15)
-    AS.mainframe.headerframe.editbox:SetHeight(AS_BUTTON_HEIGHT)
-    AS.mainframe.headerframe.editbox:SetWidth(AS.mainframe.headerframe:GetWidth()-76)
-    AS.mainframe.headerframe.editbox:SetAutoFocus(false)
-    AS.mainframe.headerframe.editbox:SetToplevel(true)
-    -------------- SCRIPT ----------------
-    AS.mainframe.headerframe.editbox:SetScript("OnEscapePressed", function(self)
-        AS.mainframe.headerframe.editbox:ClearFocus()
-    end)
-    AS.mainframe.headerframe.editbox:SetScript("OnEnterPressed", function(self)
-        AS.mainframe.headerframe.additembutton:Click()
-    end)
-    F.ReskinInput(AS.mainframe.headerframe.editbox) -- Aurora
+            F.ReskinCheck(AS.mainframe.headerframe.autoopen) -- Aurora
+
+    ------ INPUT SEARCH BOX
+        -------------- STYLE ----------------
+            AS.mainframe.headerframe.editbox = CreateFrame("EditBox", nil, AS.mainframe.headerframe, "InputBoxTemplate")
+            AS.mainframe.headerframe.editbox:SetPoint("BOTTOMLEFT", AS.mainframe.headerframe, "BOTTOMLEFT", 27, 15)
+            AS.mainframe.headerframe.editbox:SetHeight(AS_BUTTON_HEIGHT)
+            AS.mainframe.headerframe.editbox:SetWidth(AS.mainframe.headerframe:GetWidth()-76)
+            AS.mainframe.headerframe.editbox:SetAutoFocus(false)
+            AS.mainframe.headerframe.editbox:SetToplevel(true)
+        -------------- SCRIPT ----------------
+            AS.mainframe.headerframe.editbox:SetScript("OnEscapePressed", function(self)
+                AS.mainframe.headerframe.editbox:ClearFocus()
+            end)
+            AS.mainframe.headerframe.editbox:SetScript("OnEnterPressed", function(self)
+                AS.mainframe.headerframe.additembutton:Click()
+            end)
+
+            F.ReskinInput(AS.mainframe.headerframe.editbox) -- Aurora
 
     ------ ADD ITEM BUTTON
         -------------- STYLE ----------------
@@ -334,7 +297,6 @@ function AScreatemainframe()
             end)
 
     AScreateoptionframe()
-
 end
 
 function AScreateoptionframe(self)
@@ -344,8 +306,8 @@ function AScreateoptionframe(self)
             AS.optionframe = CreateFrame("Frame", "ASoptionframe", UIParent)
             AS.optionframe:SetHeight((AS_BUTTON_HEIGHT* 5) + (AS_FRAMEWHITESPACE * 2))  --5 buttons
             AS.optionframe:SetWidth(200)
-            AS.optionframe:SetBackdrop({    bgFile = C.media.backdrop,
-                                            edgeFile = C.media.backdrop,--"Interface/Tooltips/UI-Tooltip-Border",
+            AS.optionframe:SetBackdrop({    bgFile = C.media.backdrop, -- Aurora
+                                            edgeFile = C.media.backdrop, -- Aurora
                                             tile = true, tileSize = 32, edgeSize = 1,
                                             insets = { left = 0, right = 0, top = 0, bottom = 1}
             })
@@ -354,7 +316,7 @@ function AScreateoptionframe(self)
             AS.optionframe:SetToplevel(true)
             AS.optionframe:EnableMouse(true)
         -------------- SCRIPT ----------------
-            AS.optionframe:SetScript("OnLeave", function(self)
+            AS.optionframe:SetScript("OnLeave", function(self) -- TODO: To review
                 --AS.optionframe:Hide()--bah doesnt work right
                 local x,y = GetCursorScaledPosition()
                 --ASprint("Cursor x,y="..x..","..y.."  Left, right, bottom, top="..AS.optionframe:GetLeft()..","..AS.optionframe:GetRight()..","..AS.optionframe:GetBottom()..","..AS.optionframe:GetTop())
@@ -371,8 +333,8 @@ function AScreateoptionframe(self)
             AS.optionframe.manualpricebutton:SetPoint("TOP", 0, -AS_FRAMEWHITESPACE)
             AS.optionframe.manualpricebutton:SetNormalFontObject("GameFontNormal")
             AS.optionframe.manualpricebutton:SetText("Modify manual price")
-            AS.optionframe.manualpricebutton:SetHighlightTexture(C.media.backdrop)
-            AS.optionframe.manualpricebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
+            AS.optionframe.manualpricebutton:SetHighlightTexture(C.media.backdrop) -- Aurora
+            AS.optionframe.manualpricebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
             AS.optionframe.manualpricebutton:SetFrameStrata("TOOLTIP")
         -------------- SCRIPT ----------------
             AS.optionframe.manualpricebutton:SetScript("OnClick", function(self)
@@ -387,8 +349,8 @@ function AScreateoptionframe(self)
             AS.optionframe.resetignorebutton:SetPoint("TOP", AS.optionframe.manualpricebutton, "BOTTOM")
             AS.optionframe.resetignorebutton:SetNormalFontObject("GameFontNormal")
             AS.optionframe.resetignorebutton:SetText("Erase Ignore Conditions")
-            AS.optionframe.resetignorebutton:SetHighlightTexture(C.media.backdrop)
-            AS.optionframe.resetignorebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
+            AS.optionframe.resetignorebutton:SetHighlightTexture(C.media.backdrop) -- Aurora
+            AS.optionframe.resetignorebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
         -------------- SCRIPT ----------------
             AS.optionframe.resetignorebutton:SetScript("OnClick", function(self)
                 ASresetignore(self)
@@ -402,8 +364,8 @@ function AScreateoptionframe(self)
             AS.optionframe.movetotopbutton:SetPoint("TOP", AS.optionframe.resetignorebutton,"BOTTOM")
             AS.optionframe.movetotopbutton:SetNormalFontObject("GameFontNormal")
             AS.optionframe.movetotopbutton:SetText("Move to top")
-            AS.optionframe.movetotopbutton:SetHighlightTexture(C.media.backdrop)
-            AS.optionframe.movetotopbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
+            AS.optionframe.movetotopbutton:SetHighlightTexture(C.media.backdrop) -- Aurora
+            AS.optionframe.movetotopbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
         -------------- SCRIPT ----------------
             AS.optionframe.movetotopbutton:SetScript("OnClick", function(self)
                 local listnum = ASbuttontolistnum(self)
@@ -418,8 +380,8 @@ function AScreateoptionframe(self)
             AS.optionframe.movetobottombutton:SetPoint("TOP",ASoptionframe.movetotopbutton,"BOTTOM")
             AS.optionframe.movetobottombutton:SetNormalFontObject("GameFontNormal")
             AS.optionframe.movetobottombutton:SetText("Move to bottom")
-            AS.optionframe.movetobottombutton:SetHighlightTexture(C.media.backdrop)
-            AS.optionframe.movetobottombutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
+            AS.optionframe.movetobottombutton:SetHighlightTexture(C.media.backdrop) -- Aurora
+            AS.optionframe.movetobottombutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
         -------------- SCRIPT ----------------
             AS.optionframe.movetobottombutton:SetScript("OnClick", function(self)
                 local listnum = ASbuttontolistnum(self)
@@ -434,8 +396,8 @@ function AScreateoptionframe(self)
             AS.optionframe.deleterowbutton:SetPoint("TOP", AS.optionframe.movetobottombutton, "BOTTOM")
             AS.optionframe.deleterowbutton:SetNormalFontObject("GameFontNormal")
             AS.optionframe.deleterowbutton:SetText(AS_BUTTONDELETE)
-            AS.optionframe.deleterowbutton:SetHighlightTexture(C.media.backdrop)
-            AS.optionframe.deleterowbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2)
+            AS.optionframe.deleterowbutton:SetHighlightTexture(C.media.backdrop) -- Aurora
+            AS.optionframe.deleterowbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
         -------------- SCRIPT ----------------
             AS.optionframe.deleterowbutton:SetScript("OnClick", function(self)
                 ASdeleterow(self)
@@ -461,7 +423,6 @@ function ASresetpriceignore(self) -- manual price menu option
     local listnum = ASbuttontolistnum(self)
 
     if listnum then
-        ASprint("|c00449955 reset manual price for "..listnum)
         AScreatemanualprompt(AS.item[listnum], listnum)
         AS.optionframe:Hide()
     end
@@ -502,7 +463,7 @@ function AScreatemanualprompt(item, listnumber)
 
     if AS.manualprompt == nil then
 
-                ASprint("|c004499FFCreating manual prompt frame")
+        ASprint("|c004499FFCreating manual prompt frame")
 
         ------ MANUAL PROMPT FRAME
             -------------- STYLE ----------------
@@ -595,7 +556,7 @@ function AScreatemanualprompt(item, listnumber)
 
         ------ CUTOFF PRICE
             -------------- STYLE ----------------
-                AS.manualprompt.lowerstring = AS.manualprompt:CreateFontString(nil, "OVERLAY","gamefontnormal")
+                AS.manualprompt.lowerstring = AS.manualprompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")
                 AS.manualprompt.lowerstring:SetJustifyH("Left")
                 AS.manualprompt.lowerstring:SetJustifyV("Top")
                 AS.manualprompt.lowerstring:SetWidth(AS.manualprompt:GetWidth() - (2*AS_FRAMEWHITESPACE))
@@ -628,7 +589,7 @@ function AScreatemanualprompt(item, listnumber)
                 AS.manualprompt.savebutton:SetText(AS_BUTTONEXPENSIVE)
                 AS.manualprompt.savebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
                 AS.manualprompt.savebutton:SetHeight(AS_BUTTON_HEIGHT)
-                AS.manualprompt.savebutton:SetPoint("BOTTOMRIGHT",AS.manualprompt,"BOTTOMRIGHT",-18,12)
+                AS.manualprompt.savebutton:SetPoint("BOTTOMRIGHT", AS.manualprompt, "BOTTOMRIGHT", -18, 12)
             -------------- SCRIPT ----------------
                 AS.manualprompt.savebutton:SetScript("OnClick", function(self)
                     AS[AS_BUTTONEXPENSIVE]()
@@ -686,6 +647,7 @@ function AScreatemanualprompt(item, listnumber)
                 AS.manualprompt.priceoverride:SetScript("OnLeave", function(self)
                     AShidetooltip()
                 end)
+
                 F.ReskinInput(AS.manualprompt.priceoverride) -- Aurora
     end
 
@@ -711,24 +673,9 @@ function AScreatemanualprompt(item, listnumber)
 end
 
 function AScreateprompt()
-
-   --i want eight options
-   --buyout.  grey when no buyout
-   --bid.
-   --skip self one
-   --skip all, go to next query
-   --ignore all of self particular name
-   --ignore all of this item at this price (or worse)
-   --this is the item we want.  update the name, and add an icon
-   --close
-   --(and maybe a global 'ignore item' - not specific to any query
-   --and a reset
-   --and a delete item
-
-   -------------------------------------------------------------------------------
-   --this is the prompt frame and its children
-   -------------------------------------------------------------------------------
-
+    -------------------------------------------------------------------------------
+    --this is the prompt frame and its children
+    -------------------------------------------------------------------------------
     ASprint("|c004499ffCreating prompt frame")
 
     ------ MANUAL PROMPT FRAME
@@ -975,12 +922,8 @@ function AScreateprompt()
         -------------- STYLE ----------------
             AS.prompt.lowerstring= AS.prompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")
             AS.prompt.lowerstring:SetJustifyH("CENTER")
-            --AS.prompt.lowerstring:SetJustifyV("TOP")
             AS.prompt.lowerstring:SetWidth(AS.prompt.separator:GetWidth() + AS.prompt.rseparator:GetWidth())
-            --AS.prompt.lowerstring:SetHeight(AS.prompt:GetHeight())
-            --AS.prompt:SetAllPoints()
             AS.prompt.lowerstring:SetPoint("TOP", AS.prompt[AS_BUTTONBID], "BOTTOMRIGHT", 1, -7)
-            --AS.prompt.lowerstring:SetPoint("bottomright",AS.prompt,"bottomright")
 
     ------ EXTRA BUTTONS
         AS_CreateButtonHandlers()

@@ -219,19 +219,23 @@ dropdown_labels = {
                 AS.elapsed = 0
 
                 if AS.status == STATE.QUERYING then
-                    ASprint(MSG_C.EVENT.."[ Start querying ]")
-                    AS_QueryAH()
-                elseif AS.status == STATE.WAITINGFORUPDATE then
-                    ASprint(MSG_C.EVENT.."[ Waiting for update event ]")
-                    
                     canQuery, canQueryAll = CanSendAuctionQuery("list")
                     if canQuery then
-                        ASprint(MSG_C.BOOL.."[ Server ready for query ]")
-                        AS.status = STATE.EVALUATING
+                        ASprint(MSG_C.EVENT.."[ Start querying ]")
+                        AS_QueryAH()
                     end
+                
+                elseif AS.status == STATE.WAITINGFORUPDATE then
+                    ASprint(MSG_C.EVENT.."[ Waiting for update event ]")
+                    AS.status = STATE.EVALUATING
+                
                 elseif AS.status == STATE.EVALUATING then
-                    ASprint(MSG_C.EVENT.."[ Start evaluating ]")
-                    ASevaluate()
+                    canQuery, canQueryAll = CanSendAuctionQuery("list")
+                    if canQuery then
+                        ASprint(MSG_C.EVENT.."[ Start evaluating ]")
+                        AS_Evaluate()
+                    end
+                
                 elseif AS.status == STATE.WAITINGFORPROMPT then
                     -- The prompt buttons will change the status accordingly
                 elseif AS.status == STATE.BUYING then
@@ -655,7 +659,7 @@ dropdown_labels = {
         end
 
         AS[AS_BUTTONNEXTAH] = function()  -- Go to next item in AH
-                ASprint(MSG_C.INFO.."Skipping item")
+                ASprint(MSG_C.INFO.."Skipping item...")
 
                 AS.prompt:Hide()
                 AS.status = STATE.EVALUATING
@@ -740,6 +744,7 @@ dropdown_labels = {
 
         AS[AS_BUTTONFILTERS] = function()  -- Open manualprompt filters
                 ASprint(MSG_C.EVENT.."Opening manual edit filters")
+                AS.mainframe.headerframe.stopsearchbutton:Click()
                 AS.prompt:Hide()
                 AS.optionframe.manualpricebutton:Click()
         end
@@ -884,6 +889,13 @@ dropdown_labels = {
                 BrowseResetButton:Click()
                 BrowseName:SetText(ASsanitize(AS.item[AScurrentauctionsnatchitem].name))
                 AuctionFrameBrowse_Search()
+
+                -- Sort auctions by buyout price, or minimum bid if there's no buyout price
+                SortAuctionSetSort("list", "minbidbuyout")
+                SortAuctionSetSort("list", "bid")
+                SortAuctionSetSort("list", "unitprice")
+                SortAuctionApplySort("list")
+
                 AScurrentahresult = 0
                 AS.status = STATE.WAITINGFORUPDATE
                 return true
@@ -898,65 +910,47 @@ dropdown_labels = {
         return false
     end
 
-    function ASevaluate()
-        local batch,total
-        local name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner
-        local messagestring,cutoffprice
+    -- STATE.EVALUATING
+    function AS_Evaluate()
+        local messagestring
         local showprompt
-        local bid, buyout, cutoffprice, budget, priceperitembid, priceperitembuyout
+        local budget, priceperitembid, priceperitembuyout
 
-        ASprint("|c000055ee Evaluate() reached")
-
-        batch,total = GetNumAuctionItems("list")
-        --ASprint("batch "..batch.." total "..total)
-        if AS.manualprompt:IsShown() then
+        if AS.manualprompt:IsVisible() then
             AS.manualprompt:Hide()
         end
 
-        SortAuctionSetSort("list", "minbidbuyout")
-        SortAuctionApplySort("list")
-        local criterion, reverse = GetAuctionSort("list", 1)
-        ASprint("Criterion: "..tostring(criterion).." reversed? "..tostring(reverse))
+        local batch, total = GetNumAuctionItems("list")
 
-        while(true) do
-            AScurrentahresult=AScurrentahresult+1  --next!!
-             --reset stuff
+        while true do
+            
+            AScurrentahresult = AScurrentahresult + 1  --next!!
+
+            if AS_IsEndPage(total) then
+                ASprint(MSG_C.EVENT.."End of page reached")
+                return false
+            elseif AS_IsEndResults(batch, total) then
+                ASprint(MSG_C.EVENT.."End of AH results: "..total)
+                return false
+            end
+
             --processing-wise, this here is a very expensive hit
             --so i'm only gonna do it (and similar stuff) here, ONCE, and pass everything in as parametners
-            name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, highBidderFullName, owner, ownerFullName, saleStatus, itemId, hasAllInfo = GetAuctionItemInfo("list",AScurrentahresult);
-            --name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner=GetAuctionItemInfo("list",AScurrentahresult);
-            --ASprint("INDEX: "..tostring(AScurrentahresult).."Name: "..tostring(name).." Count: "..tostring(count).." buyoutPrice: "..tostring(buyoutPrice).." minbid: "..tostring(minBid).." ownertest: "..tostring(ownerFullName).." owner: "..tostring(owner).." all info? "..tostring(hasAllInfo))
+            local name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, highBidderFullName, owner, ownerFullName, saleStatus, itemId, hasAllInfo = GetAuctionItemInfo("list", AScurrentahresult)
 
-
-
-
-            if (ASisendofpage(total)) then
-                ASprint("End of listing for: "..tostring(name))
-                return false
-            end
-            if(ASisendoflist(batch,total)) then
-                ASprint("End of batch: "..tostring(batch).."-"..tostring(total))
+            if not buyoutPrice and ASignorenobuyout then
                 return false
             end
 
-            if (ASisdoublequery(name)) then
-                ASprint("Double query: "..tostring(name))
-                return false
-            end
-
-            if(tonumber(buyoutPrice) == 0) and (ASignorenobuyout) then
-                return false
-            end
-
-            cutoffprice = ASgetcutoffprice(name,quality,count)
-            --ASprint("|c0000aaff ASgetcutoffprice end.  Cutoff returned? = "..tostring(cutoffprice))
+            local cutoffprice = ASgetcutoffprice(name, quality, count)
 
             showprompt = ASisshowprompt(cutoffprice,name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner,batch,total)
 
             if showprompt then
                 showprompt = false
+                
                 if ASnodoorbell then
-                   ASprint("attempting to play sound file.")
+                   ASprint(MSG_C.DEBUG.."Attempting to play sound file")
                    PlaySoundFile("Interface\\Addons\\auctionsnatch\\Sounds\\DoorBell.mp3")
                 end
 
@@ -973,90 +967,50 @@ dropdown_labels = {
                 ASprint("Im through the good ol |c00eeaaff Messagestring |r :(")
                 AS.prompt.lowerstring:SetText(messagestring)
 
-                --[[if (AS.item[AScurrentauctionsnatchitem].priceoverride) then
-                    if(ASsavedtable and ASsavedtable.copperoverride) then
-                        AS.prompt.priceoverride:SetText(AS.item[AScurrentauctionsnatchitem].priceoverride)
-                    else
-                        AS.prompt.priceoverride:SetText(AS.item[AScurrentauctionsnatchitem].priceoverride / COPPER_PER_GOLD)
-                    end
-                else
-                    AS.prompt.priceoverride:SetText("")
-                end]]
                 SetSelectedAuctionItem("list", AScurrentahresult)
 
-                AS.status=STATE.WAITINGFORPROMPT
+                AS.status = STATE.WAITINGFORPROMPT
                 AS.prompt:Show()
-                return true --exit
-             end
-       end --end loop
-
-       return false  --will never happen, but, /shrug
-    end
-
-
-function ASisdoublequery(name)
-    if not ((strfind(strlower(name),strlower(AS.item[AScurrentauctionsnatchitem].name))) or (name == AS.item[AScurrentauctionsnatchitem].name )) then
-      --[[there is a bug here.  The prompt shows the last window from the last query.  heres how it happens i think:
-      Bid on last item in ah.
-      check if its the end - it is.  go to next query.
-      send query - wait for update.
-      Update happens, either from the bid being accepted or query completing!
-      Bid accepted, status set to evaluating, This line called - but the old info from the old query is still returned!
-
-      The fix - save the old one, compare it to the new, make sure they dont match if querys are new?
-      --no, because what if they put the same name in twice in the list
-      --after a bid, do nothing until we get an update.  THEN check if its the end, and go to the next query.
-      --edit:still doesnt work!  we're gonna have to disallow double queries
-      ]]
-        ASprint("|c00ff0000ERROR. |c0000ff00"..strlower(AS.item[AScurrentauctionsnatchitem].name).."|c00ff0000 not found in |c0000ff00"..strlower(name).."|r.  Status set to re query.")
-        ASprint("Strfind result = "..tostring(strfind(strlower(name),strlower(AS.item[AScurrentauctionsnatchitem].name))))
-        AScurrentahresult=0
-        --AS.status = WAITINGFORUPDATE --?
-        AS.status=STATE.QUERYING
-        return true
-    end
-    return false
-end
-function ASisendofpage(total)
-    --stop at the end of page and wait for.. something
-      if(AScurrentahresult > 50 and total > 50) then
-
-         ASprint("currentahresult > 50 (end of page).    page="..AuctionFrameBrowse.page..".  Calling  AuctionFrameBrowse_Search()")
-
-        --BrowseNextPageButton:Click()  --go to the next page --doesnt work for some reason
-
-         --  so hack into the blizzard ui code to go to the next page
-
-         AuctionFrameBrowse.page = AuctionFrameBrowse.page + 1;
-         AuctionFrameBrowse_Search();
-
-
-         AScurrentahresult=0
-         AS.status = STATE.WAITINGFORUPDATE
-         ASprint("Waiting for update")
-         return true
-      end
-      return false
-end
-
-function ASisendoflist(batch,total)
-    if (AScurrentahresult > batch or total < 1) then
-         -- end of ah results.  reset and go to next query.
-         ASprint(AScurrentahresult.."|c00eeaa00 = Current result > batch = "..batch.." (or total < 1).  Going to next query after:"..AScurrentauctionsnatchitem)
-         AScurrentahresult=0
-
-         if AS.status_override then -- Single item search, when right clicking button
-            AS.mainframe.headerframe.stopsearchbutton:Disable()
-            AS.status = nil
-            AS.status_override = nil
-        else
-            AScurrentauctionsnatchitem=AScurrentauctionsnatchitem+1
-            AS.status=STATE.QUERYING
+                return true
+            end
         end
-        return true
-      end
-      return false
-end
+    end
+
+    function AS_IsEndPage(total)
+        -- Stop at the end of page and wait for server to accept a new query
+        -- First AuctionFrameBrowse.page = 0
+        if AScurrentahresult > 50 and total > ((AuctionFrameBrowse.page + 1) * 50) then
+            ASprint(MSG_C.INFO.."Current page: "..AuctionFrameBrowse.page.." Current result: "..tostring((AuctionFrameBrowse.page + 1) * 50).."/"..total)
+            
+            -- BrowseNextPageButton:Click() doesnt work for some reason
+            -- so hack into the blizzard ui code to go to the next page
+            AuctionFrameBrowse.page = AuctionFrameBrowse.page + 1
+            AuctionFrameBrowse_Search()
+
+            AScurrentahresult = 0
+            AS.status = STATE.WAITINGFORUPDATE
+            return true
+        end
+        return false
+    end
+
+    function AS_IsEndResults(batch, total)
+        -- End of AH results. Reset and go to the next query
+        if not total or AScurrentahresult > batch then
+
+            if AS.status_override then -- Single item search, when right clicking button
+                AS.mainframe.headerframe.stopsearchbutton:Click()
+                AS.status = nil
+                AS.status_override = nil
+            else
+                AScurrentauctionsnatchitem = AScurrentauctionsnatchitem + 1
+                AS.status = STATE.QUERYING
+            end
+            AScurrentahresult = 0
+            return true
+        end
+        return false
+    end
 
 function ASisshowprompt(cutoffprice,name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner, batch, total)
     --do all the primary conditionals here
@@ -1277,26 +1231,7 @@ function AScreatemessagestring(cutoffprice, name, texture, count, quality, canUs
 
 
       messagestring=""
---[[
---check if a buyout is available
-    if (AS.prompt[AS_BUTTONBUYOUT]:IsEnabled() == 1) then
-       ASprint("button "..AS_BUTTONBUYOUT.." is enabled")
-        messagestring=messagestring.."\n\n"..ASGSC(buyout).." "..AS_BUYOUT
-        if(count>1) then
-             messagestring=messagestring.."\n("..ASGSC(peritembuyout).." "..AS_EACH..")"
-       end
-    else
-       ASprint("button "..AS_BUTTONBUYOUT.." is NOT enabled.  cutoff = "..tostring(cutoffprice))
-    end
 
-    if (not ASignorebid) then
-        --a bid should always be possible
-        messagestring=messagestring.. "\n"..ASGSC(bid).." "..AS_BID
-        if(count>1) then
-           messagestring=messagestring.."\n            ("..ASGSC(peritembid).." "..AS_EACH..")"
-    --             lines=lines+1
-        end
-    end]]
 
     if (cutoffprice and tonumber(cutoffprice) > 0) then
 
@@ -1341,14 +1276,14 @@ function ASgetcost(listing,count, minBid, minIncrement, buyoutPrice, bidAmount)
    buyout=buyoutPrice
    peritembid = math.floor(bid/count)
    peritembuyout = math.floor(buyout/count)
-   --[[
+
    ASprint("|c00ff00aa---------------------------math.floor testing-------------------------")
    ASprint("|c00ff00aa ASGSC(buyout) = "..ASGSC(buyout))
    ASprint("|c00ff00aa buyout = "..buyout)
    ASprint("|c00ff00aa count = "..count)
    ASprint("|c00ff00aa  buyout/count = "..buyout/count)
    ASprint("|c00ff00aa  floor(buyout/count) = "..math.floor(buyout/count))
-   ]]
+
    return bid,buyout,peritembid,peritembuyout
 end
 
