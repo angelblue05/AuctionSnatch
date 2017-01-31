@@ -29,7 +29,7 @@ function AScreatemainframe()
             end)
             AS.mainframe:SetScript("OnMouseUp", function(self)
                 AS.mainframe:StopMovingOrSizing()
-                ASsavevariables()
+                AS_SavedVariables()
             end)
             AS.mainframe:SetScript("OnShow", function(self)
                 ASbringtotop()
@@ -98,9 +98,9 @@ function AScreatemainframe()
       -- make sure frame.ScrollFrameUpdate defined early -- and be prepared for
       -- that function to run before the scrollframe has any real data
     F.ReskinScroll(AS.mainframe.listframe.scrollFrame.ScrollBar)
-    AS.mainframe.listframe.scrollFrame:SetScript("OnShow",ASscrollbar_Update)
+    AS.mainframe.listframe.scrollFrame:SetScript("OnShow",AS_ScrollbarUpdate)
     AS.mainframe.listframe.scrollFrame:SetScript("OnVerticalScroll",function(self,offset)
-        FauxScrollFrame_OnVerticalScroll(self,offset,20,ASscrollbar_Update)
+        FauxScrollFrame_OnVerticalScroll(self,offset,20,AS_ScrollbarUpdate)
     end)
 
    -- create background frame to contain list
@@ -226,7 +226,7 @@ function AScreatemainframe()
         else
             ASautostart = false
         end
-        ASsavevariables()
+        AS_SavedVariables()
     end)
     AS.mainframe.headerframe.autostart:SetScript("OnEnter",
     function(self)
@@ -252,7 +252,7 @@ function AScreatemainframe()
         else
             ASautoopen = false
         end
-        ASsavevariables()
+        AS_SavedVariables()
     end)
 
     getglobal(AS.mainframe.headerframe.autoopen:GetName().."Text"):SetText(AS_AUTOOPEN);
@@ -284,7 +284,7 @@ function AScreatemainframe()
             AS.mainframe.headerframe.additembutton:SetHeight(AS_BUTTON_HEIGHT)
             AS.mainframe.headerframe.additembutton:SetPoint("TOPLEFT", AS.mainframe.headerframe.editbox, "TOPRIGHT", 2, 0)
         -------------- SCRIPT ----------------
-            AS.mainframe.headerframe.additembutton:SetScript("OnClick", ASadditem)
+            AS.mainframe.headerframe.additembutton:SetScript("OnClick", AS_AddItem)
             
             F.Reskin(AS.mainframe.headerframe.additembutton) -- Aurora
 
@@ -300,7 +300,7 @@ function AScreatemainframe()
                 if IsControlKeyDown() then
                     local x
                     AS.item = {}
-                    ASscrollbar_Update()
+                    AS_ScrollbarUpdate()
                 end
             end)
             AS.mainframe.headerframe.deletelistbutton:SetScript("OnEnter", function(self)
@@ -407,7 +407,7 @@ function AScreateoptionframe(self)
         -------------- SCRIPT ----------------
             AS.optionframe.movetotopbutton:SetScript("OnClick", function(self)
                 local listnum = ASbuttontolistnum(self)
-                ASmovelistbutton(listnum, 1)
+                AS_MoveListButton(listnum, 1)
             end)
 
     ------ MOVE ENTRY TO BOTTOM
@@ -423,7 +423,7 @@ function AScreateoptionframe(self)
         -------------- SCRIPT ----------------
             AS.optionframe.movetobottombutton:SetScript("OnClick", function(self)
                 local listnum = ASbuttontolistnum(self)
-                ASmovelistbutton(listnum, table.maxn(AS.item))
+                AS_MoveListButton(listnum, table.maxn(AS.item))
             end)
 
     ------ DELETE ENTRY
@@ -452,7 +452,7 @@ function ASresetignore(self)
         AS.item[listnum].ignoretable = nil
         AS.item[listnum].priceoverride = nil
         AS.optionframe:Hide()
-        ASsavevariables()
+        AS_SavedVariables()
     end
 end
 
@@ -476,10 +476,11 @@ function ASdeleterow(self)
             ASprint("|c00ff0000 error.  |ritem.[buttonnumber]name "..listnum.." doesn't exist.")
         end
         table.remove(AS.item, listnum)
-        ASscrollbar_Update()
+        AS_ScrollbarUpdate()
     end
     AS.optionframe:Hide()
-    ASscrollbar_Update() -- Necessary to remove empty gap
+    AS_ScrollbarUpdate() -- Necessary to remove empty gap
+    AS_SavedVariables()
 end
 
 
@@ -982,7 +983,7 @@ function AScreateprompt()
             --AS.prompt.lowerstring:SetPoint("bottomright",AS.prompt,"bottomright")
 
     ------ EXTRA BUTTONS
-        AScreatebuttonhandlers()
+        AS_CreateButtonHandlers()
 
         local buttonnames
         local buttontooltips = {AS_BUTTONTEXT9, AS_BUTTONTEXT4, AS_BUTTONTEXT1, AS_BUTTONTEXT11}
@@ -1095,8 +1096,8 @@ function AScreatelistbutton(i)
                 end
                 ASprint(MSG_C.ERROR.."Auction house is not visible")
             else
-                ASmovelistbutton(ASorignumber)
-                ASscrollbar_Update()
+                AS_MoveListButton(ASorignumber)
+                AS_ScrollbarUpdate()
             end
         end)
         buttontemplate:SetScript("OnEnter", function(self)

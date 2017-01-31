@@ -241,7 +241,6 @@ dropdown_labels = {
         end
     end
 
-
 --[[//////////////////////////////////////////////////
 
     MAIN FUNCTIONS
@@ -337,12 +336,12 @@ dropdown_labels = {
         local _, height = GameFontNormal:GetFont()
         local new_height = (height * 10) + ((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE)*6)  -- LINES, 5 BUTTONS + 1 togrow on
         
-        ASprint(MSG_C.INFO.."Font height: "..height)
-        ASprint(MSG_C.INFO.."New prompt height: "..new_height)
+        ASprint(MSG_C.DEBUG.."Font height: "..height)
+        ASprint(MSG_C.DEBUG.."New prompt height: "..new_height)
         AS.prompt:SetHeight(new_height)
 
         -- Generate scroll bar items
-        ASscrollbar_Update()
+        AS_ScrollbarUpdate()
     end
 
     function AS_Main(input)
@@ -421,420 +420,578 @@ dropdown_labels = {
         --ASbringtotop() -- TODO: Is it really needed?
     end
 
----------------------------------------------------------------------------
+    function AS_SavedVariables()
+        local serverName = GetRealmName()
 
-function ASdropDownMenu_Initialise(self, level)
-    --drop down menues can have sub menues. The value of level determines the drop down sub menu tier
-    local level = level or 1 
-    local serverName = GetRealmName()
+        ASprint(MSG_C.EVENT.."[ Saving changes ]")
 
-    if level == 1 then
-        local info = UIDropDownMenu_CreateInfo();
-        local key, value
+        if AS and AS.item then
+            if not ASsavedtable then
+                ASsavedtable={}
+                ASsavedtable.copperoverride = true
+            end
 
-        --- Profile/Server list
-        info.text = "Import list"
-        info.hasArrow = true
-        info.value = "Import"
-        UIDropDownMenu_AddButton(info,level)
+            ASsavedtable[serverName]={}
+            AS_tcopy(ASsavedtable[serverName], AS.item)
+        else
+            ASprint(MSG_C.ERROR.."Nothing found to save")
+        end
 
-        if ASsavedtable then
-            --- Copper override first
-            info.text = dropdown_labels["copperoverride"]
-            info.value = "copperoverride"
-            info.checked = ASsavedtable.copperoverride
+        if AS.mainframe then
+            -- check boxes
+            ASsavedtable[serverName].ASautostart = ASautostart
+            ASsavedtable[serverName].ASautoopen = ASautoopen
+            ASsavedtable[serverName].ASnodoorbell = ASnodoorbell
+            ASsavedtable[serverName].ASignorebid = ASignorebid
+            ASsavedtable[serverName].ASignorenobuyout = ASignorenobuyout
+        else
+            ASprint(MSG_C.ERROR.."Checkboxes not found to save")
+        end
+    end
+
+    function ASdropDownMenu_Initialise(self, level)
+        --drop down menues can have sub menues. The value of level determines the drop down sub menu tier
+        local level = level or 1 
+        local serverName = GetRealmName()
+
+        if level == 1 then
+            local info = UIDropDownMenu_CreateInfo();
+            local key, value
+
+            --- Profile/Server list
+            info.text = "Import list"
+            info.hasArrow = true
+            info.value = "Import"
+            UIDropDownMenu_AddButton(info,level)
+
+            if ASsavedtable then
+                --- Copper override first
+                info.text = dropdown_labels["copperoverride"]
+                info.value = "copperoverride"
+                info.checked = ASsavedtable.copperoverride
+                info.hasArrow = false
+                info.func =  ASdropDownMenuItem_OnClick
+                info.owner = self:GetParent()
+                UIDropDownMenu_AddButton(info,level)
+                --- Other settings
+                for key, value in pairs(ASsavedtable[serverName]) do
+                    if dropdown_labels[key] then -- options
+                        info.text = dropdown_labels[key]
+                        info.value = key
+                        if type(value) == "boolean" then
+                            info.checked = value
+                        end
+                        info.hasArrow = false
+                        info.func =  ASdropDownMenuItem_OnClick
+                        info.owner = self:GetParent()
+                        UIDropDownMenu_AddButton(info,level)
+                    end
+                end
+            end
+        elseif level == 2 and UIDROPDOWNMENU_MENU_VALUE == "Import" then
+            local info = UIDropDownMenu_CreateInfo();
+            local key, value
+
+            if ASsavedtable then
+                for key, value in pairs(ASsavedtable) do
+                    if not dropdown_labels[key] then -- Found a server
+
+                        info.text = key
+                        info.value = key
+                        if key == serverName then -- indicate which list is being used
+                            info.checked = true
+                        else
+                            info.checked = false
+                        end
+                        info.hasArrow = false
+                        info.func =  ASdropDownMenuItem_OnClick
+                        info.owner = self:GetParent()
+                        UIDropDownMenu_AddButton(info, level)
+                    end
+                end
+            end
+        else
+            local info = UIDropDownMenu_CreateInfo();
+            
+            info.text = AS_NODATA
+            info.value = nil
             info.hasArrow = false
-            info.func =  ASdropDownMenuItem_OnClick
             info.owner = self:GetParent()
             UIDropDownMenu_AddButton(info,level)
-            --- Other settings
-            for key, value in pairs(ASsavedtable[serverName]) do
-                if dropdown_labels[key] then -- options
-                    info.text = dropdown_labels[key]
-                    info.value = key
-                    if type(value) == "boolean" then
-                        info.checked = value
+        end
+    end
+
+    function ASdropDownMenuItem_OnClick(self)
+        -- this is where the actual importing takes place
+        local serverName = GetRealmName();
+        ASprint("self.value: "..tostring(self.value))
+
+        if self.value == "copperoverride" then
+            ASsavedtable.copperoverride = not ASsavedtable.copperoverride
+            return
+        elseif self.value == "ASnodoorbell" then
+            ASnodoorbell = not ASnodoorbell
+            AS_SavedVariables()
+            return
+        elseif self.value == "ASignorebid" then
+            ASignorebid = not ASignorebid
+            AS_SavedVariables()
+            return
+        elseif self.value == "ASignorenobuyout" then
+            ASignorenobuyout = not ASignorenobuyout
+            AS_SavedVariables()
+            return
+        end
+
+        if not (self.value == serverName) then  --dont import ourself
+          --table.insert doesnt work.. grrrrrr!!!
+            local index,temptable -- TODO: To be reviewed to may create more lists and just switch between them (per server).
+            for index,temptable in pairs(ASsavedtable[self.value]) do
+                if type(temptable) == "table" then
+                    if temptable["name"] then  --just some redundancy checking
+                        local tablecopy = {}
+                        AS_tcopy(tablecopy,temptable) -- this is an unfortunate and slow necessity because table.insert doesnt copy tables.
+                        table.insert(AS.item,tablecopy)
                     end
-                    info.hasArrow = false
-                    info.func =  ASdropDownMenuItem_OnClick
-                    info.owner = self:GetParent()
-                    UIDropDownMenu_AddButton(info,level)
                 end
             end
         end
-    elseif level == 2 and UIDROPDOWNMENU_MENU_VALUE == "Import" then
-        local info = UIDropDownMenu_CreateInfo();
-        local key, value
 
-        if ASsavedtable then
-            for key, value in pairs(ASsavedtable) do
-                if not dropdown_labels[key] then -- Found a server
+        AS_ScrollbarUpdate()
+    end
 
-                    info.text = key
-                    info.value = key
-                    if key == serverName then -- indicate which list is being used
-                        info.checked = true
-                    else
-                        info.checked = false
+--[[//////////////////////////////////////////////////
+
+    SECONDARY FUNCTIONS
+
+----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
+
+    function AS_ScrollbarUpdate()
+        -- This redraws all the buttons and make sure they're showing the right stuff
+        if not AS.item then
+            ASprint(MSG_C.ERROR.."AS.item is empty")
+            return false
+        end
+
+        AS.optionframe:Hide()
+
+        local ASnumberofitems = table.maxn(AS.item)
+        local currentscrollbarvalue = FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+
+        FauxScrollFrame_Update(AS.mainframe.listframe.scrollFrame, ASnumberofitems, ASrowsthatcanfit(), AS_BUTTON_HEIGHT)
+
+        local x, idx, link, hexcolor, itemRarity
+
+        for x = 1, ASrowsthatcanfit() do --apparently theres a bug here for some screen resolutions?
+            -- Get the appropriate item, which will be x + value
+            idx = x + currentscrollbarvalue
+
+            if AS.item[idx] and AS.item[idx].name then
+                hexcolor = ""
+
+                if AS.item[idx].icon then -- Set the item icon and link
+                    AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture(AS.item[idx].icon)
+                    AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+
+                    link = AS.item[idx].link
+                    AS.mainframe.listframe.itembutton[x].link = link
+                    if not AS.item[idx].rarity then --updated for 3.1 to include colors
+                        _, _, itemRarity = GetItemInfo(link)
+                        AS.item[idx].rarity = itemRarity
                     end
-                    info.hasArrow = false
-                    info.func =  ASdropDownMenuItem_OnClick
-                    info.owner = self:GetParent()
-                    UIDropDownMenu_AddButton(info, level)
-                end
-            end
-        end
-    else
-        local info = UIDropDownMenu_CreateInfo();
-        
-        info.text = AS_NODATA
-        info.value = nil
-        info.hasArrow = false
-        info.owner = self:GetParent()
-        UIDropDownMenu_AddButton(info,level)
-    end
-end
 
-function ASdropDownMenuItem_OnClick(self)
-    -- this is where the actual importing takes place
-    local serverName = GetRealmName();
-    ASprint("self.value: "..tostring(self.value))
-
-    if self.value == "copperoverride" then
-        ASsavedtable.copperoverride = not ASsavedtable.copperoverride
-        return
-    elseif self.value == "ASnodoorbell" then
-        ASnodoorbell = not ASnodoorbell
-        ASsavevariables()
-        return
-    elseif self.value == "ASignorebid" then
-        ASignorebid = not ASignorebid
-        ASsavevariables()
-        return
-    elseif self.value == "ASignorenobuyout" then
-        ASignorenobuyout = not ASignorenobuyout
-        ASsavevariables()
-        return
-    end
-
-    if not (self.value == serverName) then  --dont import ourself
-      --table.insert doesnt work.. grrrrrr!!!
-        local index,temptable -- TODO: To be reviewed to may create more lists and just switch between them (per server).
-        for index,temptable in pairs(ASsavedtable[self.value]) do
-            if type(temptable) == "table" then
-                if temptable["name"] then  --just some redundancy checking
-                    local tablecopy = {}
-                    AS_tcopy(tablecopy,temptable) -- this is an unfortunate and slow necessity because table.insert doesnt copy tables.
-                    table.insert(AS.item,tablecopy)
-                end
-            end
-        end
-    end
-
-    ASscrollbar_Update()
-end
-
-
-
-
---+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-function ASscrollbar_Update()
-   --this redraws all the buttons and make sure they're showing the right stuff.
-   --ASprint("printing sl.item at beginning of update.")
-   --ASprint(AS.item)
-   local offset = FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
-   local ASnumberofitems
-
-   if not (AS) then
-      ASprint("error.  AS not found in scrollbarupdate.")
-      return false
-   end
-   if not (AS.item) then
-      --      ASprint("error.  ASitem not found in scrollbarupdate.")
-      return false
-   end
-   if not (AS.mainframe) then
-      ASprint("error.  AS mainframe not found in scrollbarupdate.")
-      return false
-   end
-
-   --aight, so what do we have to do
-   AS.optionframe:Hide()  --weird bugs if you delete while scrolling
-
-   --get the objects we're working with
-   --local ASscrollbar = getglobal(AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBar")
-   --local ASscrollupbutton = getglobal(  AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBarScrollUpButton" );
-   --local ASscrolldownbutton = getglobal(  AS.mainframe.listframe.scrollbarframe:GetName().."ScrollBarScrollDownButton" );
-
-   ASnumberofitems = table.maxn(AS.item)
-   FauxScrollFrame_Update(AS.mainframe.listframe.scrollFrame, ASnumberofitems, ASrowsthatcanfit(), AS_BUTTON_HEIGHT)
-
-
-   --[[if ASnumberofitems < ASrowsthatcanfit() then
-      --disable the top and bottom buttons
-
-      ASscrollbar:SetMinMaxValues(0,0)
-      ASscrollupbutton:Disable()
-      ASscrolldownbutton:Disable()
-
-   else
-      --else enable them
-      --if a row was changed/added/removed we have to do this.  we can call it every time too, that will be fine
-      ASscrollbar:SetMinMaxValues(0,ASnumberofitems-ASrowsthatcanfit())  --i think this is the appropriate logic?
-      ASscrollupbutton:Enable()
-      ASscrolldownbutton:Enable()
-
-   end]]
-
-   --GetValue()
-   --value decides which rows to start showing.
-   --we show items value to value+getrowsthatcanfit()
-
-   local x,hexcolor,itemRarity
-   local ourbutton, currentscrollbarvalue
-
-   currentscrollbarvalue=offset
-
-
-   --ASprint("scrollbarvalue = "..currentscrollbarvalue.."  #of items="..ASnumberofitems)
-
-
-   if(AS) then
-      if (AS.item) then
-      for x=1,ASrowsthatcanfit() do --apparently theres a bug here for some screen resolutions
-        --get all buttons
-        --get the appropriate item, which will be x + value
-        if  (AS.item[x+currentscrollbarvalue] and AS.mainframe.listframe.itembutton[x]) then
-           if (AS.item[x+currentscrollbarvalue].name) then
-           --set the item link
-              --set the icon
-              hexcolor = ""
-
-              if (AS.item[x+currentscrollbarvalue].icon) then
-                 local icon=AS.item[x+currentscrollbarvalue].icon
-                 AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture(icon)
-                 --AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0,0.640625, 0,0.640625)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
-                 AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)
-
-                 --set the item link - if theres an icon, there must be a link
-                 local link=AS.item[x+currentscrollbarvalue].link
-                 AS.mainframe.listframe.itembutton[x].link = link
-                 if not (AS.item[x+currentscrollbarvalue].rarity) then --updated for 3.1 to include colors
-                    _, _, itemRarity, _,_,_,_,_,_,_ = GetItemInfo(link)
-                    AS.item[x+currentscrollbarvalue].rarity = itemRarity
-                 end
-                 --ASprint("|c0000eeccIcon was found, attempting to set rarity and get color")
-                 --ASprint("Rarity = "..tostring(AS.item[x+currentscrollbarvalue].rarity))
-                 if(AS.item[x+currentscrollbarvalue].rarity) then  --sometimes is still nil even after looking at the exact link  :(
-                    --ASprint("color = "..GetItemQualityColor(AS.item[x+currentscrollbarvalue].rarity))
-                    _,_,_,hexcolor = GetItemQualityColor(AS.item[x+currentscrollbarvalue].rarity)
+                    _,_,_,hexcolor = GetItemQualityColor(AS.item[idx].rarity)
                     hexcolor = "|c"..hexcolor
-                 end
-              else
-                 -- clear icon, link
-                 AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
-                    AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
-                 AS.mainframe.listframe.itembutton[x].link = nil
-                 AS.mainframe.listframe.itembutton[x].rarity = nil
+                else
+                    -- clear icon, link
+                    AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
+                    AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+                    AS.mainframe.listframe.itembutton[x].link = nil
+                    AS.mainframe.listframe.itembutton[x].rarity = nil
+                end
 
-              end
+                AS.mainframe.listframe.itembutton[x].leftstring:SetText(hexcolor..tostring(AS.item[idx].name))
+                AS.mainframe.listframe.itembutton[x]:Show()
 
-
-
-
-
-              AS.mainframe.listframe.itembutton[x].leftstring:SetText(hexcolor..tostring(AS.item[x+currentscrollbarvalue].name))
-              AS.mainframe.listframe.itembutton[x]:Show()
-              --AS.mainframe.listframe.itembutton[x].rightstring:SetText(tostring(x+currentscrollbarvalue))
-              --if we have a 'ignore' price  -- doesnt work because every item has lots of ignore prices, one for each different result
-    --        if( AS.item[x+currentscrollbarvalue].ignoretable) then
-                --AS.mainframe.listframe.itembutton[x].rightstring:SetText(AS.item[x+currentscrollbarvalue].ignoretable[name])
-              --end
-
-
-           else
-                 ASprint("|c00ff0000error.  |ritem exists but no name for "..x.. "  Scrollbarvalue ="..currentscrollbarvalue)
-                 AS.item[x+currentscrollbarvalue] = nil
-                 --ASscrollbar:SetValue(currentscrollbarvalue-1)
-                 --ASprint("printing AS.item")
-                 --ASprint(AS.item)
-                 --table.remove(AS.item,x+currentscrollbarvalue)
-                 --ASprint("removed item."..x+currentscrollbarvalue)
-                 if(x+currentscrollbarvalue == 1) then
-                    AS.item={}
-                 end
-
-           end
-        else
-           --ASprint("no .item.  index= "..x)
-           --if theres no item, then clear the text
-           AS.mainframe.listframe.itembutton[x].leftstring:SetText("")
-           -- clear icon, link
-           AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
-            AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)  --i have no idea how this manages to make the texture bigger, but hallelujah it does
-           AS.mainframe.listframe.itembutton[x].link = nil
-           --AS.mainframe.listframe.itembutton[x].rightstring:SetText("")
-           AS.mainframe.listframe.itembutton[x]:Hide()
-
+            else
+                --ASprint(MSG_C.DEBUG.."No item, hiding button: "..x)
+                AS.mainframe.listframe.itembutton[x]:Hide()
+            end
         end
-        --end loop
-     end
-      end
-   else
-      ASprint("self |c00ff0000should never be seen>")
-   end
-
-   ASsavevariables()
-
-end
-
-
-
-
--- STATE.QUERYING
-function AS_QueryAH()
-
-    if not AScurrentauctionsnatchitem then
-        AScurrentauctionsnatchitem = 1
     end
+
+    function AS_CreateButtonHandlers()
+        ------------------------------------------------------------------
+        --  Create all the script handlers for the buttons
+        ------------------------------------------------------------------
+        AS[AS_BUTTONBUYOUT] = function()  -- Buyout prompt item
+                local bid, buyout
+                _, buyout = ASgetcost(AScurrentahresult)
+                 selected_auction = GetSelectedAuctionItem("list")
+                 ASprint("Index: "..selected_auction)
+                 --ASprint("should buy index: "..selected_auction)
+                 --ASprint("Buyout: "..buyout.." index: "..AScurrentahresult)
+                 PlaceAuctionBid("list",selected_auction,buyout)  --the actual buying call.  Requires a hardware event?
+                 --the next item will be the same location as what was just bought, so no need to increment
+                 AScurrentahresult = AScurrentahresult - 1
+                 ASprint("result index: "..AScurrentahresult)
+                 AS.prompt:Hide()
+                 AS.status = STATE.BUYING
+        end
+
+        AS[AS_BUTTONBID] = function() -- Bid prompt item
+
+                ASprint("AS.bid called.  current ah result="..tostring(AScurrentahresult))
+                selected_auction = GetSelectedAuctionItem("list")
+                 local bid,buyout
+                 bid,_=ASgetcost(selected_auction)
+
+                 PlaceAuctionBid("list",selected_auction,bid)  --the actual buying call.  Requires a hardware event?
+
+
+                 --AS.status=EVALUATING --OMG here's the bug.  why would this be different from the buying button???!?!?!?   im dumb?
+                 AS.prompt:Hide()
+                 AS.status=STATE.BUYING
+        end
+
+        AS[AS_BUTTONNEXTAH] = function()  -- Go to next item in AH
+                ASprint(MSG_C.INFO.."Skipping item")
+
+                AS.prompt:Hide()
+                AS.status = STATE.EVALUATING
+        end
+
+        AS[AS_BUTTONNEXTLIST] = function()  -- Go to next item in snatch list
+                AScurrentauctionsnatchitem = AScurrentauctionsnatchitem + 1
+                AScurrentahresult = 0
+                AS.prompt:Hide()
+                AS.status = STATE.QUERYING
+        end
+
+        AS[AS_BUTTONIGNORE] = function()  -- Ignore this item by setting cutoffprice to 0
+                local name = AS.item["ASmanualedit"].name
+                local listnumber = AS.item['ASmanualedit'].listnumber
+                
+                if not AS.item[listnumber].ignoretable then
+                    AS.item[listnumber].ignoretable = {}
+                end
+                
+                AS.item[listnumber].ignoretable[name] = {}
+                AS.item[listnumber].ignoretable[name].cutoffprice = 0
+                AS.item[listnumber].ignoretable[name].quality = quality
+                AS.item[listnumber].priceoverride = nil
+                AS.item['ASmanualedit'] = nil
+                AS_SavedVariables()
+                AS.manualprompt:Hide()
+        end
+
+        AS[AS_BUTTONEXPENSIVE] = function()  -- Save price filter in manualprompt
+                local name = AS.item['ASmanualedit'].name
+                local listnumber = AS.item['ASmanualedit'].listnumber
+
+                if AS.item['ASmanualedit'].priceoverride == nil then
+                    AS.manualprompt:Hide()
+                    return
+                end
+
+                if not AS.item[listnumber].ignoretable then
+                   AS.item[listnumber].ignoretable = {}
+                end
+
+                AS.item[listnumber].ignoretable[name] = {}
+                AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualedit'].priceoverride
+                AS.item[listnumber].ignoretable[name].quality = quality
+                AS.item[listnumber].priceoverride = nil
+                AS.item['ASmanualedit'] = nil
+                AS_SavedVariables()
+                AS.manualprompt:Hide()
+        end
+
+        AS[AS_BUTTONDELETE] = function()  -- Delete item
+                table.remove(AS.item, AScurrentauctionsnatchitem)
+                AS.status = STATE.QUERYING
+                AS_ScrollbarUpdate()
+        end
+
+        AS[AS_BUTTONDELETEALL] = function()  -- Delete list
+                if IsControlKeyDown() then
+                    AS.item = {}
+                    AS.status = nil
+                    ASsavedtable = nil
+                    AS_ScrollbarUpdate()
+                end
+        end
+
+        AS[AS_BUTTONUPDATE] = function()  -- Update saved item with prompt item
+                local  name, texture, _, quality = GetAuctionItemInfo("list", AScurrentahresult);
+                local link = GetAuctionItemLink("list", AScurrentahresult)
+                
+                if AS.item[AScurrentauctionsnatchitem] then
+
+                    AS.item[AScurrentauctionsnatchitem].name = name
+                    AS.item[AScurrentauctionsnatchitem].icon = texture
+                    AS.item[AScurrentauctionsnatchitem].link = link
+                    AS.item[AScurrentauctionsnatchitem].rarity = quality
+                    AScurrentahresult = AScurrentahresult - 1  --redo this item :)
+                    AS.status = STATE.EVALUATING
+                    AS_ScrollbarUpdate()
+                end
+        end
+
+        AS[AS_BUTTONFILTERS] = function()  -- Open manualprompt filters
+                ASprint(MSG_C.EVENT.."Opening manual edit filters")
+                AS.prompt:Hide()
+                AS.optionframe.manualpricebutton:Click()
+        end
+    end
+
+    function AS_AddItem()
+        --this is when they hit enter and something is in the box
+        local item_name = AS.mainframe.headerframe.editbox:GetText()
+        
+        if not item_name or (string.find(item_name,'achievement:*')) then
+            ASprint(MSG_C.ERROR.."There's nothing valid in the editbox")
+            AS.mainframe.headerframe.editbox:SetText("")
+            return false
+        end
+
+        ASprint(MSG_C.INFO.."Item name: "..item_name, 1)
+
+        local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(item_name)
+        local new_id = table.maxn(AS.item) + 1
+        
+        AS.item[new_id] = {}
+
+        if itemLink then
+            ASprint(MSG_C.INFO.."New Item name: "..itemName)
+            ASprint(MSG_C.INFO.."Link found "..itemLink)
+            AS.item[new_id].name = itemName
+            AS.item[new_id].icon = itemTexture
+            AS.item[new_id].link = itemLink
+            AS.item[new_id].rarity = itemRarity
+        else
+            ASprint(MSG_C.INFO.."nothing found for "..item_name)
+            local _, _, itemString = string.find(item_name, "^|c%x+|H(.+)|h%[.*%]")  --see wowwiki, itemlink.  removes brackets and crap
+            
+            if not itemString then
+                itemString = item_name
+            end
+            AS.item[new_id].name = itemString
+        end
+
+        AS.mainframe.headerframe.editbox:SetText("")
+        AS_ScrollbarUpdate()
+    end
+
+    function AS_MoveListButton(orignumber, insertat)
+
+        if not insertat then
+            local mouseoverbutton = GetMouseFocus()
+            
+            if not mouseoverbutton.buttonnumber then
+                ASprint(MSG_C.ERROR.."No item to trade place with")
+                return false
+            end
+            insertat = mouseoverbutton.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+        end
+
+        if insertat == orignumber then -- No moving happened
+           return false
+        end
+
+        ASprint(MSG_C.INFO.."Move from: "..orignumber.." to: "..insertat)
+        -- Get the value we want to move
+        local ASmoveme = {}
+        AS_tcopy(ASmoveme, AS.item[orignumber])
+
+       if insertat > orignumber then  --we moved down the list
+          table.insert(AS.item, insertat + 1, ASmoveme)
+          table.remove(AS.item, orignumber)
+       else -- we moved up the list
+           table.remove(AS.item, orignumber)
+           table.insert(AS.item, insertat, ASmoveme)
+       end
+
+       AShidetooltip()
+       AS_ScrollbarUpdate()
+       AS_SavedVariables()
+       return true
+    end
+
+    function AS_ChatFrame_OnHyperlinkShow(self, link, text, button)
+
+        if IsShiftKeyDown() and link then
+            ASprint(MSG_C.INFO.."OnHyperLinkShow Called")
+
+            if string.find(link, 'achievement:*') or string.find(link,'spell:*') then
+                return false
+            end
+
+            ASprint(MSG_C.INFO.."Link for: "..text)
+
+            if AS.mainframe.headerframe.editbox:HasFocus() then
+                AS.mainframe.headerframe.editbox:SetText(text)
+            end
+        end
+    end
+
+    function AS_ContainerFrameItemButton_OnModifiedClick(self)
+
+        if IsShiftKeyDown() and AS.mainframe.headerframe.editbox:HasFocus() then
+            local bag, item = self:GetParent():GetID(), self:GetID()
+            local link = GetContainerItemLink(bag, item)
+
+            ASprint(MSG_C.INFO.."OnModifiedLink Called")
+            ASprint(MSG_C.INFO.."Link: "..link)
+
+            AS.mainframe.headerframe.editbox:SetText(link)
+            BrowseName:SetText(link)
+        end
+    end
+
+--[[//////////////////////////////////////////////////
+
+    AUCTION HOUSE FUNCTIONS
+
+----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
     
-    if (AScurrentauctionsnatchitem > table.maxn(AS.item)) or (AScurrentauctionsnatchitem < 1) then
-        ASprint(MSG_C.INFO.."Nothing to process. RESET")
+    -- STATE.QUERYING
+    function AS_QueryAH()
+
+        if not AScurrentauctionsnatchitem then
+            AScurrentauctionsnatchitem = 1
+        end
+        
+        if (AScurrentauctionsnatchitem > table.maxn(AS.item)) or (AScurrentauctionsnatchitem < 1) then
+            ASprint(MSG_C.INFO.."Nothing to process. RESET")
+
+            AS.status = nil
+            AScurrentauctionsnatchitem = 1
+            AS.mainframe.headerframe.stopsearchbutton:Disable()
+            return false
+        end
+
+        if AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then  --some mods change the default AH frame name
+            ASprint(MSG_C.INFO.."Called query: ("..AScurrentauctionsnatchitem..") "..AS.item[AScurrentauctionsnatchitem].name)
+
+            if Auctioneer then
+                ASprint(MSG_C.ERROR.."Auctioneer detected")
+            end
+
+            if AS.item[AScurrentauctionsnatchitem].name then
+                AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem -- Setup in advanced for manual filters prompt
+                AS.mainframe.headerframe.stopsearchbutton:Enable()
+                BrowseResetButton:Click()
+                BrowseName:SetText(ASsanitize(AS.item[AScurrentauctionsnatchitem].name))
+                AuctionFrameBrowse_Search()
+                AScurrentahresult = 0
+                AS.status = STATE.WAITINGFORUPDATE
+                return true
+            else
+                ASprint(MSG_C.ERROR.."Could not find current index in AS.item")
+            end
+        else
+            ASprint(MSG_C.ERROR.."Can't find auction frame object")
+        end
 
         AS.status = nil
-        AScurrentauctionsnatchitem = 1
-        AS.mainframe.headerframe.stopsearchbutton:Disable()
         return false
     end
 
-    if AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then  --some mods change the default AH frame name
-        ASprint("called query "..AScurrentauctionsnatchitem.." = "..AS.item[AScurrentauctionsnatchitem].name)
+    function ASevaluate()
+        local batch,total
+        local name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner
+        local messagestring,cutoffprice
+        local showprompt
+        local bid, buyout, cutoffprice, budget, priceperitembid, priceperitembuyout
 
-        if Auctioneer then
-            ASprint(MSG_C.ERROR.."Auctioneer detected")
+        ASprint("|c000055ee Evaluate() reached")
+
+        batch,total = GetNumAuctionItems("list")
+        --ASprint("batch "..batch.." total "..total)
+        if AS.manualprompt:IsShown() then
+            AS.manualprompt:Hide()
         end
 
-        if AS.item[AScurrentauctionsnatchitem].name then
-            AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem -- Setup in advanced for manual prompt
-            AS.mainframe.headerframe.stopsearchbutton:Enable()
-            BrowseResetButton:Click()
-            BrowseName:SetText(ASsanitize(AS.item[AScurrentauctionsnatchitem].name))
-            AuctionFrameBrowse_Search()
-            AScurrentahresult = 0
-            AS.status = STATE.WAITINGFORUPDATE
-            return true
-        else
-            ASprint(MSG_C.ERROR.."Could not find current index in AS.item")
-        end
-    else
-        ASprint(MSG_C.ERROR.."Can't find auction frame object")
-    end
+        SortAuctionSetSort("list", "minbidbuyout")
+        SortAuctionApplySort("list")
+        local criterion, reverse = GetAuctionSort("list", 1)
+        ASprint("Criterion: "..tostring(criterion).." reversed? "..tostring(reverse))
 
-    AS.status = nil
-    return false
-end
-
-
-function ASevaluate()
-    local batch,total
-    local name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner
-    local messagestring,cutoffprice
-    local showprompt
-    local bid, buyout, cutoffprice, budget, priceperitembid, priceperitembuyout
-
-    ASprint("|c000055ee Evaluate() reached")
-
-    batch,total = GetNumAuctionItems("list")
-    --ASprint("batch "..batch.." total "..total)
-    if AS.manualprompt:IsShown() then
-        AS.manualprompt:Hide()
-    end
-
-    --[[local criterion, reverse = GetAuctionSort("list", 2)
-    ASprint("Criterion: "..tostring(criterion).." reversed? "..tostring(reverse))
-    -- clear any existing criteria
-    --SortAuctionClearSort("list")
-
-    --SortAuctionSetSort("list", "name")
-    SortAuctionSetSort("list", "minbidbuyout")
-
-    -- apply the criteria to the server query
-    SortAuctionApplySort("list")]]
-
-    while(true) do
-        AScurrentahresult=AScurrentahresult+1  --next!!
-         --reset stuff
-        --processing-wise, this here is a very expensive hit
-        --so i'm only gonna do it (and similar stuff) here, ONCE, and pass everything in as parametners
-        name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, highBidderFullName, owner, ownerFullName, saleStatus, itemId, hasAllInfo = GetAuctionItemInfo("list",AScurrentahresult);
-        --name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner=GetAuctionItemInfo("list",AScurrentahresult);
-        --ASprint("INDEX: "..tostring(AScurrentahresult).."Name: "..tostring(name).." Count: "..tostring(count).." buyoutPrice: "..tostring(buyoutPrice).." minbid: "..tostring(minBid).." ownertest: "..tostring(ownerFullName).." owner: "..tostring(owner).." all info? "..tostring(hasAllInfo))
+        while(true) do
+            AScurrentahresult=AScurrentahresult+1  --next!!
+             --reset stuff
+            --processing-wise, this here is a very expensive hit
+            --so i'm only gonna do it (and similar stuff) here, ONCE, and pass everything in as parametners
+            name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, highBidderFullName, owner, ownerFullName, saleStatus, itemId, hasAllInfo = GetAuctionItemInfo("list",AScurrentahresult);
+            --name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner=GetAuctionItemInfo("list",AScurrentahresult);
+            --ASprint("INDEX: "..tostring(AScurrentahresult).."Name: "..tostring(name).." Count: "..tostring(count).." buyoutPrice: "..tostring(buyoutPrice).." minbid: "..tostring(minBid).." ownertest: "..tostring(ownerFullName).." owner: "..tostring(owner).." all info? "..tostring(hasAllInfo))
 
 
 
 
-        if (ASisendofpage(total)) then
-            ASprint("End of listing for: "..tostring(name))
-            return false
-        end
-        if(ASisendoflist(batch,total)) then
-            ASprint("End of batch: "..tostring(batch).."-"..tostring(total))
-            return false
-        end
-
-        if (ASisdoublequery(name)) then
-            ASprint("Double query: "..tostring(name))
-            return false
-        end
-
-        if(tonumber(buyoutPrice) == 0) and (ASignorenobuyout) then
-            return false
-        end
-
-        cutoffprice = ASgetcutoffprice(name,quality,count)
-        --ASprint("|c0000aaff ASgetcutoffprice end.  Cutoff returned? = "..tostring(cutoffprice))
-
-        showprompt = ASisshowprompt(cutoffprice,name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner,batch,total)
-
-        if showprompt then
-            showprompt = false
-            if ASnodoorbell then
-               ASprint("attempting to play sound file.")
-               PlaySoundFile("Interface\\Addons\\auctionsnatch\\Sounds\\DoorBell.mp3")
+            if (ASisendofpage(total)) then
+                ASprint("End of listing for: "..tostring(name))
+                return false
+            end
+            if(ASisendoflist(batch,total)) then
+                ASprint("End of batch: "..tostring(batch).."-"..tostring(total))
+                return false
             end
 
-            -- Set the title and icon
-            if quality then
-                _,_,_,hexcolor = GetItemQualityColor(quality)
-                AS.prompt.upperstring:SetText("|c"..hexcolor..tostring(name))
-            else
-                AS.prompt.upperstring:SetText(name)
+            if (ASisdoublequery(name)) then
+                ASprint("Double query: "..tostring(name))
+                return false
             end
-            AS.prompt.icon:SetNormalTexture(texture)
 
-            messagestring = AScreatemessagestring(cutoffprice,name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner)
-            ASprint("Im through the good ol |c00eeaaff Messagestring |r :(")
-            AS.prompt.lowerstring:SetText(messagestring)
+            if(tonumber(buyoutPrice) == 0) and (ASignorenobuyout) then
+                return false
+            end
 
-            --[[if (AS.item[AScurrentauctionsnatchitem].priceoverride) then
-                if(ASsavedtable and ASsavedtable.copperoverride) then
-                    AS.prompt.priceoverride:SetText(AS.item[AScurrentauctionsnatchitem].priceoverride)
-                else
-                    AS.prompt.priceoverride:SetText(AS.item[AScurrentauctionsnatchitem].priceoverride / COPPER_PER_GOLD)
+            cutoffprice = ASgetcutoffprice(name,quality,count)
+            --ASprint("|c0000aaff ASgetcutoffprice end.  Cutoff returned? = "..tostring(cutoffprice))
+
+            showprompt = ASisshowprompt(cutoffprice,name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner,batch,total)
+
+            if showprompt then
+                showprompt = false
+                if ASnodoorbell then
+                   ASprint("attempting to play sound file.")
+                   PlaySoundFile("Interface\\Addons\\auctionsnatch\\Sounds\\DoorBell.mp3")
                 end
-            else
-                AS.prompt.priceoverride:SetText("")
-            end]]
-            SetSelectedAuctionItem("list", AScurrentahresult)
 
-            AS.status=STATE.WAITINGFORPROMPT
-            AS.prompt:Show()
-            return true --exit
-         end
-   end --end loop
+                -- Set the title and icon
+                if quality then
+                    _,_,_,hexcolor = GetItemQualityColor(quality)
+                    AS.prompt.upperstring:SetText("|c"..hexcolor..tostring(name))
+                else
+                    AS.prompt.upperstring:SetText(name)
+                end
+                AS.prompt.icon:SetNormalTexture(texture)
 
-   return false  --will never happen, but, /shrug
-end
+                messagestring = AScreatemessagestring(cutoffprice,name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner)
+                ASprint("Im through the good ol |c00eeaaff Messagestring |r :(")
+                AS.prompt.lowerstring:SetText(messagestring)
+
+                --[[if (AS.item[AScurrentauctionsnatchitem].priceoverride) then
+                    if(ASsavedtable and ASsavedtable.copperoverride) then
+                        AS.prompt.priceoverride:SetText(AS.item[AScurrentauctionsnatchitem].priceoverride)
+                    else
+                        AS.prompt.priceoverride:SetText(AS.item[AScurrentauctionsnatchitem].priceoverride / COPPER_PER_GOLD)
+                    end
+                else
+                    AS.prompt.priceoverride:SetText("")
+                end]]
+                SetSelectedAuctionItem("list", AScurrentahresult)
+
+                AS.status=STATE.WAITINGFORPROMPT
+                AS.prompt:Show()
+                return true --exit
+             end
+       end --end loop
+
+       return false  --will never happen, but, /shrug
+    end
 
 
 function ASisdoublequery(name)
@@ -1155,60 +1312,6 @@ end
 
 -----------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------
-function ASsavevariables()
-   local serverName = GetRealmName();
-   if (AS) then
-      if (AS.item) then
-         if not (ASsavedtable) then
-            ASsavedtable={}
-            ASsavedtable.copperoverride = true
-         end
-    --   if not (ASsavedtable[serverName]) then
-            ASsavedtable[serverName]={}
-    --   end
-         AS_tcopy(ASsavedtable[serverName],AS.item)
-    --[[
-         ASprint("saving |c0066aaff"..serverName)
-         ASprint("here is sl.item post-save")
-         ASprint(AS.item)
-         ASprint("here is slsavedtable")
-         ASprint(ASsavedtable)
-        ]]
-      else
-         ASprint("Nothing found to save.")
-      end
-
-      if (AS.mainframe) then
-      --check boxes
-         ASsavedtable[serverName].ASautostart = ASautostart
-         ASsavedtable[serverName].ASautoopen = ASautoopen
-         ASsavedtable[serverName].ASnodoorbell = ASnodoorbell
-         ASsavedtable[serverName].ASignorebid = ASignorebid
-         ASsavedtable[serverName].ASignorenobuyout = ASignorenobuyout
-
-         --ASsavedtable[serverName]["test"]= tostring(false)
-
-          --ASprint(ASsavedtable[serverName]["test"])
-        -- ASprint("|c00ee00eesaving autostart="..tostring(ASautostart))
-       -- ASprint("|c00ee00eesaving nodoorbell="..tostring(ASnodoorbell))
-        --ASprint("|c00ee00eesaving nodoorbell="..tostring(ASsavedtable[serverName].ASnodoorbell))
-
-         -- save any movement of position :)
-         --[[local point, relativeTo, relativePoint, xOfs, yOfs = AS.mainframe:GetPoint(1)
-         if not (ASsavedposition) then
-            ASsavedposition={}
-         end
-         ASsavedposition.point=point
-         ASsavedposition.relativePoint=relativePoint
-         ASsavedposition.xOfs=xOfs
-         ASsavedposition.yOfs=yOfs]]
-
-       else
-         ASprint("error.  check box not found to save.")
-      end
-   end
-
-end
 
 
 function ASgetcost(listing,count, minBid, minIncrement, buyoutPrice, bidAmount)
@@ -1249,223 +1352,6 @@ function ASgetcost(listing,count, minBid, minIncrement, buyoutPrice, bidAmount)
    return bid,buyout,peritembid,peritembuyout
 end
 
-
-function AScreatebuttonhandlers()
-    ------------------------------------------------------------------
-    --  Create all the script handlers for the buttons
-    ------------------------------------------------------------------
-
-    AS[AS_BUTTONBUYOUT] = function()  -- Buyout prompt item
-            local bid, buyout
-            _, buyout = ASgetcost(AScurrentahresult)
-                 selected_auction = GetSelectedAuctionItem("list")
-                 ASprint("Index: "..selected_auction)
-                 --ASprint("should buy index: "..selected_auction)
-                 --ASprint("Buyout: "..buyout.." index: "..AScurrentahresult)
-                 PlaceAuctionBid("list",selected_auction,buyout)  --the actual buying call.  Requires a hardware event?
-                 --the next item will be the same location as what was just bought, so no need to increment
-                 AScurrentahresult = AScurrentahresult - 1
-                 ASprint("result index: "..AScurrentahresult)
-                 AS.prompt:Hide()
-                 AS.status=STATE.BUYING
-    end
-
-    AS[AS_BUTTONBID] = function() -- Bid prompt item
-
-                ASprint("AS.bid called.  current ah result="..tostring(AScurrentahresult))
-                selected_auction = GetSelectedAuctionItem("list")
-                 local bid,buyout
-                 bid,_=ASgetcost(selected_auction)
-
-                 PlaceAuctionBid("list",selected_auction,bid)  --the actual buying call.  Requires a hardware event?
-
-
-                 --AS.status=EVALUATING --OMG here's the bug.  why would this be different from the buying button???!?!?!?   im dumb?
-                 AS.prompt:Hide()
-                 AS.status=STATE.BUYING
-    end
-
-    AS[AS_BUTTONNEXTAH] = function()  -- Go to next item in AH
-            ASprint(MSG_C.INFO.."Skipping item")
-
-            AS.prompt:Hide()
-            AS.status = STATE.EVALUATING
-    end
-
-    AS[AS_BUTTONNEXTLIST] = function()  -- Go to next item in snatch list
-            AScurrentauctionsnatchitem = AScurrentauctionsnatchitem + 1
-            AScurrentahresult = 0
-            AS.prompt:Hide()
-            AS.status = STATE.QUERYING
-    end
-
-    AS[AS_BUTTONIGNORE] = function()  -- Ignore this item by setting cutoffprice to 0
-            local name = AS.item["ASmanualedit"].name
-            local listnumber = AS.item['ASmanualedit'].listnumber
-            
-            if not AS.item[listnumber].ignoretable then
-                AS.item[listnumber].ignoretable = {}
-            end
-            
-            AS.item[listnumber].ignoretable[name] = {}
-            AS.item[listnumber].ignoretable[name].cutoffprice = 0
-            AS.item[listnumber].ignoretable[name].quality = quality
-            AS.item[listnumber].priceoverride = nil
-            AS.item['ASmanualedit'] = nil
-            ASsavevariables()
-            AS.manualprompt:Hide()
-    end
-
-    AS[AS_BUTTONEXPENSIVE] = function()  -- Save price filter in manualprompt
-            local name = AS.item['ASmanualedit'].name
-            local listnumber = AS.item['ASmanualedit'].listnumber
-
-            if AS.item['ASmanualedit'].priceoverride == nil then
-                AS.manualprompt:Hide()
-                return
-            end
-
-            if not AS.item[listnumber].ignoretable then
-               AS.item[listnumber].ignoretable = {}
-            end
-
-            AS.item[listnumber].ignoretable[name] = {}
-            AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualedit'].priceoverride
-            AS.item[listnumber].ignoretable[name].quality = quality
-            AS.item[listnumber].priceoverride = nil
-            AS.item['ASmanualedit'] = nil
-            ASsavevariables()
-            AS.manualprompt:Hide()
-    end
-
-    AS[AS_BUTTONDELETE] = function()  -- Delete item
-            table.remove(AS.item, AScurrentauctionsnatchitem)
-            AS.status = STATE.QUERYING
-            ASscrollbar_Update()
-    end
-
-    AS[AS_BUTTONDELETEALL] = function()  -- Delete list
-            if IsControlKeyDown() then
-                AS.item = {}
-                AS.status = nil
-                ASsavedtable = nil
-                ASscrollbar_Update()
-            end
-    end
-
-    AS[AS_BUTTONUPDATE] = function()  -- Update saved item with prompt item
-            local  name, texture, _, quality = GetAuctionItemInfo("list", AScurrentahresult);
-            local link = GetAuctionItemLink("list", AScurrentahresult)
-            
-            if AS.item[AScurrentauctionsnatchitem] then
-
-                AS.item[AScurrentauctionsnatchitem].name = name
-                AS.item[AScurrentauctionsnatchitem].icon = texture
-                AS.item[AScurrentauctionsnatchitem].link = link
-                AS.item[AScurrentauctionsnatchitem].rarity = quality
-                AScurrentahresult = AScurrentahresult - 1  --redo this item :)
-                AS.status = STATE.EVALUATING
-                ASscrollbar_Update()
-            end
-    end
-
-    AS[AS_BUTTONFILTERS] = function()  -- Open manualprompt filters
-            ASprint(MSG_C.EVENT.."Opening manual edit filters")
-            AS.prompt:Hide()
-            AS.optionframe.manualpricebutton:Click()
-    end
-end
-
-function AS_ContainerFrameItemButton_OnModifiedClick(self)
-    ASprint("Modifier click")
-    --first check if shift (maybe alt?) key is down
-    --does our edit box have focus
-    --is the cursor over an item
-    --get the bag,id -->get the link
-    --put link in editbox
-
-    if(IsShiftKeyDown()) then
-        ASprint("ShiftModifier click")
-        if (AS.mainframe.headerframe.editbox:HasFocus()) then --?
-
-            local bag, item = self:GetParent():GetID(), self:GetID()
-            ASprint("bag = "..bag.."  item="..item)
-            local link = GetContainerItemLink(bag,item)
-            ASprint(link)
-            AS.mainframe.headerframe.editbox:SetText(link)
-            BrowseName:SetText(link)
-        end
-    end
-end
-
-function ASadditem()  --this is when they hit enter and something is in the box
-    local itemname = AS.mainframe.headerframe.editbox:GetText()
-    ASprint("itemname=")
-    ASprint(itemname)
-
-    local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemCount, itemEquipLoc, itemTexture = GetItemInfo(itemname)
-
-    if(type(itemname) == "table") then  --why the heck does this return a table?  its text!  text!
-        ASprint("PROBMEL!  Its a table?!?!?")
-        itemname = itemname[1]
-    end
-
-    if((not itemname) or (itemname == "")  or (string.find(itemname,'achievement:*'))) then
-        ASprint("there is nothing (valid) in the editbox!")
-        AS.mainframe.headerframe.editbox:SetText("")
-        return false
-    end
-
-
-
-    ASprint("newitemname = "..tostring(itemname))
-    local max=table.maxn(AS.item)
-    AS.item[max+1]={}
-
-    if(itemLink) then
-        ASprint("a link was found "..itemLink)
-        AS.item[max+1].name=itemName
-        AS.item[max+1].icon=itemTexture
-        AS.item[max+1].link=itemLink
-        AS.item[max+1].rarity=itemRarity
-    else
-
-        ASprint("nothing found for "..itemname)
-        --itemname=ASsanitize(itemname)
-        --ASprint("sanitized:   "..itemname)
-        local found, _, itemString = string.find(itemname, "^|c%x+|H(.+)|h%[.*%]")  --see wowwiki, itemlink.  removes brackets and crap
-        ASprint("No ItemLink found for "..tostring(itemname)..".  setting .name to = "..tostring(itemString))
-        if (not itemString) then itemString = itemname; end
-        AS.item[max+1].name=itemString
-    end
-
-    AS.mainframe.headerframe.editbox:SetText("")
-    ASscrollbar_Update()
-end
-function AS_ChatFrame_OnHyperlinkShow(self, link, text, button)
-
-    ASprint("OnHyperLinkShow Called>")
-    if(IsShiftKeyDown() )then
-
-
-        ASprint("link:")
-        ASprint(link)
-        if(not link) then
-            return false
-        end
-        if(string.find(link,'achievement:*') or (string.find(link,'spell:*'))) then
-            return false
-        end
-        ASprint("text")
-        ASprint(text)
-
-        if (AS.mainframe.headerframe.editbox:HasFocus()) then --?
-            AS.mainframe.headerframe.editbox:SetText(text)
-        end
-
-    end
-
-end
 function ASisalwaysignore(name)
 
     local cutoffprice
@@ -1487,61 +1373,4 @@ function ASisalwaysignore(name)
 
 
     return false
-end
-function ASmovelistbutton(orignumber,insertat)
-    ASprint("|c00aaffffSTART of function MOVELISTBUTTON().  Insertat = "..tostring(insertat).."  orignumber = "..tostring(orignumber))
-    if not (AS.item) then
-       return false
-    end
-    local mouseoverbutton,ourmax
-    --find the button the mouse is on - that is the destination, unless one was explicitly passed in as a parameter
-    if(not insertat) then
-        mouseoverbutton = GetMouseFocus()
-        if(mouseoverbutton.buttonnumber) then
-
-           --ASscrollbar = AS.mainframe.listframe.scrollbarframe
-           insertat = mouseoverbutton.buttonnumber+ FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)---1-- + ASscrollbar:GetValue()
-           ASprint("Insertat needs to be created. = "..tostring(insertat).."  orignumber = "..tostring(orignumber))
-        else
-            ASprint("No insertat passed in.   No mouseoverfocus() found.  error i think.")
-           return false
-        end
-    else
-        ASprint("passed in Insertat = "..tostring(insertat).."  orignumber = "..tostring(orignumber))
-    end
-
-    --if no moving happened
-    if(insertat == orignumber) then
-       return false
-    end
-
-
-
-
-    ourmax = table.maxn(AS.item)
-    if (insertat > ourmax) then
-        insertat = ourmax+1
-    end
-    --get the value we want to move
-    ASmoveme={}
-    if(AS.item[orignumber]) then  -- nil when you try to drag an empty box
-        AS_tcopy(ASmoveme,AS.item[orignumber])
-    else
-       return false
-    end
-
-    --now, if we moved a button up (backwards, lower numbers), we have to delete the original first, then insert
-    -- if we moved a button down (below), we insert first, delete second
-
-   if (insertat > orignumber) then  --we moved down the list
-      table.insert(AS.item,insertat+1,ASmoveme)
-      table.remove(AS.item, orignumber)
-   else
-       table.remove(AS.item, orignumber)
-       table.insert(AS.item,insertat,ASmoveme)
-   end
-
-   AShidetooltip()
-   ASscrollbar_Update()
-   return true
 end
