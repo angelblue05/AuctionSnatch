@@ -42,8 +42,8 @@ STATE = {
 
 MSG_C = {
     ['ERROR'] = "|cffFC357C",
-    ['INFO'] = "|cffB5EDFF",
-    ['EVENT'] = "|cff35FCB5",
+    ['INFO'] = "|cff35FCB5",--"|cffB5EDFF",
+    ['EVENT'] = "|cffFF00E1",--"|cff35FCB5",
     ['DEBUG'] = "|cffE0FC35",
     ['DEFAULT'] = "|cff765EFF",
     ['BOOL'] = "|cff2BED48"
@@ -350,7 +350,7 @@ dropdown_labels = {
 
     function AS_Main(input)
         -- this is called when we type /AS or clicks the AS tab
-        ASprint(MSG_C.EVENT.."Excelsior!", 1)
+        ASprint(MSG_C.INFO.."Excelsior!", 1)
         if input then
             input = string.lower(input)
         end
@@ -927,45 +927,24 @@ dropdown_labels = {
             AScurrentahresult = AScurrentahresult + 1  --next!!
 
             if AS_IsEndPage(total) then
-                ASprint(MSG_C.EVENT.."End of page reached")
+                ASprint(MSG_C.EVENT.."[ End of page reached ]")
                 return false
             elseif AS_IsEndResults(batch, total) then
-                ASprint(MSG_C.EVENT.."End of AH results: "..total)
+                ASprint(MSG_C.EVENT.."[ End of AH results: "..total.." ]")
                 return false
             end
 
-            --processing-wise, this here is a very expensive hit
-            --so i'm only gonna do it (and similar stuff) here, ONCE, and pass everything in as parametners
+            -- Processing-wise, this here is a very expensive hit, so only call once
+            local auction_item = {GetAuctionItemInfo("list", AScurrentahresult)}
+
             local name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, highBidderFullName, owner, ownerFullName, saleStatus, itemId, hasAllInfo = GetAuctionItemInfo("list", AScurrentahresult)
 
-            if not buyoutPrice and ASignorenobuyout then
-                return false
-            end
-
-            local cutoffprice = ASgetcutoffprice(name, quality, count)
-
-            showprompt = ASisshowprompt(cutoffprice,name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner,batch,total)
-
-            if showprompt then
-                showprompt = false
+            if AS_IsShowPrompt(auction_item) then
                 
                 if ASnodoorbell then
                    ASprint(MSG_C.DEBUG.."Attempting to play sound file")
                    PlaySoundFile("Interface\\Addons\\auctionsnatch\\Sounds\\DoorBell.mp3")
                 end
-
-                -- Set the title and icon
-                if quality then
-                    _,_,_,hexcolor = GetItemQualityColor(quality)
-                    AS.prompt.upperstring:SetText("|c"..hexcolor..tostring(name))
-                else
-                    AS.prompt.upperstring:SetText(name)
-                end
-                AS.prompt.icon:SetNormalTexture(texture)
-
-                messagestring = AScreatemessagestring(cutoffprice,name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner)
-                ASprint("Im through the good ol |c00eeaaff Messagestring |r :(")
-                AS.prompt.lowerstring:SetText(messagestring)
 
                 SetSelectedAuctionItem("list", AScurrentahresult)
 
@@ -1012,244 +991,156 @@ dropdown_labels = {
         return false
     end
 
-function ASisshowprompt(cutoffprice,name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner, batch, total)
-    --do all the primary conditionals here
+    function AS_CutoffPrice(name)
+        -- Ignore price is the cutoff point where we won't spend more than this price
+        local cutoffprice
 
-
-    --ASprint("Evaluating Item # |c00ffff00"..AScurrentahresult.."|r, "..name.." x"..count..".  Bid is "..minBid..".  PerItemBuyout is "..math.floor(buyoutPrice/count))
-
-
-    if not (name) then
-        return false
+        if AS.item[AScurrentauctionsnatchitem].ignoretable and AS.item[AScurrentauctionsnatchitem].ignoretable[name] then
+            cutoffprice = AS.item[AScurrentauctionsnatchitem].ignoretable[name].cutoffprice
+            --ASprint(MSG_C.INFO.."Cutoff price "..tostring(name)..": "..tostring(cutoffprice))
+        else
+            cutoffprice = nil
+        end
+        return cutoffprice
     end
 
-      --if we're allready the highbidder
-     if(highBidder) then
-        ASprint("WE are the highbidder!  Returning |c00ff0000 false |r")
-        return false
-     end
-
-     --disable the buyout button if there's no buyout
-     if (buyoutPrice > 0) then
-        AS.prompt[AS_BUTTONBUYOUT]:Enable()  --enable buyout button
-     else
-        AS.prompt[AS_BUTTONBUYOUT]:Disable()
-    --    ASprint("disabled buyout due to no buyout on ah")
-     end
-
-     if (((buyoutPrice > 0) and (minBid + minIncrement >= buyoutPrice)) or (ASignorebid)) then
-        AS.prompt[AS_BUTTONBID]:Disable()
-      --  ASprint("disabled bid .  bid is same price as buyout")
-     else
-        AS.prompt[AS_BUTTONBID]:Enable()  --enable buyout button
-     end
+    function AS_IsShowPrompt(auction_item)
+        -- Primary conditional and fill info for prompt if returns true
+        local cutoffprice = AS_CutoffPrice(auction_item[1])
+        local buyoutPrice = auction_item[10]
+        local minBid = auction_item[8]
+        local minIncrement = auction_item[9]
+        local name = auction_item[1]
+        local count = auction_item[3]
+        local owner = auction_item[14]
 
 
-     if (ASisalwaysignore(name)) then
-        ASprint("always ignore this name!  Returning |c00ff0000 false |r")
-        return false
-     end
-
-     if ((tonumber(buyoutPrice) <= 0) and (ASignorebid)) then  --no buyout.. ignore bid.. nothing to do!
-        ASprint("returning false in isshowprompt Buyoutprice = "..buyoutPrice.."     ignorebid = "..tostring(ASignorebid))
-        return false
-     end
-
-
-     --get ignore price
-     if not (cutoffprice) then  --since getmsassagestring is called from multipla places
-        cutoffprice = ASgetcutoffprice(name,quality,count)
-    end
-     if(cutoffprice) then
-
-         if(cutoffprice == 0) then
-            --means always ignore
+        if owner == UnitName('player') then
+            ASprint(MSG_C.INFO.."Skipping own auction")
             return false
-         end
-         --get cost of current item
-        --bid,buyout,peritembid,peritembuyout = ASgetcost(AScurrentahresult)
-        bid=minIncrement+math.max(bidAmount,minBid)
-        buyout=buyoutPrice
-        peritembid = bid/count
-        peritembuyout = buyout/count
 
-        if(ASignorebid) then
-            if (cutoffprice <= peritembuyout) then
+        elseif cutoffprice == 0 then -- 0 is always ignore
+            return false
+
+        elseif ASisalwaysignore(name) then
+            ASprint(MSG_C.INFO.."Always ignore this name: "..name)
+            return false
+
+        elseif not buyoutPrice and (ASignorebid or ASignorenobuyout) then
+            -- No buyout, bids disabled or ignore no buyouts enabled
+            return false
+
+        elseif auction_item[12] then -- If we are highest bidder
+            ASprint(MSG_C.INFO.."We are the high bidder!")
+            return false
+
+        elseif AS.item[AScurrentauctionsnatchitem].link and AS.item[AScurrentauctionsnatchitem].name ~= name then
+            -- if update was set (A link is provided) then
+            -- if the name does NOT match the link, do not show prompt
+            return false
+        end
+
+        -- The buyout button
+        if buyoutPrice then
+            AS.prompt[AS_BUTTONBUYOUT]:Enable()
+        else
+            AS.prompt[AS_BUTTONBUYOUT]:Disable()
+        end
+        -- The bid button
+        if ASignorebid or (buyoutPrice and (minBid + minIncrement >= buyoutPrice)) then
+            AS.prompt[AS_BUTTONBID]:Disable()
+        else
+            AS.prompt[AS_BUTTONBID]:Enable()
+        end
+
+        -- Fill prompt info
+        local bid, _, peritembid, peritembuyout = ASgetcost(AScurrentahresult, count, minBid, minIncrement, buyoutPrice, auction_item[11])
+
+        if cutoffprice ~= nil then
+            if ASignorebid and (cutoffprice <= peritembuyout) then
+                -- Ignore bid, item is higher than cutoff price
+                --ASprint(MSG_C.INFO.."Ignore bid enabled. Cutoff higher than buyout")
                 return false
+            elseif cutoffprice <= peritembid then
+                -- Item bid higher than cutoff price
+                --ASprint(MSG_C.INFO.."Cutoff higher than bid")
+                return false
+            elseif (cutoffprice > peritembid) and (cutoffprice <= peritembuyout) then
+                -- Cutoff meets bid, not buyout
+                AS.prompt[AS_BUTTONBUYOUT]:Disable()
             end
+            -- Fill prompt info
+            if cutoffprice then
+                local strcutoffprice = AS_CUTOFF.."\n"..ASGSC(cutoffprice)
+                AS.prompt.lowerstring:SetText(strcutoffprice)
+            end
+        end
+        -- Fill prompt info
+        AS.prompt.quantity:SetText(count)
+        AS.prompt.vendor:SetText(AS_BY..": "..(owner or "Unavailable"))
+        AS.prompt.icon:SetNormalTexture(auction_item[2])
+
+        -- Set the title
+        if quality then
+            local _, _, _, hexcolor = GetItemQualityColor(auction_item[4])
+            AS.prompt.upperstring:SetText("|c"..hexcolor..name)
         else
-
-            --is the buyout price within the cutoff range?
-             if (cutoffprice <= peritembid) then
-                ASprint("Bid price is higher than cuttof price!  Returning |c00ff0000 false |r")
-                return false
-             else
-                 -- the cutoff price is enough for a bid, but not a buyout
-                 --ASprint("|c0000aa00Cutoff price = |c0000aaaa"..cutoffprice.."  peritembid = |c000033da"..peritembid.."  peritembuyout="..peritembuyout)
-                  if (cutoffprice > peritembid) and (cutoffprice <= peritembuyout) then
-                        AS.prompt[AS_BUTTONBUYOUT]:Disable()
-                        --ASprint("disabling buyout button  "..peritembuyout.." above cutoff? of "..cutoffprice)
-                  end
-             end
+            AS.prompt.upperstring:SetText(name)
         end
-     end
 
-     --if update was set (A link is provided) then
-     -- if the name does NOT match the link,
-     --do not show prompt
-     if(AS.item[AScurrentauctionsnatchitem].link) then
-        if  not (AS.item[AScurrentauctionsnatchitem].name == name) then
-            return false
+        if ASignorebid then -- Show buyout only
+            AS.prompt.buyoutonly:Show()
+
+            if AS.prompt.bidbuyout:IsShown() then
+                AS.prompt.bidbuyout:Hide()
+            end
+
+            if count > 1 then
+                AS.prompt.buyoutonly.buyout.single:SetText(ASGSC(peritembuyout).." "..AS_EACH)
+                AS.prompt.buyoutonly.buyout.total:SetText(ASGSC(buyoutPrice))
+            else
+                AS.prompt.buyoutonly.buyout.single:SetText(ASGSC(buyoutPrice))
+                AS.prompt.buyoutonly.buyout.total:SetText("")
+            end
+        else -- Show bid and buyout
+            AS.prompt.bidbuyout:Show()
+
+            if AS.prompt.buyoutonly:IsShown() then
+                AS.prompt.buyoutonly:Hide()
+            end
+
+            if cutoffprice and (cutoffprice < peritembuyout) then
+                AS.prompt.bidbuyout.bid:SetTextColor(0,1,0,1)
+                AS.prompt.bidbuyout.buyout:SetTextColor(1,1,1,1)
+            else
+                AS.prompt.bidbuyout.buyout:SetTextColor(0,1,0,1)
+                AS.prompt.bidbuyout.bid:SetTextColor(1,1,1,1)
+            end
+
+            if count > 1 then
+                AS.prompt.bidbuyout.each:Show()
+                AS.prompt.bidbuyout.bid.single:SetText(ASGSC(peritembid))
+                AS.prompt.bidbuyout.bid.total:SetText(ASGSC(bid))
+                AS.prompt.bidbuyout.buyout.single:SetText(ASGSC(peritembuyout))
+                AS.prompt.bidbuyout.buyout.total:SetText(ASGSC(buyoutPrice))
+            else
+                AS.prompt.bidbuyout.each:Hide()
+                AS.prompt.bidbuyout.bid.single:SetText(ASGSC(bid))
+                AS.prompt.bidbuyout.bid.total:SetText("")
+                AS.prompt.bidbuyout.buyout.single:SetText(ASGSC(buyoutPrice))
+                AS.prompt.bidbuyout.buyout.total:SetText("")
+            end
         end
-     end
 
-     --dont show our own auctions
-     if(owner == UnitName("player")) then
-        ASprint("Its my auction!  Returning |c00ff0000 false |r")
-        return false
-     end
-
-     ASprint("returning |c0000ff00 true |r from ASisshowprompt()")
-     return true
-
-
-end
-
-
-
-
-
-
-function ASgetcutoffprice(name,quality,count)
---ignore price is the cutoff point where we won't spend more than this price
-   local cutoffprice
-  -- ASprint("|c0000aaff ASgetcutoffprice start.")
-
-     if(AS.item[AScurrentauctionsnatchitem].priceoverride) then  --override has priority
-        cutoffprice=tonumber(AS.item[AScurrentauctionsnatchitem].priceoverride)
-
-      --check if this item is on our ignore list
-     elseif (AS.item[AScurrentauctionsnatchitem].ignoretable) then
-        if(AS.item[AScurrentauctionsnatchitem].ignoretable[name]) then
-           --newer versions, this is a table, to hold more data
-           if(type(AS.item[AScurrentauctionsnatchitem].ignoretable[name]) == "table") then
-               --new version
-               cutoffprice=AS.item[AScurrentauctionsnatchitem].ignoretable[name].cutoffprice
-          --     ASprint("ignore price set "..name.."="..cutoffprice)
-           else
-              --old version
-              cutoffprice = AS.item[AScurrentauctionsnatchitem].ignoretable[name]
-           --   ASprint("ignore price set "..name.."="..cutoffprice)
-              --update to the new format
-              AS.item[AScurrentauctionsnatchitem].ignoretable[name] = {}
-              AS.item[AScurrentauctionsnatchitem].ignoretable[name].cutoffprice = cutoffprice
-              AS.item[AScurrentauctionsnatchitem].ignoretable[name].quality = quality
-           end
-       end
-     else
-        --something else is ignored - but not this item
-       -- ASprint("No ignore price found on:"..name )
-        cutoffprice = nil
-     end
-   return cutoffprice
-end
-
-function AScreatemessagestring(cutoffprice, name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner)
-
-   local bid,buyout,peritembid,peritembuyout
-   local messagestring
-
-  -- ASprint("Heading on INto good'ole |c00ffaaee MESsagestring! |r function.   ")
-
-   if not (name) then
-        --local name, texture, count, quality, canUse, level, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner
-        name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, owner=GetAuctionItemInfo("list",AScurrentahresult);
+        ASprint(MSG_C.INFO.."Show prompt:|r"..MSG_C.BOOL.." true")
+        return true
     end
-    if not (cutoffprice) then  --since getmsassagestring is called from multipla places
-        cutoffprice = ASgetcutoffprice(name,quality,count)
-    end
-   bid,buyout,peritembid,peritembuyout = ASgetcost(AScurrentahresult,count, minBid, minIncrement, buyoutPrice, bidAmount)
-
-    -- local lines=6  --cant use lines, because we don't want the buttons to move, so a person can just rapid fire click 'buy' or whatever
-    --set the prompt text
-
-    if not (name) then return false end;
-    if(quality) then
-        ASprint("quality Withinmessagestring= "..quality)
-        ASprint("   Itemraritycolors = "..itemRarityColors[quality].."COLOR")
-     else
-        quality = 1
-        ASprint("quality = nonexistent")
-     end
-
-
-    AS.prompt.quantity:SetText(count)
-    AS.prompt.vendor:SetText(AS_BY..": "..(owner or "Unavailable"))
-
-    if ASignorebid then
-        AS.prompt.buyoutonly:Show()
-
-        if AS.prompt.bidbuyout:IsShown() then
-            AS.prompt.bidbuyout:Hide()
-        end
-
-        AS.prompt.buyoutonly.buyout.total:SetText(ASGSC(buyout))
-
-        if count > 1 then
-            AS.prompt.buyoutonly.buyout.single:SetText(ASGSC(peritembuyout).." "..AS_EACH)
-        else
-            AS.prompt.buyoutonly.buyout.single:SetText("")
-        end
-    else
-        AS.prompt.bidbuyout:Show()
-
-        if AS.prompt.buyoutonly:IsShown() then
-            AS.prompt.buyoutonly:Hide()
-        end
-
-        if cutoffprice and tonumber(cutoffprice) < tonumber(peritembuyout) then
-            AS.prompt.bidbuyout.bid:SetTextColor(0,1,0,1)
-            AS.prompt.bidbuyout.buyout:SetTextColor(1,1,1,1)
-        else
-            AS.prompt.bidbuyout.buyout:SetTextColor(0,1,0,1)
-            AS.prompt.bidbuyout.bid:SetTextColor(1,1,1,1)
-        end
-
-        AS.prompt.bidbuyout.bid.total:SetText(ASGSC(bid))
-        AS.prompt.bidbuyout.buyout.total:SetText(ASGSC(buyout))
-
-        if count > 1 then
-            AS.prompt.bidbuyout.each:Show()
-            AS.prompt.bidbuyout.bid.single:SetText(ASGSC(peritembid))
-            AS.prompt.bidbuyout.buyout.single:SetText(ASGSC(peritembuyout))
-        else
-            AS.prompt.bidbuyout.each:Hide()
-            AS.prompt.bidbuyout.bid.single:SetText("")
-            AS.prompt.bidbuyout.buyout.single:SetText("")
-        end
-    end
-
-
-      messagestring=""
-
-
-    if (cutoffprice and tonumber(cutoffprice) > 0) then
-
-           messagestring=messagestring..""..AS_CUTOFF.."\n"
-           messagestring=messagestring..ASGSC(tonumber(cutoffprice))
-    else
-        ASprint("|c00ffaaaaNo Cutoff price found!")
-    end
-
-
-    return messagestring
-end
 
 -----------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------
 
 
-function ASgetcost(listing,count, minBid, minIncrement, buyoutPrice, bidAmount)
+function ASgetcost(listing, count, minBid, minIncrement, buyoutPrice, bidAmount)
    --if bidAmount = 0 that means no one ever bid on it
    --minBid will always contain the original posted price.  Ignores bids.
    --so we need to bid minincrement+max(bid,amount)
@@ -1271,18 +1162,17 @@ function ASgetcost(listing,count, minBid, minIncrement, buyoutPrice, bidAmount)
 
     end
 
-   bid=minIncrement+math.max(bidAmount,minBid)
+    bid = minIncrement + math.max(bidAmount, minBid) -- BidAmount or minBid
+    buyout = buyoutPrice
+    peritembid = bid * (1/count)
+    peritembuyout = buyoutPrice * (1/count)
 
-   buyout=buyoutPrice
-   peritembid = math.floor(bid/count)
-   peritembuyout = math.floor(buyout/count)
-
-   ASprint("|c00ff00aa---------------------------math.floor testing-------------------------")
-   ASprint("|c00ff00aa ASGSC(buyout) = "..ASGSC(buyout))
-   ASprint("|c00ff00aa buyout = "..buyout)
-   ASprint("|c00ff00aa count = "..count)
-   ASprint("|c00ff00aa  buyout/count = "..buyout/count)
-   ASprint("|c00ff00aa  floor(buyout/count) = "..math.floor(buyout/count))
+   --ASprint("|c00ff00aa---------------------------math.floor testing-------------------------")
+   --ASprint("|c00ff00aa ASGSC(buyout) = "..ASGSC(buyout))
+   --ASprint("|c00ff00aa buyout = "..buyout)
+   --ASprint("|c00ff00aa count = "..count)
+   --ASprint("|c00ff00aa  buyout/count = "..buyout/count)
+   --ASprint("|c00ff00aa  floor(buyout/count) = "..math.floor(buyout/count))
 
    return bid,buyout,peritembid,peritembuyout
 end
