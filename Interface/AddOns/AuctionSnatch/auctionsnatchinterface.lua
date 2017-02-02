@@ -488,6 +488,7 @@ function AScreatemanualprompt(item, listnumber)
                 end)
                 AS.manualprompt:SetScript("OnShow",function(self)
                     ASprint("|c0055ffffManual prompt is shown")
+                    AS.mainframe.headerframe.stopsearchbutton:Click()
                     AS.manualprompt.priceoverride:SetFocus()
                 end)
                 AS.manualprompt:SetScript("OnHide",function(self)
@@ -1032,6 +1033,7 @@ function AScreatelistbutton(i)
                     
                     AuctionFrameTab1:Click() -- Focus on search tab
                     AS.prompt:Hide()
+                    AuctionFrameBrowse.page = 0
                     
                     AS.item['LastListButtonClicked'] = self.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
                     AScurrentauctionsnatchitem = self.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)

@@ -41,9 +41,9 @@ STATE = {
 }
 
 MSG_C = {
-    ['ERROR'] = "|cffFC357C",
+    ['ERROR'] = "|cffFF00E1",
     ['INFO'] = "|cff35FCB5",--"|cffB5EDFF",
-    ['EVENT'] = "|cffFF00E1",--"|cff35FCB5",
+    ['EVENT'] = "|cffFFBF00",--"|cff35FCB5",
     ['DEBUG'] = "|cffE0FC35",
     ['DEFAULT'] = "|cff765EFF",
     ['BOOL'] = "|cff2BED48"
@@ -629,33 +629,25 @@ dropdown_labels = {
         --  Create all the script handlers for the buttons
         ------------------------------------------------------------------
         AS[AS_BUTTONBUYOUT] = function()  -- Buyout prompt item
-                local bid, buyout
-                _, buyout = ASgetcost(AScurrentahresult)
-                 selected_auction = GetSelectedAuctionItem("list")
-                 ASprint("Index: "..selected_auction)
-                 --ASprint("should buy index: "..selected_auction)
-                 --ASprint("Buyout: "..buyout.." index: "..AScurrentahresult)
-                 PlaceAuctionBid("list",selected_auction,buyout)  --the actual buying call.  Requires a hardware event?
-                 --the next item will be the same location as what was just bought, so no need to increment
-                 AScurrentahresult = AScurrentahresult - 1
-                 ASprint("result index: "..AScurrentahresult)
-                 AS.prompt:Hide()
-                 AS.status = STATE.BUYING
+                local _, buyout = AS_GetCost()
+                
+                ASprint(MSG_C.DEBUG.."Buying index: "..selected_auction)
+                
+                PlaceAuctionBid("list", selected_auction, buyout) -- The actual buying call
+                -- The next item will be the same location as what was just bought
+                AScurrentahresult = selected_auction - 1
+                AS.prompt:Hide()
+                AS.status = STATE.BUYING
         end
 
         AS[AS_BUTTONBID] = function() -- Bid prompt item
+                local bid = AS_GetCost()
 
-                ASprint("AS.bid called.  current ah result="..tostring(AScurrentahresult))
-                selected_auction = GetSelectedAuctionItem("list")
-                 local bid,buyout
-                 bid,_=ASgetcost(selected_auction)
+                ASprint(MSG_C.DEBUG.."Bidding on index: "..selected_auction)
 
-                 PlaceAuctionBid("list",selected_auction,bid)  --the actual buying call.  Requires a hardware event?
-
-
-                 --AS.status=EVALUATING --OMG here's the bug.  why would this be different from the buying button???!?!?!?   im dumb?
-                 AS.prompt:Hide()
-                 AS.status=STATE.BUYING
+                PlaceAuctionBid("list", selected_auction, bid)  --the actual bidding call.
+                AS.prompt:Hide()
+                AS.status = STATE.BUYING
         end
 
         AS[AS_BUTTONNEXTAH] = function()  -- Go to next item in AH
@@ -744,7 +736,6 @@ dropdown_labels = {
 
         AS[AS_BUTTONFILTERS] = function()  -- Open manualprompt filters
                 ASprint(MSG_C.EVENT.."Opening manual edit filters")
-                AS.mainframe.headerframe.stopsearchbutton:Click()
                 AS.prompt:Hide()
                 AS.optionframe.manualpricebutton:Click()
         end
@@ -867,7 +858,7 @@ dropdown_labels = {
             AScurrentauctionsnatchitem = 1
         end
         
-        if (AScurrentauctionsnatchitem > table.maxn(AS.item)) or (AScurrentauctionsnatchitem < 1) then
+        if (AScurrentauctionsnatchitem > table.maxn(AS.item)) then
             ASprint(MSG_C.INFO.."Nothing to process. RESET")
 
             AS.status = nil
@@ -886,7 +877,7 @@ dropdown_labels = {
             if AS.item[AScurrentauctionsnatchitem].name then
                 AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem -- Setup in advanced for manual filters prompt
                 AS.mainframe.headerframe.stopsearchbutton:Enable()
-                BrowseResetButton:Click()
+                --BrowseResetButton:Click()
                 BrowseName:SetText(ASsanitize(AS.item[AScurrentauctionsnatchitem].name))
                 AuctionFrameBrowse_Search()
 
@@ -935,11 +926,10 @@ dropdown_labels = {
             end
 
             -- Processing-wise, this here is a very expensive hit, so only call once
-            local auction_item = {GetAuctionItemInfo("list", AScurrentahresult)}
+            auction_item = {GetAuctionItemInfo("list", AScurrentahresult)}
+            --local name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, highBidderFullName, owner, ownerFullName, saleStatus, itemId, hasAllInfo = GetAuctionItemInfo("list", AScurrentahresult)
 
-            local name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, highBidderFullName, owner, ownerFullName, saleStatus, itemId, hasAllInfo = GetAuctionItemInfo("list", AScurrentahresult)
-
-            if AS_IsShowPrompt(auction_item) then
+            if AS_IsShowPrompt() then
                 
                 if ASnodoorbell then
                    ASprint(MSG_C.DEBUG.."Attempting to play sound file")
@@ -947,6 +937,7 @@ dropdown_labels = {
                 end
 
                 SetSelectedAuctionItem("list", AScurrentahresult)
+                selected_auction = AScurrentahresult
 
                 AS.status = STATE.WAITINGFORPROMPT
                 AS.prompt:Show()
@@ -991,22 +982,12 @@ dropdown_labels = {
         return false
     end
 
-    function AS_CutoffPrice(name)
-        -- Ignore price is the cutoff point where we won't spend more than this price
-        local cutoffprice
-
-        if AS.item[AScurrentauctionsnatchitem].ignoretable and AS.item[AScurrentauctionsnatchitem].ignoretable[name] then
-            cutoffprice = AS.item[AScurrentauctionsnatchitem].ignoretable[name].cutoffprice
-            --ASprint(MSG_C.INFO.."Cutoff price "..tostring(name)..": "..tostring(cutoffprice))
-        else
-            cutoffprice = nil
-        end
-        return cutoffprice
-    end
-
-    function AS_IsShowPrompt(auction_item)
+    function AS_IsShowPrompt()
         -- Primary conditional and fill info for prompt if returns true
+        local auction_item = auction_item
         local cutoffprice = AS_CutoffPrice(auction_item[1])
+        local bid, _, peritembid, peritembuyout = AS_GetCost()
+
         local buyoutPrice = auction_item[10]
         local minBid = auction_item[8]
         local minIncrement = auction_item[9]
@@ -1014,19 +995,28 @@ dropdown_labels = {
         local count = auction_item[3]
         local owner = auction_item[14]
 
-
+        -- Filters
         if owner == UnitName('player') then
             ASprint(MSG_C.INFO.."Skipping own auction")
             return false
 
-        elseif cutoffprice == 0 then -- 0 is always ignore
+        elseif cutoffprice == 0 then
+            -- 0 is always ignore
+            return false
+
+        elseif cutoffprice and ASignorebid and (cutoffprice <= peritembuyout) then
+            -- Ignore bid, item is higher than cutoff price
+            return false
+
+        elseif cutoffprice and (cutoffprice <= peritembid) then
+            -- Item bid higher than cutoff price
             return false
 
         elseif ASisalwaysignore(name) then
             ASprint(MSG_C.INFO.."Always ignore this name: "..name)
             return false
 
-        elseif not buyoutPrice and (ASignorebid or ASignorenobuyout) then
+        elseif buyoutPrice == 0 and (ASignorebid or ASignorenobuyout) then
             -- No buyout, bids disabled or ignore no buyouts enabled
             return false
 
@@ -1040,52 +1030,35 @@ dropdown_labels = {
             return false
         end
 
-        -- The buyout button
-        if buyoutPrice then
-            AS.prompt[AS_BUTTONBUYOUT]:Enable()
-        else
-            AS.prompt[AS_BUTTONBUYOUT]:Disable()
-        end
-        -- The bid button
-        if ASignorebid or (buyoutPrice and (minBid + minIncrement >= buyoutPrice)) then
-            AS.prompt[AS_BUTTONBID]:Disable()
-        else
-            AS.prompt[AS_BUTTONBID]:Enable()
-        end
-
-        -- Fill prompt info
-        local bid, _, peritembid, peritembuyout = ASgetcost(AScurrentahresult, count, minBid, minIncrement, buyoutPrice, auction_item[11])
-
-        if cutoffprice ~= nil then
-            if ASignorebid and (cutoffprice <= peritembuyout) then
-                -- Ignore bid, item is higher than cutoff price
-                --ASprint(MSG_C.INFO.."Ignore bid enabled. Cutoff higher than buyout")
-                return false
-            elseif cutoffprice <= peritembid then
-                -- Item bid higher than cutoff price
-                --ASprint(MSG_C.INFO.."Cutoff higher than bid")
-                return false
-            elseif (cutoffprice > peritembid) and (cutoffprice <= peritembuyout) then
-                -- Cutoff meets bid, not buyout
-                AS.prompt[AS_BUTTONBUYOUT]:Disable()
-            end
-            -- Fill prompt info
-            if cutoffprice then
-                local strcutoffprice = AS_CUTOFF.."\n"..ASGSC(cutoffprice)
-                AS.prompt.lowerstring:SetText(strcutoffprice)
-            end
-        end
-        -- Fill prompt info
+        -- Fill prompt info, title, icon, bid or buyout text/buttons
         AS.prompt.quantity:SetText(count)
         AS.prompt.vendor:SetText(AS_BY..": "..(owner or "Unavailable"))
         AS.prompt.icon:SetNormalTexture(auction_item[2])
-
+        if cutoffprice then
+            local strcutoffprice = AS_CUTOFF.."\n"..ASGSC(cutoffprice)
+            AS.prompt.lowerstring:SetText(strcutoffprice)
+        end
         -- Set the title
         if quality then
             local _, _, _, hexcolor = GetItemQualityColor(auction_item[4])
             AS.prompt.upperstring:SetText("|c"..hexcolor..name)
         else
             AS.prompt.upperstring:SetText(name)
+        end
+
+        -- The buyout button
+        if (buyoutPrice == 0) or (cutoffprice and (cutoffprice > peritembid) and (cutoffprice <= peritembuyout)) then
+            -- Buyout does not exist or cutoff meets bid but not buyout
+            AS.prompt[AS_BUTTONBUYOUT]:Disable()
+        else
+            AS.prompt[AS_BUTTONBUYOUT]:Enable()
+        end
+        -- The bid button
+        if ASignorebid or (peritembid == peritembuyout) then
+            -- Ignore bid or bid is the same as buyout
+            AS.prompt[AS_BUTTONBID]:Disable()
+        else
+            AS.prompt[AS_BUTTONBID]:Enable()
         end
 
         if ASignorebid then -- Show buyout only
@@ -1109,7 +1082,7 @@ dropdown_labels = {
                 AS.prompt.buyoutonly:Hide()
             end
 
-            if cutoffprice and (cutoffprice < peritembuyout) then
+            if buyoutPrice == 0 or (cutoffprice and (cutoffprice <= peritembuyout)) then
                 AS.prompt.bidbuyout.bid:SetTextColor(0,1,0,1)
                 AS.prompt.bidbuyout.buyout:SetTextColor(1,1,1,1)
             else
@@ -1136,46 +1109,39 @@ dropdown_labels = {
         return true
     end
 
+    function AS_CutoffPrice(name)
+        -- Ignore price is the cutoff point where we won't spend more than this price
+        local cutoffprice
+
+        if AS.item[AScurrentauctionsnatchitem].ignoretable and AS.item[AScurrentauctionsnatchitem].ignoretable[name] then
+            cutoffprice = AS.item[AScurrentauctionsnatchitem].ignoretable[name].cutoffprice
+            --ASprint(MSG_C.INFO.."Cutoff price "..tostring(name)..": "..tostring(cutoffprice))
+        else
+            cutoffprice = nil
+        end
+        return cutoffprice
+    end
+
+    function AS_GetCost()
+        -- If bidAmount = 0 that means no one ever bid on it
+        -- minBid will always contain the original posted price (ignores existing bids)
+        local bid, peritembid, peritembuyout
+        local auction_item = auction_item
+        local count = auction_item[3]
+        local minBid = auction_item[8]
+        local minIncrement = auction_item[9]
+        local buyoutPrice = auction_item[10]
+        local bidAmount = auction_item[11]
+
+        bid = minIncrement + math.max(bidAmount, minBid) -- BidAmount or minBid
+        peritembid = bid * (1/count)
+        peritembuyout = buyoutPrice * (1/count)
+
+        return bid, buyoutPrice, peritembid, peritembuyout
+    end
+
 -----------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------
-
-
-function ASgetcost(listing, count, minBid, minIncrement, buyoutPrice, bidAmount)
-   --if bidAmount = 0 that means no one ever bid on it
-   --minBid will always contain the original posted price.  Ignores bids.
-   --so we need to bid minincrement+max(bid,amount)
-   local bid,buyout,peritembid,peritembuyout
-   if not listing then listing = AScurrentahresult end;
-    if not (count or minBid or minIncrement or buyoutPrice or bidAmount) then
-        ASprint("|c00ff5500 Small problem in ASgetcost")
-        _, _, count, _, _, _, _, minBid, minIncrement, buyoutPrice, bidAmount, _, _=GetAuctionItemInfo("list",listing);
-    end
-    if not (count or minBid or minIncrement or buyoutPrice or bidAmount) then
-        ASprint(count)
-        ASprint(minBid)
-        ASprint (minIncrement)
-        ASprint(buyoutPrice)
-        ASprint(bidAmount)
-        ASprint("|c00ff0000 HUGE problem in ASgetcost")
-        result = {GetAuctionItemInfo("list",listing)}
-        ASprint(result)
-
-    end
-
-    bid = minIncrement + math.max(bidAmount, minBid) -- BidAmount or minBid
-    buyout = buyoutPrice
-    peritembid = bid * (1/count)
-    peritembuyout = buyoutPrice * (1/count)
-
-   --ASprint("|c00ff00aa---------------------------math.floor testing-------------------------")
-   --ASprint("|c00ff00aa ASGSC(buyout) = "..ASGSC(buyout))
-   --ASprint("|c00ff00aa buyout = "..buyout)
-   --ASprint("|c00ff00aa count = "..count)
-   --ASprint("|c00ff00aa  buyout/count = "..buyout/count)
-   --ASprint("|c00ff00aa  floor(buyout/count) = "..math.floor(buyout/count))
-
-   return bid,buyout,peritembid,peritembuyout
-end
 
 function ASisalwaysignore(name)
 

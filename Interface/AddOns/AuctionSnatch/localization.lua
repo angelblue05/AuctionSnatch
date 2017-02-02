@@ -5,7 +5,7 @@ AS_INTERESTEDIN = "Are you interested in"
 AS_BY = "by"
 AS_FOR = "for"
 AS_BUYOUT = "buyout"
-AS_EACH ="each"
+AS_EACH ="ea"
 AS_BID="bid"
 AS_CUTOFF="Cutoff Price for one"
 
