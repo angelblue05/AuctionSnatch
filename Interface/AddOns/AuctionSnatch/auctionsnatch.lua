@@ -1012,7 +1012,7 @@ dropdown_labels = {
             -- Item bid higher than cutoff price
             return false
 
-        elseif ASisalwaysignore(name) then
+        elseif AS_IsAlwaysIgnore(name) then
             ASprint(MSG_C.INFO.."Always ignore this name: "..name)
             return false
 
@@ -1140,28 +1140,12 @@ dropdown_labels = {
         return bid, buyoutPrice, peritembid, peritembuyout
     end
 
------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------
+    function AS_IsAlwaysIgnore(name)
 
-function ASisalwaysignore(name)
-
-    local cutoffprice
-
-    if (AS.item[AScurrentauctionsnatchitem].ignoretable) then
-        if(AS.item[AScurrentauctionsnatchitem].ignoretable[name]) then
-           if(type(AS.item[AScurrentauctionsnatchitem].ignoretable[name]) == "table") then
-               cutoffprice=AS.item[AScurrentauctionsnatchitem].ignoretable[name].cutoffprice
-               --ASprint("ignore price set "..name.."="..cutoffprice)
-               if(cutoffprice == 0) then
-                    return true
-               end
+        if AS.item[AScurrentauctionsnatchitem].ignoretable and AS.item[AScurrentauctionsnatchitem].ignoretable[name] then
+            if AS.item[AScurrentauctionsnatchitem].ignoretable[name].cutoffprice == 0 then
+                return true
             end
         end
+        return false
     end
-
-    --if  not (AS.item[AScurrentauctionsnatchitem].name == name) then
-    --end
-
-
-    return false
-end

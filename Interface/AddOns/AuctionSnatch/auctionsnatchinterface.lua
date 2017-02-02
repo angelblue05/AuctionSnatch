@@ -563,6 +563,7 @@ function AScreatemanualprompt(item, listnumber)
                 AS.manualprompt.lowerstring:SetWidth(AS.manualprompt:GetWidth() - (2*AS_FRAMEWHITESPACE))
                 AS.manualprompt.lowerstring:SetPoint("TOPLEFT", AS.manualprompt.icon, "BOTTOMLEFT", 0, 2)
                 AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":")
+                AS.manualprompt.lowerstring:SetTextColor(r, g, b) -- Aurora
 
         ------ IGNORE BUTTON
             -------------- STYLE ----------------
@@ -817,12 +818,14 @@ function AScreateprompt()
                 AS.prompt.bidbuyout.bid.single = AS.prompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormal")
                 AS.prompt.bidbuyout.bid.single:SetJustifyH("RIGHT")
                 AS.prompt.bidbuyout.bid.single:SetPoint("TOP", AS.prompt.bidbuyout.bid, "BOTTOM", 0, -10)
+                AS.prompt.bidbuyout.bid.single:SetTextColor(r, g, b) -- Aurora
 
         ------ BID AMOUNT TOTAL
             -------------- STYLE ----------------
                 AS.prompt.bidbuyout.bid.total = AS.prompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormal")
                 AS.prompt.bidbuyout.bid.total:SetJustifyH("RIGHT")
                 AS.prompt.bidbuyout.bid.total:SetPoint("TOP", AS.prompt.bidbuyout.bid.single, "BOTTOM", 0, -16)
+                AS.prompt.bidbuyout.bid.total:SetTextColor(r, g, b) -- Aurora
 
         ------ ITEM BUYOUT LABEL
             -------------- STYLE ----------------
@@ -836,12 +839,14 @@ function AScreateprompt()
                 AS.prompt.bidbuyout.buyout.single = AS.prompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormal")
                 AS.prompt.bidbuyout.buyout.single:SetJustifyH("LEFT")
                 AS.prompt.bidbuyout.buyout.single:SetPoint("TOP", AS.prompt.bidbuyout.buyout, "BOTTOM", 0, -10)
+                AS.prompt.bidbuyout.buyout.single:SetTextColor(r, g, b) -- Aurora
 
         ------ BUYOUT AMOUNT TOTAL
             -------------- STYLE ----------------
                 AS.prompt.bidbuyout.buyout.total = AS.prompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormal")
                 AS.prompt.bidbuyout.buyout.total:SetJustifyH("LEFT")
                 AS.prompt.bidbuyout.buyout.total:SetPoint("TOP", AS.prompt.bidbuyout.buyout.single, "BOTTOM", 0, -16)
+                AS.prompt.bidbuyout.buyout.total:SetTextColor(r, g, b) -- Aurora
 
         ------ MIDDLE SEPARATOR
             -------------- STYLE ----------------
@@ -891,6 +896,7 @@ function AScreateprompt()
                 AS.prompt.buyoutonly.buyout.total = AS.prompt.buyoutonly:CreateFontString(nil, "OVERLAY", "GameFontNormal")
                 AS.prompt.buyoutonly.buyout.total:SetJustifyH("CENTER")
                 AS.prompt.buyoutonly.buyout.total:SetPoint("TOP", AS.prompt.buyoutonly.buyout.single, "BOTTOM", 0, -16)
+                AS.prompt.buyoutonly.buyout.total:SetTextColor(r, g, b) -- Aurora
 
     ------ BID BUTTON
         -------------- STYLE ----------------
