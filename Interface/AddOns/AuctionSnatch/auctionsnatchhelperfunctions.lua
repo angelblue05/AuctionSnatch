@@ -121,6 +121,55 @@ function AS_tcount(tab)
 end
 
 
+function AS_template(name)
+
+    ASprint(MSG_C.EVENT.."Generating template: "..name)
+    AS.item = {}
+    ASautostart = true
+    ASautoopen = true
+    ASnodoorbell = true
+    ASignorebid = false
+    ASignorenobuyout = false
+
+    ACTIVE_TABLE = name
+    AS_SavedVariables()
+end
+
+function AS_LoadTable(name)
+
+    ACTIVE_TABLE = name
+    AS.item = {}
+    AS_tcopy(AS.item, ASsavedtable[name])
+
+    if ASsavedtable[name]["test"] then
+        ASprint("test = "..ASsavedtable[name]["test"])
+    end
+
+    if ASsavedtable[name].ASautostart ~= nil then
+        ASautostart = ASsavedtable[name].ASautostart
+        --ASprint("Auto start = "..MSG_C.BOOL..""..tostring(ASautostart))
+    end
+    if ASsavedtable[name].ASautoopen ~= nil then
+        ASautoopen = ASsavedtable[name].ASautoopen
+        --ASprint("Auto open = "..MSG_C.BOOL..""..tostring(ASautoopen))
+    end
+    if ASsavedtable[name].ASnodoorbell ~= nil then
+        ASnodoorbell = ASsavedtable[name].ASnodoorbell
+        --ASprint("Doorbell sound = "..MSG_C.BOOL..""..tostring(ASnodoorbell))
+    end
+    if ASsavedtable[name].ASignorebid ~= nil then
+        ASignorebid = ASsavedtable[name].ASignorebid
+        --ASprint("Ignore bid = "..MSG_C.BOOL..""..tostring(ASignorebid))
+    end
+    if ASsavedtable[name].ASignorenobuyout ~= nil then
+        ASignorenobuyout = ASsavedtable[name].ASignorenobuyout
+        --ASprint("Ignore no buyout = "..MSG_C.BOOL..""..tostring(ASignorenobuyout))
+    end
+
+    AS_ScrollbarUpdate()
+end
+
+
 
 
 function ASshowtooltip(frame, notes)

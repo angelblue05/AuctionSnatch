@@ -31,6 +31,15 @@
 
     \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
 
+AS_FRAMEWHITESPACE = 10
+AS_BUTTON_HEIGHT = 23
+AS_GROSSHEIGHT = 420
+AS_HEADERHEIGHT = 120
+AS_LISTHEIGHT = AS_GROSSHEIGHT - AS_HEADERHEIGHT
+AS = {}
+AS.elapsed = 0
+ASfirsttime = false
+ACTIVE_TABLE = nil
 
 STATE = {
     ['QUERYING'] = 1,
@@ -49,17 +58,7 @@ MSG_C = {
     ['BOOL'] = "|cff2BED48"
 }
 
-AS_FRAMEWHITESPACE = 10
-AS_BUTTON_HEIGHT = 23
-AS_GROSSHEIGHT = 420
-AS_HEADERHEIGHT = 120
-AS_LISTHEIGHT = AS_GROSSHEIGHT-AS_HEADERHEIGHT
-AS = {}
-AS.elapsed=0
-AS.scrollelapsed=0
-ASfirsttime = false
-
-itemRarityColors = {
+RARITY_C = {
    [-1] = "|cffffff9a", -- all (ah: -1)
    [0] = "|cff9d9d9d", -- poor (ah: 0)
    [1] = "|cffffffff", -- common (ah: 1)
@@ -119,6 +118,33 @@ dropdown_labels = {
                     return old_BrowseName() --for some reason this causes an infinate loop :( > Can't seem to trigger infinite loop -AB5
                 end)
             end
+
+        ------ STATIC DIALOG // To get new list name
+        StaticPopupDialogs["AS_NewList"] = {
+            text = "Enter name for the new list",
+            button1 = "Create",
+            button2 = "Cancel",
+            OnShow = function (self, data)
+                --self.editBox:SetText("")
+                self.button1:Disable()
+            end,
+            OnAccept = function (self, data, data2)
+                AS_NewList(self.editBox:GetText())
+            end,
+            EditBoxOnTextChanged = function (self, data)
+                text = self:GetParent().editBox:GetText()
+                if text == "" then
+                    self:GetParent().button1:Disable()
+                else
+                    self:GetParent().button1:Enable()
+                end
+            end,
+            hasEditBox = true,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+            preferredIndex = 3  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
+        }
 
         DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT..AS_LOADTEXT)
 
@@ -267,81 +293,25 @@ dropdown_labels = {
         AScurrentahresult = 0
         AS.status = nil
 
-        if ASsavedtable then
-            if ASsavedtable[serverName] then
-
-                AS_tcopy(AS.item, ASsavedtable[serverName])
-
-                if ASsavedtable[serverName]["test"] then
-                    ASprint("test = "..ASsavedtable[serverName]["test"])
-                end
-
-                if ASsavedtable[serverName].ASautostart ~= nil then
-                    ASautostart = ASsavedtable[serverName].ASautostart
-                    --ASprint("Auto start = "..MSG_C.BOOL..""..tostring(ASautostart))
-                end
-                if ASsavedtable[serverName].ASautoopen ~= nil then
-                    ASautoopen = ASsavedtable[serverName].ASautoopen
-                    --ASprint("Auto open = "..MSG_C.BOOL..""..tostring(ASautoopen))
-                end
-                if ASsavedtable[serverName].ASnodoorbell ~= nil then
-                    ASnodoorbell = ASsavedtable[serverName].ASnodoorbell
-                    --ASprint("Doorbell sound = "..MSG_C.BOOL..""..tostring(ASnodoorbell))
-                end
-                if ASsavedtable[serverName].ASignorebid ~= nil then
-                    ASignorebid = ASsavedtable[serverName].ASignorebid
-                    --ASprint("Ignore bid = "..MSG_C.BOOL..""..tostring(ASignorebid))
-                end
-                if ASsavedtable[serverName].ASignorenobuyout ~= nil then
-                    ASignorenobuyout = ASsavedtable[serverName].ASignorenobuyout
-                    --ASprint("Ignore no buyout = "..MSG_C.BOOL..""..tostring(ASignorenobuyout))
-                end
-
-            else
-                ASprint(MSG_C.EVENT.."New server found")
-
-                if not ASfirsttime then
-                    ASfirsttime = true
-                end
-            end
-
+        if ASsavedtable and ASsavedtable[serverName] then
+            AS_LoadTable(serverName)
         else
-            ASprint(MSG_C.ERROR.."Nothing saved :(")
+            ASprint(MSG_C.EVENT.."New server found")
+            AS_template(serverName)
         end
 
-        -- Verify settings, otherwise set default
-        if ASautostart == nil then
-            ASprint(MSG_C.EVENT.."Auto start not found")
-            ASautostart = true
-        end
-        if ASautoopen == nil then
-            ASprint(MSG_C.EVENT.."Auto open not found")
-            ASautoopen = true
-        end
+        -- Set checkboxes
         if AS.mainframe then
             AS.mainframe.headerframe.autostart:SetChecked(ASautostart)
             AS.mainframe.headerframe.autoopen:SetChecked(ASautoopen)
-        end
-        -- Other settings
-        if ASnodoorbell == nil then
-            ASprint(MSG_C.EVENT.."Doorbell not found")
-            ASnodoorbell = true
-        end
-        if ASignorebid == nil then
-            ASprint(MSG_C.EVENT.."Ignore bid not found")
-            ASignorebid = false
-        end
-        if ASignorenobuyout == nil then
-            ASprint(MSG_C.EVENT.."Ignore no buyout not found")
-            ASignorenobuyout = false
         end
 
         -- font size testing and adjuting height of prompt
         local _, height = GameFontNormal:GetFont()
         local new_height = (height * 10) + ((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE)*6)  -- LINES, 5 BUTTONS + 1 togrow on
         
-        ASprint(MSG_C.DEBUG.."Font height: "..height)
-        ASprint(MSG_C.DEBUG.."New prompt height: "..new_height)
+        ASprint(MSG_C.DEBUG.."Font height:|r "..height)
+        ASprint(MSG_C.DEBUG.."New prompt height:|r "..new_height)
         AS.prompt:SetHeight(new_height)
 
         -- Generate scroll bar items
@@ -425,29 +395,27 @@ dropdown_labels = {
     end
 
     function AS_SavedVariables()
-        local serverName = GetRealmName()
-
         ASprint(MSG_C.EVENT.."[ Saving changes ]")
 
         if AS and AS.item then
             if not ASsavedtable then
-                ASsavedtable={}
+                ASsavedtable = {}
                 ASsavedtable.copperoverride = true
             end
 
-            ASsavedtable[serverName]={}
-            AS_tcopy(ASsavedtable[serverName], AS.item)
+            ASsavedtable[ACTIVE_TABLE] = {}
+            AS_tcopy(ASsavedtable[ACTIVE_TABLE], AS.item)
         else
             ASprint(MSG_C.ERROR.."Nothing found to save")
         end
 
         if AS.mainframe then
             -- check boxes
-            ASsavedtable[serverName].ASautostart = ASautostart
-            ASsavedtable[serverName].ASautoopen = ASautoopen
-            ASsavedtable[serverName].ASnodoorbell = ASnodoorbell
-            ASsavedtable[serverName].ASignorebid = ASignorebid
-            ASsavedtable[serverName].ASignorenobuyout = ASignorenobuyout
+            ASsavedtable[ACTIVE_TABLE].ASautostart = ASautostart
+            ASsavedtable[ACTIVE_TABLE].ASautoopen = ASautoopen
+            ASsavedtable[ACTIVE_TABLE].ASnodoorbell = ASnodoorbell
+            ASsavedtable[ACTIVE_TABLE].ASignorebid = ASignorebid
+            ASsavedtable[ACTIVE_TABLE].ASignorenobuyout = ASignorenobuyout
         else
             ASprint(MSG_C.ERROR.."Checkboxes not found to save")
         end
@@ -456,17 +424,24 @@ dropdown_labels = {
     function ASdropDownMenu_Initialise(self, level)
         --drop down menues can have sub menues. The value of level determines the drop down sub menu tier
         local level = level or 1 
-        local serverName = GetRealmName()
 
         if level == 1 then
-            local info = UIDropDownMenu_CreateInfo();
+            local info = UIDropDownMenu_CreateInfo()
             local key, value
+
+            --- Create new list
+            info.text = "Create list"
+            info.hasArrow = false
+            info.value = "ASnewlist"
+            info.func =  ASdropDownMenuItem_OnClick
+            info.owner = self:GetParent()
+            UIDropDownMenu_AddButton(info, level)
 
             --- Profile/Server list
             info.text = "Import list"
             info.hasArrow = true
             info.value = "Import"
-            UIDropDownMenu_AddButton(info,level)
+            UIDropDownMenu_AddButton(info, level)
 
             if ASsavedtable then
                 --- Copper override first
@@ -478,13 +453,15 @@ dropdown_labels = {
                 info.owner = self:GetParent()
                 UIDropDownMenu_AddButton(info,level)
                 --- Other settings
-                for key, value in pairs(ASsavedtable[serverName]) do
+                for key, value in pairs(ASsavedtable[ACTIVE_TABLE]) do
                     if dropdown_labels[key] then -- options
-                        info.text = dropdown_labels[key]
-                        info.value = key
+        
                         if type(value) == "boolean" then
                             info.checked = value
                         end
+
+                        info.text = dropdown_labels[key]
+                        info.value = key
                         info.hasArrow = false
                         info.func =  ASdropDownMenuItem_OnClick
                         info.owner = self:GetParent()
@@ -493,20 +470,21 @@ dropdown_labels = {
                 end
             end
         elseif level == 2 and UIDROPDOWNMENU_MENU_VALUE == "Import" then
-            local info = UIDropDownMenu_CreateInfo();
+            local info = UIDropDownMenu_CreateInfo()
             local key, value
 
             if ASsavedtable then
                 for key, value in pairs(ASsavedtable) do
                     if not dropdown_labels[key] then -- Found a server
-
-                        info.text = key
-                        info.value = key
-                        if key == serverName then -- indicate which list is being used
+    
+                        if key == ACTIVE_TABLE then -- indicate which list is being used
                             info.checked = true
                         else
                             info.checked = false
                         end
+
+                        info.text = key
+                        info.value = key
                         info.hasArrow = false
                         info.func =  ASdropDownMenuItem_OnClick
                         info.owner = self:GetParent()
@@ -515,7 +493,7 @@ dropdown_labels = {
                 end
             end
         else
-            local info = UIDropDownMenu_CreateInfo();
+            local info = UIDropDownMenu_CreateInfo()
             
             info.text = AS_NODATA
             info.value = nil
@@ -527,8 +505,7 @@ dropdown_labels = {
 
     function ASdropDownMenuItem_OnClick(self)
         -- this is where the actual importing takes place
-        local serverName = GetRealmName();
-        ASprint("self.value: "..tostring(self.value))
+        ASprint(MSG_C.INFO.."Dropdown selected: "..tostring(self.value))
 
         if self.value == "copperoverride" then
             ASsavedtable.copperoverride = not ASsavedtable.copperoverride
@@ -545,23 +522,15 @@ dropdown_labels = {
             ASignorenobuyout = not ASignorenobuyout
             AS_SavedVariables()
             return
+        elseif self.value == "ASnewlist" then
+            StaticPopup_Show("AS_NewList")
+            return
         end
 
-        if not (self.value == serverName) then  --dont import ourself
-          --table.insert doesnt work.. grrrrrr!!!
-            local index,temptable -- TODO: To be reviewed to may create more lists and just switch between them (per server).
-            for index,temptable in pairs(ASsavedtable[self.value]) do
-                if type(temptable) == "table" then
-                    if temptable["name"] then  --just some redundancy checking
-                        local tablecopy = {}
-                        AS_tcopy(tablecopy,temptable) -- this is an unfortunate and slow necessity because table.insert doesnt copy tables.
-                        table.insert(AS.item,tablecopy)
-                    end
-                end
-            end
+        if self.value ~= ACTIVE_TABLE then  --dont import ourself
+            AS_LoadTable(self.value)
+            ASdropDownMenuButton:Click() -- to close the dropdown
         end
-
-        AS_ScrollbarUpdate()
     end
 
 --[[//////////////////////////////////////////////////
@@ -776,6 +745,7 @@ dropdown_labels = {
         end
 
         AS.mainframe.headerframe.editbox:SetText("")
+        AS_SavedVariables()
         AS_ScrollbarUpdate()
     end
 
@@ -877,7 +847,7 @@ dropdown_labels = {
             if AS.item[AScurrentauctionsnatchitem].name then
                 AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem -- Setup in advanced for manual filters prompt
                 AS.mainframe.headerframe.stopsearchbutton:Enable()
-                --BrowseResetButton:Click()
+
                 BrowseName:SetText(ASsanitize(AS.item[AScurrentauctionsnatchitem].name))
                 AuctionFrameBrowse_Search()
 

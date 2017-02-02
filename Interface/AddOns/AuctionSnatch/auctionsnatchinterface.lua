@@ -91,13 +91,11 @@ function AScreatemainframe()
     AS.mainframe.listframe.scrollFrame = CreateFrame("ScrollFrame","FauxScrollFrameTestScrollFrame",AS.mainframe.listframe,"FauxScrollFrameTemplate")
       -- note the anchors: the area of the scrollframe is the scrollable area
       -- (that intercepts mousewheel to scroll). it does not include the scrollbar,
-      -- which is anchored off the right (hence the -28 xoffset)
+      -- which is anchored off the right
     AS.mainframe.listframe.scrollFrame:SetPoint("TOPLEFT", AS.mainframe.headerframe,"BOTTOMLEFT", 0, 6)
     AS.mainframe.listframe.scrollFrame:SetPoint("BOTTOMRIGHT", AS.mainframe, "BOTTOMRIGHT", -40, 38)
-    --AS.mainframe.mainlistframe._scrollframe:SetHeight(AS_LISTHEIGHT)
-      -- make sure frame.ScrollFrameUpdate defined early -- and be prepared for
-      -- that function to run before the scrollframe has any real data
-    F.ReskinScroll(AS.mainframe.listframe.scrollFrame.ScrollBar)
+
+    F.ReskinScroll(AS.mainframe.listframe.scrollFrame.ScrollBar) -- Aurora
     AS.mainframe.listframe.scrollFrame:SetScript("OnShow",AS_ScrollbarUpdate)
     AS.mainframe.listframe.scrollFrame:SetScript("OnVerticalScroll",function(self,offset)
         FauxScrollFrame_OnVerticalScroll(self,offset,20,AS_ScrollbarUpdate)
@@ -261,8 +259,16 @@ function AScreatemainframe()
         -------------- SCRIPT ----------------
             AS.mainframe.headerframe.deletelistbutton:SetScript("OnClick", function(self)
                 if IsControlKeyDown() then
-                    local x
-                    AS.item = {}
+                    -- delete list if not current server name
+                    if GetRealmName() == ACTIVE_TABLE then
+                        ASprint("Resetting server list")
+                        AS.item = {}
+                        AS_SavedVariables()
+                    else
+                        ASprint("Deleting list: "..ACTIVE_TABLE)
+                        ASsavedtable[ACTIVE_TABLE] = nil
+                        AS_LoadTable(GetRealmName())
+                    end
                     AS_ScrollbarUpdate()
                 end
             end)
@@ -428,7 +434,6 @@ function ASresetpriceignore(self) -- manual price menu option
     end
 end
 
-
 function ASdeleterow(self)
     local listnum = ASbuttontolistnum(self)
 
@@ -442,6 +447,12 @@ function ASdeleterow(self)
     AS.optionframe:Hide()
     AS_ScrollbarUpdate() -- Necessary to remove empty gap
     AS_SavedVariables()
+end
+
+function AS_NewList(listname)
+    ASprint(MSG_C.EVENT.."New list created:|r"..listname)
+    AS_template(listname)
+    AS_ScrollbarUpdate()
 end
 
 
@@ -1083,7 +1094,7 @@ function AScreatelistbutton(i)
                           ignoreprice=value
                        end
 
-                       key=itemRarityColors[quality]..key.."|r"
+                       key=RARITY_C[quality]..key.."|r"
 
                        if (ignoreprice == 0) then
                             messagestring = messagestring.."\n"..key..": |cff9d9d9d"..AS_ALWAYS.."|r"
@@ -1112,7 +1123,7 @@ function AScreatelistbutton(i)
         buttontemplate:SetScript("OnDoubleClick", function(self)
             if (BrowseName) then
                  if(self.leftstring:GetText()) then
-                    BrowseResetButton:Click()
+                    AuctionFrameBrowse.page = 0
                     BrowseName:SetText(ASsanitize(self.leftstring:GetText()))
                     AuctionFrameBrowse_Search()
                   --search for the auction in that box
