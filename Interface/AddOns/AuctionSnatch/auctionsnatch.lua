@@ -854,24 +854,21 @@ OPT_LABEL = {
                     ASprint(MSG_C.ERROR.."Auctioneer detected")
                 end
 
-                if AS.item[AScurrentauctionsnatchitem].name then
-                    AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem -- Setup in advanced for manual filters prompt
-                    AS.mainframe.headerframe.stopsearchbutton:Enable()
+                AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem -- Setup in advanced for manual filters prompt
+                AS.mainframe.headerframe.stopsearchbutton:Enable()
 
-                    BrowseResetButton:Click()
-                    BrowseName:SetText(ASsanitize(item.name))
-                    -- Sort auctions by buyout price, or minimum bid if there's no buyout price
-                    SortAuctionSetSort("list", "minbidbuyout")
-                    SortAuctionSetSort("list", "bid")
-                    SortAuctionSetSort("list", "unitprice")
-                    AuctionFrameBrowse_Search()
+                BrowseResetButton:Click()
+                BrowseName:SetText(ASsanitize(item.name))
+                -- Sort auctions by buyout price, or minimum bid if there's no buyout price
+                SortAuctionSetSort("list", "minbidbuyout")
+                SortAuctionSetSort("list", "bid")
+                SortAuctionSetSort("list", "unitprice")
+                AuctionFrameBrowse_Search()
 
-                    AScurrentahresult = 0
-                    AS.status = STATE.WAITINGFORUPDATE
-                    return true
-                else
-                    ASprint(MSG_C.ERROR.."Could not find current index in AS.item")
-                end
+                AScurrentahresult = 0
+                AS.status = STATE.WAITINGFORUPDATE
+                return true
+
             else
                 ASprint(MSG_C.INFO.."Ignoring query: ("..AScurrentauctionsnatchitem..")|r "..item.name, 1)
                 AScurrentauctionsnatchitem = AScurrentauctionsnatchitem + 1
