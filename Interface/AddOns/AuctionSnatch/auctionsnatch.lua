@@ -29,7 +29,8 @@
     but was unsucessful. Modified to fit Altz UI (using Aurora)
     http://www.wowinterface.com/downloads/info21263-AltzUIforLegion.html#info
 
-    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
+----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
+
 
 AS_FRAMEWHITESPACE = 10
 AS_BUTTON_HEIGHT = 23
@@ -69,12 +70,13 @@ RARITY_C = {
    --[8] = "|cffe6cc80", -- artifact (not in ah index)
 }
 
-dropdown_labels = {
-    ["copperoverride"] = "Copper override",
-    ["ASnodoorbell"] = AS_DOORBELLSOUND,
-    ["ASignorebid"] = "Ignore bids",
-    ["ASignorenobuyout"] = "Ignore no buyout"
+OPT_LABEL = {
+    ['copperoverride'] = "Copper override",
+    ['ASnodoorbell'] = AS_DOORBELLSOUND,
+    ['ASignorebid'] = "Ignore bids",
+    ['ASignorenobuyout'] = "Ignore no buyout"
 }
+
 
 --[[//////////////////////////////////////////////////
 
@@ -120,31 +122,31 @@ dropdown_labels = {
             end
 
         ------ STATIC DIALOG // To get new list name
-        StaticPopupDialogs["AS_NewList"] = {
-            text = "Enter name for the new list",
-            button1 = "Create",
-            button2 = "Cancel",
-            OnShow = function (self, data)
-                --self.editBox:SetText("")
-                self.button1:Disable()
-            end,
-            OnAccept = function (self, data, data2)
-                AS_NewList(self.editBox:GetText())
-            end,
-            EditBoxOnTextChanged = function (self, data)
-                text = self:GetParent().editBox:GetText()
-                if text == "" then
-                    self:GetParent().button1:Disable()
-                else
-                    self:GetParent().button1:Enable()
-                end
-            end,
-            hasEditBox = true,
-            timeout = 0,
-            whileDead = true,
-            hideOnEscape = true,
-            preferredIndex = 3  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
-        }
+            StaticPopupDialogs["AS_NewList"] = {
+                text = "Enter name for the new list",
+                button1 = "Create",
+                button2 = "Cancel",
+                OnShow = function (self, data)
+                    --self.editBox:SetText("")
+                    self.button1:Disable()
+                end,
+                OnAccept = function (self, data, data2)
+                    AS_NewList(self.editBox:GetText())
+                end,
+                EditBoxOnTextChanged = function (self, data)
+                    text = self:GetParent().editBox:GetText()
+                    if text == "" then
+                        self:GetParent().button1:Disable()
+                    else
+                        self:GetParent().button1:Enable()
+                    end
+                end,
+                hasEditBox = true,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+                preferredIndex = 3  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
+            }
 
         DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT..AS_LOADTEXT)
 
@@ -181,8 +183,7 @@ dropdown_labels = {
             AS_Initialize()
 
         elseif event == "AUCTION_ITEM_LIST_UPDATE" then
-            ASprint(MSG_C.INFO..event)
-
+            --ASprint(MSG_C.INFO..event)
             if AS.status == STATE.BUYING then
                 AS.status = STATE.EVALUATING
             end
@@ -209,6 +210,7 @@ dropdown_labels = {
         elseif event == "AUCTION_HOUSE_CLOSED" then
 
             AS.mainframe.headerframe.editbox:SetText("")
+            BrowseResetButton:Click()
             AS.prompt:Hide()
             AS.manualprompt:Hide()
             AS.status = nil
@@ -429,6 +431,12 @@ dropdown_labels = {
             local info = UIDropDownMenu_CreateInfo()
             local key, value
 
+            --- Profile/Server list
+            info.text = "Import list"
+            info.hasArrow = true
+            info.value = "Import"
+            UIDropDownMenu_AddButton(info, level)
+
             --- Create new list
             info.text = "Create list"
             info.hasArrow = false
@@ -437,15 +445,9 @@ dropdown_labels = {
             info.owner = self:GetParent()
             UIDropDownMenu_AddButton(info, level)
 
-            --- Profile/Server list
-            info.text = "Import list"
-            info.hasArrow = true
-            info.value = "Import"
-            UIDropDownMenu_AddButton(info, level)
-
             if ASsavedtable then
                 --- Copper override first
-                info.text = dropdown_labels["copperoverride"]
+                info.text = OPT_LABEL["copperoverride"]
                 info.value = "copperoverride"
                 info.checked = ASsavedtable.copperoverride
                 info.hasArrow = false
@@ -454,13 +456,13 @@ dropdown_labels = {
                 UIDropDownMenu_AddButton(info,level)
                 --- Other settings
                 for key, value in pairs(ASsavedtable[ACTIVE_TABLE]) do
-                    if dropdown_labels[key] then -- options
+                    if OPT_LABEL[key] then -- options
         
                         if type(value) == "boolean" then
                             info.checked = value
                         end
 
-                        info.text = dropdown_labels[key]
+                        info.text = OPT_LABEL[key]
                         info.value = key
                         info.hasArrow = false
                         info.func =  ASdropDownMenuItem_OnClick
@@ -475,7 +477,7 @@ dropdown_labels = {
 
             if ASsavedtable then
                 for key, value in pairs(ASsavedtable) do
-                    if not dropdown_labels[key] then -- Found a server
+                    if not OPT_LABEL[key] then -- Found a server
     
                         if key == ACTIVE_TABLE then -- indicate which list is being used
                             info.checked = true
@@ -505,7 +507,7 @@ dropdown_labels = {
 
     function ASdropDownMenuItem_OnClick(self)
         -- this is where the actual importing takes place
-        ASprint(MSG_C.INFO.."Dropdown selected: "..tostring(self.value))
+        ASprint(MSG_C.INFO.."Dropdown selected:|r "..tostring(self.value))
 
         if self.value == "copperoverride" then
             ASsavedtable.copperoverride = not ASsavedtable.copperoverride
@@ -528,6 +530,7 @@ dropdown_labels = {
         end
 
         if self.value ~= ACTIVE_TABLE then  --dont import ourself
+            AS.mainframe.listframe.scrollFrame:SetVerticalScroll(0)
             AS_LoadTable(self.value)
             ASdropDownMenuButton:Click() -- to close the dropdown
         end
@@ -599,8 +602,8 @@ dropdown_labels = {
         ------------------------------------------------------------------
         AS[AS_BUTTONBUYOUT] = function()  -- Buyout prompt item
                 local _, buyout = AS_GetCost()
-                
-                ASprint(MSG_C.DEBUG.."Buying index: "..selected_auction)
+                selected_auction = GetSelectedAuctionItem("list") -- The only way it works correctly...
+                ASprint(MSG_C.DEBUG.."Buying index: "..selected_auction.." price: "..buyout, 1)
                 
                 PlaceAuctionBid("list", selected_auction, buyout) -- The actual buying call
                 -- The next item will be the same location as what was just bought
@@ -611,8 +614,8 @@ dropdown_labels = {
 
         AS[AS_BUTTONBID] = function() -- Bid prompt item
                 local bid = AS_GetCost()
-
-                ASprint(MSG_C.DEBUG.."Bidding on index: "..selected_auction)
+                selected_auction = GetSelectedAuctionItem("list") -- The only way it works correctly...
+                ASprint(MSG_C.DEBUG.."Bidding on index: "..selected_auction.." price: "..bid, 1)
 
                 PlaceAuctionBid("list", selected_auction, bid)  --the actual bidding call.
                 AS.prompt:Hide()
@@ -829,7 +832,7 @@ dropdown_labels = {
         end
         
         if (AScurrentauctionsnatchitem > table.maxn(AS.item)) then
-            ASprint(MSG_C.INFO.."Nothing to process. RESET")
+            ASprint(MSG_C.INFO.."Nothing to process. Reset", 1)
 
             AS.status = nil
             AScurrentauctionsnatchitem = 1
@@ -838,7 +841,7 @@ dropdown_labels = {
         end
 
         if AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then  --some mods change the default AH frame name
-            ASprint(MSG_C.INFO.."Called query: ("..AScurrentauctionsnatchitem..") "..AS.item[AScurrentauctionsnatchitem].name)
+            ASprint(MSG_C.INFO.."Called query: ("..AScurrentauctionsnatchitem..") "..AS.item[AScurrentauctionsnatchitem].name, 1)
 
             if Auctioneer then
                 ASprint(MSG_C.ERROR.."Auctioneer detected")
@@ -848,14 +851,13 @@ dropdown_labels = {
                 AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem -- Setup in advanced for manual filters prompt
                 AS.mainframe.headerframe.stopsearchbutton:Enable()
 
+                BrowseResetButton:Click()
                 BrowseName:SetText(ASsanitize(AS.item[AScurrentauctionsnatchitem].name))
-                AuctionFrameBrowse_Search()
-
                 -- Sort auctions by buyout price, or minimum bid if there's no buyout price
                 SortAuctionSetSort("list", "minbidbuyout")
                 SortAuctionSetSort("list", "bid")
                 SortAuctionSetSort("list", "unitprice")
-                SortAuctionApplySort("list")
+                AuctionFrameBrowse_Search()
 
                 AScurrentahresult = 0
                 AS.status = STATE.WAITINGFORUPDATE
@@ -895,9 +897,10 @@ dropdown_labels = {
                 return false
             end
 
-            -- Processing-wise, this here is a very expensive hit, so only call once
+            -- auction_item:    [1]name, [2]texture, [3]count, [4]quality, [5]canUse, [6]level, [7]levelColHeader,
+            --                  [8]minBid, [9]minIncrement, [10]buyoutPrice, [11]bidAmount, [12]highBidder,
+            --                  [13]highBidderFullName, [14]owner, [15]ownerFullName, [16]saleStatus, [17]itemId, [18]hasAllInfo
             auction_item = {GetAuctionItemInfo("list", AScurrentahresult)}
-            --local name, texture, count, quality, canUse, level, levelColHeader, minBid, minIncrement, buyoutPrice, bidAmount, highBidder, highBidderFullName, owner, ownerFullName, saleStatus, itemId, hasAllInfo = GetAuctionItemInfo("list", AScurrentahresult)
 
             if AS_IsShowPrompt() then
                 
@@ -907,7 +910,7 @@ dropdown_labels = {
                 end
 
                 SetSelectedAuctionItem("list", AScurrentahresult)
-                selected_auction = AScurrentahresult
+                AuctionFrameBrowse_Update()
 
                 AS.status = STATE.WAITINGFORPROMPT
                 AS.prompt:Show()
@@ -926,6 +929,7 @@ dropdown_labels = {
             -- so hack into the blizzard ui code to go to the next page
             AuctionFrameBrowse.page = AuctionFrameBrowse.page + 1
             AuctionFrameBrowse_Search()
+            BrowseScrollFrame:SetVerticalScroll(0)
 
             AScurrentahresult = 0
             AS.status = STATE.WAITINGFORUPDATE
@@ -975,7 +979,7 @@ dropdown_labels = {
             return false
 
         elseif cutoffprice and ASignorebid and (cutoffprice <= peritembuyout) then
-            -- Ignore bid, item is higher than cutoff price
+            -- Ignore bid, item buyout higher than cutoff price
             return false
 
         elseif cutoffprice and (cutoffprice <= peritembid) then
@@ -1007,6 +1011,8 @@ dropdown_labels = {
         if cutoffprice then
             local strcutoffprice = AS_CUTOFF.."\n"..ASGSC(cutoffprice)
             AS.prompt.lowerstring:SetText(strcutoffprice)
+        else
+            AS.prompt.lowerstring:SetText("")
         end
         -- Set the title
         if quality then

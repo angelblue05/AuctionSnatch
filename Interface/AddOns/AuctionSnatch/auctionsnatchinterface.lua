@@ -163,11 +163,13 @@ function AScreatemainframe()
         -------------- SCRIPT ----------------
             AS.mainframe.headerframe.stopsearchbutton:SetScript("OnClick", function(self)
                 AS.mainframe.headerframe.stopsearchbutton:Disable()
-                
                 AS.prompt:Hide()
+
                 AScurrentahresult = 0
                 AS.status = nil
                 AS.status_override = nil
+                -- set default AH sort (could not achieve the same result using API)
+                AuctionFrame_SetSort("list", "quality", false)
             end)
             AS.mainframe.headerframe.stopsearchbutton:SetScript("OnEnter", function(self)
                 tooltip = "Stop the current search. It can be resumed by shift-clicking Start Search."
@@ -261,11 +263,11 @@ function AScreatemainframe()
                 if IsControlKeyDown() then
                     -- delete list if not current server name
                     if GetRealmName() == ACTIVE_TABLE then
-                        ASprint("Resetting server list")
+                        ASprint(MSG_C.EVENT.."[ Resetting server list ]")
                         AS.item = {}
                         AS_SavedVariables()
                     else
-                        ASprint("Deleting list: "..ACTIVE_TABLE)
+                        ASprint(MSG_C.EVENT.."[ Deleting list: "..ACTIVE_TABLE.." ]")
                         ASsavedtable[ACTIVE_TABLE] = nil
                         AS_LoadTable(GetRealmName())
                     end
@@ -689,11 +691,11 @@ function AScreateprompt()
     -------------------------------------------------------------------------------
     --this is the prompt frame and its children
     -------------------------------------------------------------------------------
-    ASprint("|c004499ffCreating prompt frame")
+    ASprint(MSG_C.EVENT.."Creating prompt frame")
 
     ------ MANUAL PROMPT FRAME
         -------------- STYLE ----------------
-            AS.prompt = CreateFrame("Frame", "ASpromptframe", UIParent)
+            AS.prompt = CreateFrame("Frame", "ASpromptframe", AS.mainframe)
             AS.prompt:SetPoint("TOPLEFT", AS.mainframe, "TOPRIGHT", 3,0)
             AS.prompt:SetHeight(420)  --some addons change font size, so this will be overridden in ASinitialize
             AS.prompt:SetWidth(200)
@@ -713,10 +715,10 @@ function AScreateprompt()
                 AS.prompt:StopMovingOrSizing()
             end)
             AS.prompt:SetScript("OnShow", function(self)
-                ASprint("|c0055ffffPrompt is shown.  AS.status = "..tostring(AS.status))
+                ASprint(MSG_C.INFO.."Prompt is shown")
             end)
             AS.prompt:SetScript("OnHide", function(self)
-                ASprint("|c0055ffffPrompt is Hidden.  AS.status = "..tostring(AS.status))
+                ASprint(MSG_C.INFO.."Prompt is hidden")
 
                 if AS.status == nil then
                     AS.mainframe.headerframe.stopsearchbutton:Click()
@@ -1123,6 +1125,7 @@ function AScreatelistbutton(i)
         buttontemplate:SetScript("OnDoubleClick", function(self)
             if (BrowseName) then
                  if(self.leftstring:GetText()) then
+                    BrowseResetButton:Click()
                     AuctionFrameBrowse.page = 0
                     BrowseName:SetText(ASsanitize(self.leftstring:GetText()))
                     AuctionFrameBrowse_Search()
@@ -1131,14 +1134,25 @@ function AScreatelistbutton(i)
             end
       end)
 
-   -----------------------------the faint box background
-   ASnormaltexture,AShighlighttexture = createAStexture(buttontemplate)
-   buttontemplate:SetNormalTexture(ASnormaltexture) --i had to make a custom texture, modifying the AH button frame, because the default AH button template, for unknown reasons, would not fill the button
+    -- Create button texture
+    local normal_tex = buttontemplate:CreateTexture()
+    normal_tex:SetHeight(AS_BUTTON_HEIGHT)
+    normal_tex:SetPoint("left",30,0)
+    normal_tex:SetPoint("right",-12,0)
+    normal_tex:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
+    normal_tex:SetTexCoord(.75,.75,0,0.5)
 
-   ----------------------------- the highlight mouseover
-   buttontemplate:SetHighlightTexture(AShighlighttexture)  --this ones a little softer on the eyes
+    buttontemplate:SetNormalTexture(normal_tex)
 
-   --F.Reskin(buttontemplate)
+    local high_tex = buttontemplate:CreateTexture()
+    high_tex:SetHeight(AS_BUTTON_HEIGHT-1)
+    --high_tex:SetWidth(1) --the gap between text and anything else
+    high_tex:SetPoint("LEFT", normal_tex, 0, -1)
+    high_tex:SetPoint("RIGHT",normal_tex)
+    high_tex:SetTexture(C.media.backdrop) -- Aurora
+    high_tex:SetVertexColor(0.945, 0.847, 0.152,0.3)
+
+    buttontemplate:SetHighlightTexture(high_tex)
 
    ------------------------------the text
    --cant use button text because button text cant be left justified
@@ -1146,8 +1160,8 @@ function AScreatelistbutton(i)
    buttontemplate.leftstring:SetJustifyH("LEFT")
    buttontemplate.leftstring:SetJustifyV("CENTER")
    buttontemplate.leftstring:SetWordWrap(false)
-   buttontemplate.leftstring:SetPoint("LEFT", ASnormaltexture,"LEFT", 10, 0)
-   buttontemplate.leftstring:SetPoint("RIGHT", ASnormaltexture,"RIGHT", -2, 0)
+   buttontemplate.leftstring:SetPoint("LEFT", normal_tex,"LEFT", 10, 0)
+   buttontemplate.leftstring:SetPoint("RIGHT", normal_tex,"RIGHT", -2, 0)
 
 
    ---------------------------------- the quantity
@@ -1184,48 +1198,6 @@ function AScreatelistbutton(i)
    return buttontemplate
 end
 
-----------------------------------------------------------------------------
-------------------------------------------------------------------------------
-
-function createAStexture(ourbutton)
-   local   normaltextureleft,normaltextureright,normaltexture,highlighttexture = nil
-   --left
-   --[[normaltextureleft=ourbutton:CreateTexture()
-   normaltextureleft:SetHeight(AS_BUTTON_HEIGHT)
-   normaltextureleft:SetWidth(1) --10 is the gap between text and anything else
-   normaltextureleft:SetPoint("left",30,0)
-   --normaltextureleft:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
-   normaltextureleft:SetTexCoord(0,.07,0,1)
-   normaltextureleft:Hide()
-   --right
-   normaltextureright=ourbutton:CreateTexture()
-   normaltextureright:SetHeight(AS_BUTTON_HEIGHT)
-   normaltextureright:SetWidth(2)
-   normaltextureright:SetPoint("right",-10,0)
-   --normaltextureright:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
-   normaltextureright:SetTexCoord(0,.8,0,1)
-   normaltextureright:Hide()]]
-   --center?
-   normaltexture=ourbutton:CreateTexture()
-   normaltexture:SetHeight(AS_BUTTON_HEIGHT)
-   normaltexture:SetPoint("left",30,0)
-   normaltexture:SetPoint("right",-12,0)
-   normaltexture:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
-   normaltexture:SetTexCoord(.75,.75,0,0.5)
-
-   --center highlight
-   highlighttexture=ourbutton:CreateTexture()
-   highlighttexture:SetHeight(AS_BUTTON_HEIGHT-1)
-   highlighttexture:SetWidth(1) --10 is the gap between text and anything else
-   highlighttexture:SetPoint("left",normaltexture,0,-1)
-   highlighttexture:SetPoint("right",normaltexture)
-   highlighttexture:SetTexture(C.media.backdrop)
-   highlighttexture:SetVertexColor(0.945, 0.847, 0.152,0.3)
-   --highlighttexture:SetTexCoord(0,1,.1,.1)
-
-
-   return normaltexture,highlighttexture
-end
 
 function AScreateauctiontab()
 

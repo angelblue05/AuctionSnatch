@@ -318,25 +318,12 @@ function AScolortest()
 end
 
 function ASbuttontolistnum(button)
-
     if AS.item.LastListButtonClicked then
-        ASprint(MSG_C.INFO.."Activated button: "..AS.item.LastListButtonClicked)
+        ASprint(MSG_C.INFO.."Activated button:|r "..AS.item.LastListButtonClicked)
         return AS.item.LastListButtonClicked
     end
-    --see the 'setparent()' call in the onclick handler below
-    if (button:GetParent() and button:GetParent():GetParent()) then
-        local optionframeparent = button:GetParent():GetParent()
-       if(optionframeparent.buttonnumber) then
-          local value
-          value=ASscrollbar:GetValue()
-          local buttonnumber=tonumber(optionframeparent.buttonnumber)
-          ASprint("buttonnumber="..buttonnumber)
-          value=ASscrollbar:GetValue()
-          
-          return buttonnumber
-        end
-    end
 end
+
 function ASremoveduplicates(ASlist)
 
     local newlist = {}
