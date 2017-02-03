@@ -37,13 +37,7 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                     AS_SavedVariables()
                 end)
                 AS.mainframe:SetScript("OnShow", function(self)
-                    AS.mainframe:SetFrameStrata("HIGH")
-                end)
-                AS.mainframe:SetScript("OnEnter", function(self)
-                    AS.mainframe:SetFrameStrata("HIGH")
-                end)
-                AS.mainframe:SetScript("OnLeave", function(self)
-                    AS.mainframe:SetFrameStrata("LOW")
+                    AS.mainframe:SetFrameStrata(AuctionFrameBrowse:GetFrameStrata())
                 end)
 
         ------ CLOSE BUTTON
@@ -374,7 +368,6 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                     end
                 end)
                 button_tmp:SetScript("OnEnter", function(self)
-                    local mainfunc = AS.mainframe:GetScript("OnEnter")
                     local scrollvalue = FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
                     local idx = AS.item[self.buttonnumber + scrollvalue]
 
@@ -389,13 +382,8 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                         end
                     end
                     ASshowtooltip(self, strmsg)
-                    mainfunc()
                 end)
-                button_tmp:SetScript("OnLeave", function(self)
-                    local mainfunc = AS.mainframe:GetScript("OnLeave")
-                    AShidetooltip()
-                    mainfunc()
-                end)
+                button_tmp:SetScript("OnLeave", AShidetooltip)
                 button_tmp:SetScript("OnDoubleClick", function(self)
                     BrowseResetButton:Click()
                     AuctionFrameBrowse.page = 0
