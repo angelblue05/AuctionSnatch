@@ -844,30 +844,37 @@ OPT_LABEL = {
             return false
         end
 
+        local item = AS.item[AScurrentauctionsnatchitem]
         if AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then  --some mods change the default AH frame name
-            ASprint(MSG_C.INFO.."Called query: ("..AScurrentauctionsnatchitem..") "..AS.item[AScurrentauctionsnatchitem].name, 1)
+            if AS.status_override or (item.ignoretable and item.ignoretable[item.name].cutoffprice and item.ignoretable[item.name].cutoffprice > 0) then
+                ASprint(MSG_C.INFO.."Called query: ("..AScurrentauctionsnatchitem..")|r "..item.name, 1)
 
-            if Auctioneer then
-                ASprint(MSG_C.ERROR.."Auctioneer detected")
-            end
+                if Auctioneer then
+                    ASprint(MSG_C.ERROR.."Auctioneer detected")
+                end
 
-            if AS.item[AScurrentauctionsnatchitem].name then
-                AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem -- Setup in advanced for manual filters prompt
-                AS.mainframe.headerframe.stopsearchbutton:Enable()
+                if AS.item[AScurrentauctionsnatchitem].name then
+                    AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem -- Setup in advanced for manual filters prompt
+                    AS.mainframe.headerframe.stopsearchbutton:Enable()
 
-                BrowseResetButton:Click()
-                BrowseName:SetText(ASsanitize(AS.item[AScurrentauctionsnatchitem].name))
-                -- Sort auctions by buyout price, or minimum bid if there's no buyout price
-                SortAuctionSetSort("list", "minbidbuyout")
-                SortAuctionSetSort("list", "bid")
-                SortAuctionSetSort("list", "unitprice")
-                AuctionFrameBrowse_Search()
+                    BrowseResetButton:Click()
+                    BrowseName:SetText(ASsanitize(item.name))
+                    -- Sort auctions by buyout price, or minimum bid if there's no buyout price
+                    SortAuctionSetSort("list", "minbidbuyout")
+                    SortAuctionSetSort("list", "bid")
+                    SortAuctionSetSort("list", "unitprice")
+                    AuctionFrameBrowse_Search()
 
-                AScurrentahresult = 0
-                AS.status = STATE.WAITINGFORUPDATE
-                return true
+                    AScurrentahresult = 0
+                    AS.status = STATE.WAITINGFORUPDATE
+                    return true
+                else
+                    ASprint(MSG_C.ERROR.."Could not find current index in AS.item")
+                end
             else
-                ASprint(MSG_C.ERROR.."Could not find current index in AS.item")
+                ASprint(MSG_C.INFO.."Ignoring query: ("..AScurrentauctionsnatchitem..")|r "..item.name, 1)
+                AScurrentauctionsnatchitem = AScurrentauctionsnatchitem + 1
+                return AS_QueryAH()
             end
         else
             ASprint(MSG_C.ERROR.."Can't find auction frame object")
