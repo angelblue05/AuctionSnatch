@@ -59,17 +59,6 @@ MSG_C = {
     ['BOOL'] = "|cff2BED48"
 }
 
-RARITY_C = {
-   [-1] = "|cffffff9a", -- all (ah: -1)
-   [0] = "|cff9d9d9d", -- poor (ah: 0)
-   [1] = "|cffffffff", -- common (ah: 1)
-   [2] = "|cff1eff00", -- uncommon (ah: 2)
-   [3] = "|cff0070dd", -- rare (ah: 3)
-   [4] = "|cffa335ee"  -- epic (ah: 4)
-   --[7] = "|cffff8000", -- legendary (not in ah index)
-   --[8] = "|cffe6cc80", -- artifact (not in ah index)
-}
-
 OPT_LABEL = {
     ['copperoverride'] = "Copper override",
     ['ASnodoorbell'] = AS_DOORBELLSOUND,
@@ -82,6 +71,8 @@ OPT_LABEL = {
 
     FUNCTIONS TRIGGERED VIA XML
     auctionsnatch.xml
+
+    AS_OnLoad, AS_OnEvent, AS_OnUpdate
 
 ----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
 
@@ -162,9 +153,9 @@ OPT_LABEL = {
 
             SlashCmdList["AS"] = AS_Main;
 
-        AScreatemainframe()
-        AScreateprompt()
-        AScreatemanualprompt()
+        AS_CreateMainFrame()
+        AS_CreatePrompt()
+        AS_CreateManualPrompt()
 
         table.insert(UISpecialFrames, AS.mainframe:GetName())
         table.insert(UISpecialFrames, AS.prompt:GetName())
@@ -191,7 +182,7 @@ OPT_LABEL = {
         elseif event == "AUCTION_HOUSE_SHOW" then
 
             if not ASauctiontab then
-                AScreateauctiontab()
+                AS_CreateAuctionTab()
             end
 
             if ASautostart and not ASautoopen then
@@ -276,6 +267,10 @@ OPT_LABEL = {
 --[[//////////////////////////////////////////////////
 
     MAIN FUNCTIONS
+
+    AS_Initialize, AS_Main, AS_SavedVariables
+    ASdropDownMenu_Initialize,
+    ASdropDownMenuItem_OnClick
 
 ----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
 
@@ -423,7 +418,7 @@ OPT_LABEL = {
         end
     end
 
-    function ASdropDownMenu_Initialise(self, level)
+    function ASdropDownMenu_Initialize(self, level)
         --drop down menues can have sub menues. The value of level determines the drop down sub menu tier
         local level = level or 1 
 
@@ -539,6 +534,11 @@ OPT_LABEL = {
 --[[//////////////////////////////////////////////////
 
     SECONDARY FUNCTIONS
+
+    AS_ScrollbarUpdate, AS_CreateButtonHandlers,
+    AS_AddItem, AS_MoveListButton,
+    AS_ChatFrame_OnHyperlinkShow,
+    AS_ContainerFrameItemButton_OnModifiedClick
 
 ----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
 
@@ -821,6 +821,10 @@ OPT_LABEL = {
 --[[//////////////////////////////////////////////////
 
     AUCTION HOUSE FUNCTIONS
+
+    AS_QueryAH, AS_Evaluate, AS_IsEndPage,
+    AS_IsEndResults, AS_IsShowPrompt, AS_CutoffPrice,
+    AS_GetCost, AS_IsAlwaysIgnore
 
 ----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
     
