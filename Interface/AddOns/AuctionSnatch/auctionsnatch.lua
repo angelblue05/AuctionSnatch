@@ -63,7 +63,8 @@ OPT_LABEL = {
     ['copperoverride'] = "Copper override",
     ['ASnodoorbell'] = AS_DOORBELLSOUND,
     ['ASignorebid'] = "Ignore bids",
-    ['ASignorenobuyout'] = "Ignore no buyout"
+    ['ASignorenobuyout'] = "Ignore no buyout",
+    ['cancelauction'] = "Cancel auction"
 }
 
 
@@ -111,6 +112,8 @@ OPT_LABEL = {
                     return old_BrowseName() --for some reason this causes an infinate loop :( > Can't seem to trigger infinite loop -AB5
                 end)
             end
+
+            --GetAuctionItemLink("owner", self:GetParent():GetID() + GetEffectiveAuctionsScrollFrameOffset())
 
         ------ STATIC DIALOG // To get new list name
             StaticPopupDialogs["AS_NewList"] = {
@@ -196,6 +199,17 @@ OPT_LABEL = {
             elseif ASautoopen then
                 -- Automatically display frame, just don't auto start
                 AS_Main()
+            end
+
+            -------------- THANK YOU AUCTIONEER ----------------
+            for i = 1, 199 do
+                local owner_button = _G["AuctionsButton"..i]
+                if not owner_button then
+                    break
+                end
+                owner_button:RegisterForClicks("RightButtonUp")
+                _G["AuctionsButton"..i.."Item"]:RegisterForClicks("RightButtonUp")
+                owner_button:SetScript("OnClick", AS_CancelAuction)
             end
 
         elseif event == "AUCTION_HOUSE_CLOSED" then
@@ -399,6 +413,7 @@ OPT_LABEL = {
             if not ASsavedtable then
                 ASsavedtable = {}
                 ASsavedtable.copperoverride = true
+                ASsavedtable.cancelauction = false
             end
 
             ASsavedtable[ACTIVE_TABLE] = {}
@@ -449,7 +464,15 @@ OPT_LABEL = {
                 info.hasArrow = false
                 info.func =  ASdropDownMenuItem_OnClick
                 info.owner = self:GetParent()
-                UIDropDownMenu_AddButton(info,level)
+                UIDropDownMenu_AddButton(info, level)
+                --- Cancel auction on right click
+                info.text = OPT_LABEL["cancelauction"]
+                info.value = "cancelauction"
+                info.checked = ASsavedtable.cancelauction
+                info.hasArrow = false
+                info.func =  ASdropDownMenuItem_OnClick
+                info.owner = self:GetParent()
+                UIDropDownMenu_AddButton(info, level)
                 --- Other settings
                 for key, value in pairs(ASsavedtable[ACTIVE_TABLE]) do
                     if OPT_LABEL[key] then -- options
@@ -502,29 +525,35 @@ OPT_LABEL = {
     end
 
     function ASdropDownMenuItem_OnClick(self)
-        -- this is where the actual importing takes place
-        ASprint(MSG_C.INFO.."Dropdown selected:|r "..tostring(self.value))
 
         if self.value == "copperoverride" then
             ASsavedtable.copperoverride = not ASsavedtable.copperoverride
+            ASprint(MSG_C.INFO.."Copper Override:|r "..MSG_C.BOOL..tostring(ASsavedtable.copperoverride))
+            return
+        elseif self.value == "cancelauction" then
+            ASsavedtable.cancelauction = not ASsavedtable.cancelauction
+            ASprint(MSG_C.INFO.."Cancel Auction (on right click):|r "..MSG_C.BOOL..tostring(ASsavedtable.cancelauction))
             return
         elseif self.value == "ASnodoorbell" then
             ASnodoorbell = not ASnodoorbell
             AS_SavedVariables()
+            ASprint(MSG_C.INFO.."Doorbell sound:|r "..MSG_C.BOOL..tostring(ASnodoorbell))
             return
         elseif self.value == "ASignorebid" then
             ASignorebid = not ASignorebid
             AS_SavedVariables()
+            ASprint(MSG_C.INFO.."Ignore bids:|r "..MSG_C.BOOL..tostring(ASignorebid))
             return
         elseif self.value == "ASignorenobuyout" then
             ASignorenobuyout = not ASignorenobuyout
             AS_SavedVariables()
+            ASprint(MSG_C.INFO.."Ignore no buyouts:|r "..MSG_C.BOOL..tostring(ASignorenobuyout))
             return
         elseif self.value == "ASnewlist" then
             StaticPopup_Show("AS_NewList")
             return
         end
-
+        -- Import list
         if self.value ~= ACTIVE_TABLE then  --dont import ourself
             AS.mainframe.listframe.scrollFrame:SetVerticalScroll(0)
             AS_LoadTable(self.value)
@@ -928,7 +957,7 @@ OPT_LABEL = {
                 end
 
                 SetSelectedAuctionItem("list", AScurrentahresult)
-                --AuctionFrameBrowse_Update()
+                AuctionFrameBrowse_Update()
 
                 AS.status = STATE.WAITINGFORPROMPT
                 AS.prompt:Show()
@@ -1142,4 +1171,12 @@ OPT_LABEL = {
             end
         end
         return false
+    end
+
+    function AS_CancelAuction(self, button)
+        if ASsavedtable.cancelauction then
+            local index = self:GetID() + GetEffectiveAuctionsScrollFrameOffset()
+            SetEffectiveSelectedOwnerAuctionItemIndex(index) -- updates any WoWToken offset
+            CancelAuction(GetSelectedAuctionItem("owner"))
+        end
     end
