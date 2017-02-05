@@ -75,10 +75,11 @@ function ASGSC(money, exact, dontUseColorCodes)
    local TEXT_NONE = "0"
    
    local GSC_GOLD="ffd100"
-   local GSC_SILVER="e6e6e6"
+   local GSC_SILVER="999999"
    local GSC_COPPER="c8602c"
-   local GSC_START="|cff%s%d%s|r"
-   local GSC_PART=".|cff%s%02d%s|r"
+   local GSC_VALUE = "ffffff"
+   local GSC_START="|cff%s%s|r|cff%s%s|r"
+   local GSC_PART=".|cff%s%s|r|cff%s%s|r"
    local GSC_NONE="|cffa0a0a0"..TEXT_NONE.."|r"
    
    if (not money) then money = 0 end
@@ -87,9 +88,9 @@ function ASGSC(money, exact, dontUseColorCodes)
    
    local gsc = ""
    local fmt = GSC_START
-   if (g > 0) then gsc = gsc..string.format(fmt, GSC_GOLD, g, 'g') fmt = GSC_PART end
-   if (s > 0) or (c > 0) then gsc = gsc..string.format(fmt, GSC_SILVER, s, 's') fmt = GSC_PART end
-   if (c > 0) then gsc = gsc..string.format(fmt, GSC_COPPER, c, 'c') end
+   if (g > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, g, GSC_GOLD, 'g') fmt = GSC_PART end
+   if (s > 0) or (c > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, s, GSC_SILVER, 's') fmt = GSC_PART end
+   if (c > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, c, GSC_COPPER, 'c') end
    if (gsc == "") then gsc = GSC_NONE end
    
    return gsc

@@ -310,6 +310,7 @@ OPT_LABEL = {
         ASprint(MSG_C.DEBUG.."Font height:|r "..height)
         ASprint(MSG_C.DEBUG.."New prompt height:|r "..new_height)
         AS.prompt:SetHeight(new_height)
+        AS.manualprompt:SetHeight(new_height)
 
         -- Generate scroll bar items
         AS_ScrollbarUpdate()
@@ -603,7 +604,7 @@ OPT_LABEL = {
         AS[AS_BUTTONBUYOUT] = function()  -- Buyout prompt item
                 local _, buyout = AS_GetCost()
                 selected_auction = GetSelectedAuctionItem("list") -- The only way it works correctly...
-                ASprint(MSG_C.DEBUG.."Buying index: "..selected_auction.." price: "..buyout, 1)
+                ASprint(MSG_C.DEBUG.."Buying price: "..ASGSC(buyout), 1)
                 
                 PlaceAuctionBid("list", selected_auction, buyout) -- The actual buying call
                 -- The next item will be the same location as what was just bought
@@ -615,7 +616,7 @@ OPT_LABEL = {
         AS[AS_BUTTONBID] = function() -- Bid prompt item
                 local bid = AS_GetCost()
                 selected_auction = GetSelectedAuctionItem("list") -- The only way it works correctly...
-                ASprint(MSG_C.DEBUG.."Bidding on index: "..selected_auction.." price: "..bid, 1)
+                ASprint(MSG_C.DEBUG.."Bidding price: "..ASGSC(bid), 1)
 
                 PlaceAuctionBid("list", selected_auction, bid)  --the actual bidding call.
                 AS.prompt:Hide()
@@ -815,6 +816,14 @@ OPT_LABEL = {
 
             AS.mainframe.headerframe.editbox:SetText(link)
             BrowseName:SetText(link)
+        elseif IsShiftKeyDown() and AS.manualprompt.notes:HasFocus() then
+            local bag, item = self:GetParent():GetID(), self:GetID()
+            local link = GetContainerItemLink(bag, item)
+
+            ASprint(MSG_C.INFO.."OnModifiedLink Called")
+            ASprint(MSG_C.INFO.."Link: "..link)
+
+            AS.manualprompt.notes:SetText(AS.manualprompt.notes:GetText()..link)
         end
     end
 
@@ -898,7 +907,7 @@ OPT_LABEL = {
             
             AScurrentahresult = AScurrentahresult + 1  --next!!
 
-            if AS_IsEndPage(total) then
+            if AS_IsEndPage(batch, total) then
                 ASprint(MSG_C.EVENT.."[ End of page reached ]")
                 return false
             elseif AS_IsEndResults(batch, total) then
@@ -919,7 +928,7 @@ OPT_LABEL = {
                 end
 
                 SetSelectedAuctionItem("list", AScurrentahresult)
-                AuctionFrameBrowse_Update()
+                --AuctionFrameBrowse_Update()
 
                 AS.status = STATE.WAITINGFORPROMPT
                 AS.prompt:Show()
@@ -928,17 +937,17 @@ OPT_LABEL = {
         end
     end
 
-    function AS_IsEndPage(total)
+    function AS_IsEndPage(batch, total)
         -- Stop at the end of page and wait for server to accept a new query
         -- First AuctionFrameBrowse.page = 0
-        if AScurrentahresult > 50 and total > ((AuctionFrameBrowse.page + 1) * 50) then
+        if AScurrentahresult > batch and total > ((AuctionFrameBrowse.page + 1) * 50) then
             ASprint(MSG_C.INFO.."Current page: "..AuctionFrameBrowse.page.." Current result: "..tostring((AuctionFrameBrowse.page + 1) * 50).."/"..total)
             
             -- BrowseNextPageButton:Click() doesnt work for some reason
             -- so hack into the blizzard ui code to go to the next page
             AuctionFrameBrowse.page = AuctionFrameBrowse.page + 1
             AuctionFrameBrowse_Search()
-            BrowseScrollFrame:SetVerticalScroll(0)
+            --BrowseScrollFrame:SetVerticalScroll(0)
 
             AScurrentahresult = 0
             AS.status = STATE.WAITINGFORUPDATE
@@ -987,7 +996,7 @@ OPT_LABEL = {
             -- 0 is always ignore
             return false
 
-        elseif cutoffprice and ASignorebid and (cutoffprice <= peritembuyout) then
+        elseif cutoffprice and ASignorebid and (cutoffprice < peritembuyout) then
             -- Ignore bid, item buyout higher than cutoff price
             return false
 
@@ -1032,7 +1041,7 @@ OPT_LABEL = {
         end
 
         -- The buyout button
-        if (buyoutPrice == 0) or (cutoffprice and (cutoffprice > peritembid) and (cutoffprice <= peritembuyout)) then
+        if (buyoutPrice == 0) or (cutoffprice and (cutoffprice > peritembid) and (cutoffprice < peritembuyout)) then
             -- Buyout does not exist or cutoff meets bid but not buyout
             AS.prompt[AS_BUTTONBUYOUT]:Disable()
         else
@@ -1067,7 +1076,7 @@ OPT_LABEL = {
                 AS.prompt.buyoutonly:Hide()
             end
 
-            if buyoutPrice == 0 or (cutoffprice and (cutoffprice <= peritembuyout)) then
+            if buyoutPrice == 0 or (cutoffprice and (cutoffprice < peritembuyout)) then
                 AS.prompt.bidbuyout.bid:SetTextColor(0,1,0,1)
                 AS.prompt.bidbuyout.buyout:SetTextColor(1,1,1,1)
             else

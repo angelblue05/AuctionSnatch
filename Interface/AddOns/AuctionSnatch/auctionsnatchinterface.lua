@@ -39,6 +39,9 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                 AS.mainframe:SetScript("OnShow", function(self)
                     AS.mainframe:SetFrameStrata(AuctionFrameBrowse:GetFrameStrata())
                 end)
+                AS.mainframe:SetScript("OnHide", function (self)
+                    AS.mainframe.headerframe.stopsearchbutton:Click()
+                end)
 
         ------ CLOSE BUTTON
             -------------- STYLE ----------------
@@ -377,9 +380,13 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                         if idx.ignoretable[idx.name].cutoffprice > 0 then
                             strmsg = strmsg.."\nCutoff price: "..ASGSC(tonumber(idx.ignoretable[idx.name].cutoffprice))
                         else
-                            strmsg = strmsg.."\n"..AS_IGNORECONDITIONS..":"
-                            strmsg = strmsg.."\n|cff9d9d9d"..AS_ALWAYS.."|r"
+                            strmsg = strmsg.."\n"..AS_IGNORECONDITIONS..": "
+                            strmsg = strmsg.."|cff9d9d9d"..AS_ALWAYS.."|r"
                         end
+                    end
+
+                    if idx.notes then
+                        strmsg = strmsg.."|cff888888\n\n---------------------|r\n\n"..idx.notes
                     end
                     ASshowtooltip(self, strmsg)
                 end)
@@ -510,7 +517,7 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                 AS.optionframe.manualpricebutton:SetWidth(AS.optionframe:GetWidth())
                 AS.optionframe.manualpricebutton:SetPoint("TOP", 0, -AS_FRAMEWHITESPACE)
                 AS.optionframe.manualpricebutton:SetNormalFontObject("GameFontNormal")
-                AS.optionframe.manualpricebutton:SetText("Modify manual price")
+                AS.optionframe.manualpricebutton:SetText("Edit entry")
                 AS.optionframe.manualpricebutton:SetHighlightTexture(C.media.backdrop) -- Aurora
                 AS.optionframe.manualpricebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
                 AS.optionframe.manualpricebutton:SetFrameStrata("TOOLTIP")
@@ -670,6 +677,10 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                     end)
                     AS.manualprompt:SetScript("OnHide",function(self)
                         ASprint(MSG_C.INFO.."Manual prompt is hidden")
+                        if AS.save then
+                            AS.save = nil
+                            AS_SavedVariables()
+                        end
                     end)
 
             ------ CLOSE BUTTON
@@ -744,11 +755,11 @@ local r, g, b = C.r, C.g, C.b -- Aurora
 
             ------ IGNORE BUTTON
                 -------------- STYLE ----------------
-                    AS.manualprompt.ignorebutton = CreateFrame("Button",nil,AS.manualprompt, "UIPanelbuttontemplate")
+                    AS.manualprompt.ignorebutton = CreateFrame("Button", nil, AS.manualprompt, "UIPanelbuttontemplate")
                     AS.manualprompt.ignorebutton:SetText(AS_BUTTONIGNORE)
                     AS.manualprompt.ignorebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
                     AS.manualprompt.ignorebutton:SetHeight(AS_BUTTON_HEIGHT)
-                    AS.manualprompt.ignorebutton:SetPoint("BOTTOMLEFT",AS.manualprompt,"BOTTOMLEFT",18,12)
+                    AS.manualprompt.ignorebutton:SetPoint("TOPLEFT", AS.manualprompt.lowerstring, "BOTTOMLEFT", 0, -30)
                 -------------- SCRIPT ----------------
                     AS.manualprompt.ignorebutton:SetScript("OnClick", function(self)
                         AS[AS_BUTTONIGNORE]()
@@ -768,7 +779,7 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                     AS.manualprompt.savebutton:SetText(AS_BUTTONEXPENSIVE)
                     AS.manualprompt.savebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
                     AS.manualprompt.savebutton:SetHeight(AS_BUTTON_HEIGHT)
-                    AS.manualprompt.savebutton:SetPoint("BOTTOMRIGHT", AS.manualprompt, "BOTTOMRIGHT", -18, 12)
+                    AS.manualprompt.savebutton:SetPoint("LEFT", AS.manualprompt.ignorebutton, "RIGHT", 2, 0)
                 -------------- SCRIPT ----------------
                     AS.manualprompt.savebutton:SetScript("OnClick", function(self)
                         AS[AS_BUTTONEXPENSIVE]()
@@ -826,10 +837,49 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                     end)
 
                     F.ReskinInput(AS.manualprompt.priceoverride) -- Aurora
+
+            ------ NOTES BOX
+                -------------- STYLE ----------------
+                    AS.manualprompt.notes = CreateFrame("EditBox", nil, AS.manualprompt, "InputBoxTemplate")
+                    AS.manualprompt.notes:SetPoint("TOPLEFT", AS.manualprompt.ignorebutton, "BOTTOMLEFT", 2, -20)
+                    AS.manualprompt.notes:SetPoint("TOPRIGHT", AS.manualprompt.savebutton, "BOTTOMRIGHT", 0, -15)
+                    AS.manualprompt.notes:SetPoint("BOTTOMRIGHT", AS.manualprompt, "BOTTOMRIGHT", 0, 15)
+                    AS.manualprompt.notes:SetMultiLine(true)
+                    AS.manualprompt.notes:SetMaxLetters(300)
+                -------------- SCRIPT ----------------
+                    AS.manualprompt.notes:SetScript("OnEscapePressed", function(self)
+                        AS.manualprompt.notes:ClearFocus()
+                    end)
+                    AS.manualprompt.notes:SetScript("OnTextChanged", function(self)
+
+                        if AS.manualprompt.notes:GetText() == "" then
+                            AS.save = true
+                            AS.item[AS.item['ASmanualedit'].listnumber].notes = nil
+                        elseif AS.manualprompt.notes:GetText() ~= AS.item[AS.item['ASmanualedit'].listnumber].notes then
+                            AS.save = true
+                            AS.item[AS.item['ASmanualedit'].listnumber].notes = AS.manualprompt.notes:GetText()
+                        end
+                    end)
+
+                    F.ReskinInput(AS.manualprompt.notes) -- Aurora
+
+            ------ NOTES LABEL
+                -------------- STYLE ----------------
+                    AS.manualprompt.notes.label = AS.manualprompt:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+                    AS.manualprompt.notes.label:SetJustifyH("LEFT")
+                    AS.manualprompt.notes.label:SetPoint("BOTTOMLEFT", AS.manualprompt.notes, "TOPLEFT", 0, 2)
+                    AS.manualprompt.notes.label:SetText("Notes")
+                    AS.manualprompt.notes.label:SetTextColor(r, g, b) -- Aurora
         end
 
         if item then
             AS.manualprompt.icon:SetNormalTexture(item.icon)
+
+            if item.notes then
+                AS.manualprompt.notes:SetText(item.notes)
+            else
+                AS.manualprompt.notes:SetText("")
+            end
 
             if item.rarity then
                 local _, _, _, hexcolor = GetItemQualityColor(item.rarity)
