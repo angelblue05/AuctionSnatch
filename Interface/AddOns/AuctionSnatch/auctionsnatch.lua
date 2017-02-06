@@ -41,6 +41,8 @@ AS = {}
 AS.elapsed = 0
 ASfirsttime = false
 ACTIVE_TABLE = nil
+LISTNAMES = {}
+I_LISTNAMES = {}
 
 STATE = {
     ['QUERYING'] = 1,
@@ -65,7 +67,9 @@ OPT_LABEL = {
     ['ASignorebid'] = "Ignore bids",
     ['ASignorenobuyout'] = "Ignore no buyout",
     ['cancelauction'] = "Cancel auction",
-    ['rememberprice'] = "Remember price"
+    ['rememberprice'] = "Remember price",
+    ['ASautostart'] = AS_AUTOSEARCH,
+    ['ASautoopen'] = AS_AUTOOPEN
 }
 
 
@@ -180,15 +184,15 @@ OPT_LABEL = {
                 AS_CreateAuctionTab()
             end
 
-            if ASautostart and not ASautoopen then
+            if ASsavedtable.ASautostart and not ASsavedtable.ASautoopen then
                 -- Do nothing
-            elseif ASautostart and not IsShiftKeyDown() then -- Auto start
+            elseif ASsavedtable.ASautostart and not IsShiftKeyDown() then -- Auto start
                 AS.status = STATE.QUERYING
                 AS_Main()
             elseif IsShiftKeyDown() then -- Auto start
                 AS.status = STATE.QUERYING
                 AS_Main()
-            elseif ASautoopen then
+            elseif ASsavedtable.ASautoopen then
                 -- Automatically display frame, just don't auto start
                 AS_Main()
             end
@@ -342,12 +346,6 @@ OPT_LABEL = {
             AS_template(serverName)
         end
 
-        -- Set checkboxes
-        if AS.mainframe then
-            AS.mainframe.headerframe.autostart:SetChecked(ASautostart)
-            AS.mainframe.headerframe.autoopen:SetChecked(ASautoopen)
-        end
-
         -- font size testing and adjuting height of prompt
         local _, height = GameFontNormal:GetFont()
         local new_height = (height * 10) + ((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE)*6)  -- LINES, 5 BUTTONS + 1 togrow on
@@ -448,6 +446,8 @@ OPT_LABEL = {
                 ASsavedtable.copperoverride = true
                 ASsavedtable.cancelauction = false
                 ASsavedtable.rememberprice = true
+                ASsavedtable.ASautostart = false
+                ASsavedtable.ASautoopen = true
             end
 
             ASsavedtable[ACTIVE_TABLE] = {}
@@ -458,8 +458,6 @@ OPT_LABEL = {
 
         if AS.mainframe then
             -- check boxes
-            ASsavedtable[ACTIVE_TABLE].ASautostart = ASautostart
-            ASsavedtable[ACTIVE_TABLE].ASautoopen = ASautoopen
             ASsavedtable[ACTIVE_TABLE].ASnodoorbell = ASnodoorbell
             ASsavedtable[ACTIVE_TABLE].ASignorebid = ASignorebid
             ASsavedtable[ACTIVE_TABLE].ASignorenobuyout = ASignorenobuyout
@@ -481,7 +479,11 @@ OPT_LABEL = {
             info.hasArrow = true
             info.value = "Import"
             UIDropDownMenu_AddButton(info, level)
-
+            --- Edit list options
+            info.text = "List options"
+            info.hasArrow = true
+            info.value = "ASlistoptions"
+            UIDropDownMenu_AddButton(info, level)
             --- Create new list
             info.text = "Create list"
             info.hasArrow = false
@@ -515,22 +517,22 @@ OPT_LABEL = {
                 info.func =  ASdropDownMenuItem_OnClick
                 info.owner = self:GetParent()
                 UIDropDownMenu_AddButton(info, level)
-                --- Other settings
-                for key, value in pairs(ASsavedtable[ACTIVE_TABLE]) do
-                    if OPT_LABEL[key] then -- options
-        
-                        if type(value) == "boolean" then
-                            info.checked = value
-                        end
-
-                        info.text = OPT_LABEL[key]
-                        info.value = key
-                        info.hasArrow = false
-                        info.func =  ASdropDownMenuItem_OnClick
-                        info.owner = self:GetParent()
-                        UIDropDownMenu_AddButton(info,level)
-                    end
-                end
+                --- Auto open
+                info.text = OPT_LABEL["ASautoopen"]
+                info.value = "ASautoopen"
+                info.checked = ASsavedtable.ASautoopen
+                info.hasArrow = false
+                info.func =  ASdropDownMenuItem_OnClick
+                info.owner = self:GetParent()
+                UIDropDownMenu_AddButton(info, level)
+                --- Auto start
+                info.text = OPT_LABEL["ASautostart"]
+                info.value = "ASautostart"
+                info.checked = ASsavedtable.ASautostart
+                info.hasArrow = false
+                info.func =  ASdropDownMenuItem_OnClick
+                info.owner = self:GetParent()
+                UIDropDownMenu_AddButton(info, level)
             end
         elseif level == 2 and UIDROPDOWNMENU_MENU_VALUE == "Import" then
             local info = UIDropDownMenu_CreateInfo()
@@ -552,6 +554,27 @@ OPT_LABEL = {
                         info.func =  ASdropDownMenuItem_OnClick
                         info.owner = self:GetParent()
                         UIDropDownMenu_AddButton(info, level)
+                    end
+                end
+            end
+        elseif level == 2 and UIDROPDOWNMENU_MENU_VALUE == "ASlistoptions" then
+            local info = UIDropDownMenu_CreateInfo()
+            local key, value
+
+            if ASsavedtable then
+                for key, value in pairs(ASsavedtable[ACTIVE_TABLE]) do
+                    if OPT_LABEL[key] then -- options
+        
+                        if type(value) == "boolean" then
+                            info.checked = value
+                        end
+
+                        info.text = OPT_LABEL[key]
+                        info.value = key
+                        info.hasArrow = false
+                        info.func =  ASdropDownMenuItem_OnClick
+                        info.owner = self:GetParent()
+                        UIDropDownMenu_AddButton(info,level)
                     end
                 end
             end
@@ -595,14 +618,21 @@ OPT_LABEL = {
             AS_SavedVariables()
             ASprint(MSG_C.INFO.."Ignore no buyouts:|r "..MSG_C.BOOL..tostring(ASignorenobuyout))
             return
+        elseif self.value == "ASautostart" then
+            ASsavedtable.ASautostart = not ASsavedtable.ASautostart
+            ASprint(MSG_C.INFO.."Auto-start:|r "..MSG_C.BOOL..tostring(ASsavedtable.ASautostart))
+            return
+        elseif self.value == "ASautoopen" then
+            ASsavedtable.ASautoopen = not ASsavedtable.ASautoopen
+            ASprint(MSG_C.INFO.."Auto-open:|r "..MSG_C.BOOL..tostring(ASsavedtable.ASautoopen))
+            return
         elseif self.value == "ASnewlist" then
             StaticPopup_Show("AS_NewList")
             return
         end
         -- Import list
         if self.value ~= ACTIVE_TABLE then  --dont import ourself
-            AS.mainframe.listframe.scrollFrame:SetVerticalScroll(0)
-            AS_LoadTable(self.value)
+            AS_SwitchTable(self.value)
             ASdropDownMenuButton:Click() -- to close the dropdown
         end
     end
@@ -1019,7 +1049,7 @@ OPT_LABEL = {
             -- so hack into the blizzard ui code to go to the next page
             AuctionFrameBrowse.page = AuctionFrameBrowse.page + 1
             AuctionFrameBrowse_Search()
-            --BrowseScrollFrame:SetVerticalScroll(0)
+            BrowseScrollFrameScrollBar:SetValue(0)
 
             AScurrentahresult = 0
             AS.status = STATE.WAITINGFORUPDATE

@@ -133,28 +133,23 @@ function AS_template(name)
     ASignorenobuyout = false
 
     ACTIVE_TABLE = name
+    AS.mainframe.headerframe.listlabel:SetText(ACTIVE_TABLE)
     AS_SavedVariables()
 end
 
 function AS_LoadTable(name)
 
     ACTIVE_TABLE = name
+    AS.mainframe.headerframe.listlabel:SetText(ACTIVE_TABLE)
     AS.item = {}
     AS_tcopy(AS.item, ASsavedtable[name])
     AS.item['LastAuctionSetup'] = nil
+    AS.item['LastListButtonClicked'] = nil
 
     if ASsavedtable[name]["test"] then
         ASprint("test = "..ASsavedtable[name]["test"])
     end
 
-    if ASsavedtable[name].ASautostart ~= nil then
-        ASautostart = ASsavedtable[name].ASautostart
-        --ASprint("Auto start = "..MSG_C.BOOL..""..tostring(ASautostart))
-    end
-    if ASsavedtable[name].ASautoopen ~= nil then
-        ASautoopen = ASsavedtable[name].ASautoopen
-        --ASprint("Auto open = "..MSG_C.BOOL..""..tostring(ASautoopen))
-    end
     if ASsavedtable[name].ASnodoorbell ~= nil then
         ASnodoorbell = ASsavedtable[name].ASnodoorbell
         --ASprint("Doorbell sound = "..MSG_C.BOOL..""..tostring(ASnodoorbell))
@@ -168,7 +163,29 @@ function AS_LoadTable(name)
         --ASprint("Ignore no buyout = "..MSG_C.BOOL..""..tostring(ASignorenobuyout))
     end
 
+    LISTNAMES = {}
+    I_LISTNAMES = {}
+    for key, value in pairs(ASsavedtable) do
+        if not OPT_LABEL[key] then-- Found a server
+            LISTNAMES[#LISTNAMES + 1] = key
+        end
+    end
+    I_LISTNAMES = table_invert(LISTNAMES)
+
+    if #LISTNAMES > 1 then
+        AS.mainframe.headerframe.nextlist:Enable()
+        AS.mainframe.headerframe.prevlist:Enable()
+    else
+        AS.mainframe.headerframe.nextlist:Disable()
+        AS.mainframe.headerframe.prevlist:Disable()
+    end
+
     AS_ScrollbarUpdate()
+end
+
+function AS_SwitchTable(name)
+    AS.mainframe.listframe.scrollFrame:SetVerticalScroll(0)
+    AS_LoadTable(name)
 end
 
 
@@ -364,4 +381,10 @@ function ASvisibility(compared_to)
         return false
     end
     return true
+end
+
+function table_invert(t)
+  local u = { }
+  for k, v in pairs(t) do u[v] = k end
+  return u
 end

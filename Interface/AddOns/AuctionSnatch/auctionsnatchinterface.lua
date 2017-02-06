@@ -76,13 +76,19 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                 AS.mainframe.headerframe:SetPoint("RIGHT")
                 AS.mainframe.headerframe:SetHeight(AS_HEADERHEIGHT)
 
+            ------ LIST LABEL
+                -------------- STYLE ----------------
+                    AS.mainframe.headerframe.listlabel = AS.mainframe.headerframe:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+                    AS.mainframe.headerframe.listlabel:SetJustifyH("CENTER")
+                    AS.mainframe.headerframe.listlabel:SetPoint("TOP", AS.mainframe.headerframe, "TOP", 0, -12)
+
             ------ START BUTTON
                 -------------- STYLE ----------------
                     AS.mainframe.headerframe.startsearchbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelbuttontemplate")
                     AS.mainframe.headerframe.startsearchbutton:SetText(AS_START)
                     AS.mainframe.headerframe.startsearchbutton:SetWidth(100)
                     AS.mainframe.headerframe.startsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
-                    AS.mainframe.headerframe.startsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe, "TOPLEFT", 17, -25)
+                    AS.mainframe.headerframe.startsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe, "TOPLEFT", 17, -45)
                 -------------- SCRIPT ----------------
                     AS.mainframe.headerframe.startsearchbutton:SetScript("OnClick", function(self)
                         if AS.manualprompt then
@@ -140,46 +146,6 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                     end)
 
                     F.Reskin(AS.mainframe.headerframe.stopsearchbutton) -- Aurora
-
-            ------ AUTOSTART CHECK BUTTON
-                -------------- STYLE ----------------
-                    AS.mainframe.headerframe.autostart = CreateFrame("CheckButton", "ASautostartbutton", AS.mainframe.headerframe, "OptionsCheckbuttontemplate")
-                    AS.mainframe.headerframe.autostart:SetPoint("TOPLEFT", AS.mainframe.headerframe.startsearchbutton, "BOTTOMLEFT", -4, -2)
-                    _G[AS.mainframe.headerframe.autostart:GetName().."Text"]:SetText(AS_AUTOSEARCH)
-                -------------- SCRIPT ----------------
-                    AS.mainframe.headerframe.autostart:SetScript("OnClick", function(self)
-                        if AS.mainframe.headerframe.autostart:GetChecked() then
-                            ASautostart = true
-                        else
-                            ASautostart = false
-                        end
-                        AS_SavedVariables()
-                    end)
-                    AS.mainframe.headerframe.autostart:SetScript("OnEnter", function(self)
-                        ASshowtooltip(self,AS_SEARCHTEXT)
-                    end)
-                    AS.mainframe.headerframe.autostart:SetScript("OnLeave", function(self)
-                        AShidetooltip()
-                    end)
-
-                    F.ReskinCheck(AS.mainframe.headerframe.autostart) -- Aurora
-
-            ------ AUTOOPEN CHECK BUTTON
-                -------------- STYLE ----------------
-                    AS.mainframe.headerframe.autoopen = CreateFrame("CheckButton", "ASautoopenbutton", AS.mainframe.headerframe, "OptionsCheckbuttontemplate")
-                    AS.mainframe.headerframe.autoopen:SetPoint("TOPLEFT", AS.mainframe.headerframe.autostart, "TOPRIGHT", 90, 0)
-                    _G[AS.mainframe.headerframe.autoopen:GetName().."Text"]:SetText(AS_AUTOOPEN)
-                -------------- SCRIPT ----------------
-                    AS.mainframe.headerframe.autoopen:SetScript("OnClick", function(self)
-                        if AS.mainframe.headerframe.autoopen:GetChecked() then
-                            ASautoopen = true
-                        else
-                            ASautoopen = false
-                        end
-                        AS_SavedVariables()
-                    end)
-
-                    F.ReskinCheck(AS.mainframe.headerframe.autoopen) -- Aurora
 
             ------ INPUT SEARCH BOX
                 -------------- STYLE ----------------
@@ -242,6 +208,55 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                     end)
 
                     F.Reskin(AS.mainframe.headerframe.deletelistbutton) -- Aurora
+
+            ------ PREV BUTTON
+                -------------- STYLE ----------------
+                    AS.mainframe.headerframe.prevlist = CreateFrame("Button", nil, AS.mainframe.headerframe)
+                    AS.mainframe.headerframe.prevlist:SetWidth(24)
+                    AS.mainframe.headerframe.prevlist:SetHeight(24)
+                    AS.mainframe.headerframe.prevlist:SetPoint("LEFT", AS.mainframe.headerframe.stopsearchbutton,"RIGHT", 10, 0)
+                    AS.mainframe.headerframe.prevlist:SetNormalTexture("Interface\\Buttons\\UI-SpellbookIcon-PrevPage-Up")
+                    AS.mainframe.headerframe.prevlist:SetPushedTexture("Interface\\Buttons\\UI-SpellbookIcon-PrevPage-Down")
+                    AS.mainframe.headerframe.prevlist:SetDisabledTexture("Interface\\Buttons\\UI-SpellbookIcon-PrevPage-Disabled")
+                    AS.mainframe.headerframe.prevlist:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
+                    AS.mainframe.headerframe.prevlist:Disable()
+                -------------- SCRIPT ----------------
+                    AS.mainframe.headerframe.prevlist:SetScript("OnClick", function()
+                        if ASsavedtable then
+                            local current = I_LISTNAMES[ACTIVE_TABLE]
+                            if LISTNAMES[current - 1] == nil then -- Go to the end
+                                AS_SwitchTable(LISTNAMES[table.maxn(LISTNAMES)])
+                            else
+                                AS_SwitchTable(LISTNAMES[current - 1])
+                            end
+                        end
+                    end)
+                    F.ReskinArrow(AS.mainframe.headerframe.prevlist, "left") -- Aurora
+
+            ------ NEXT BUTTON
+                -------------- STYLE ----------------
+                    AS.mainframe.headerframe.nextlist = CreateFrame("Button", nil, AS.mainframe.headerframe)
+                    AS.mainframe.headerframe.nextlist:SetWidth(24)
+                    AS.mainframe.headerframe.nextlist:SetHeight(24)
+                    AS.mainframe.headerframe.nextlist:SetPoint("LEFT", AS.mainframe.headerframe.prevlist,"RIGHT", 7, 0)
+                    AS.mainframe.headerframe.nextlist:SetNormalTexture("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up")
+                    AS.mainframe.headerframe.nextlist:SetPushedTexture("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Down")
+                    AS.mainframe.headerframe.nextlist:SetDisabledTexture("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Disabled")
+                    AS.mainframe.headerframe.nextlist:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
+                    AS.mainframe.headerframe.nextlist:Disable()
+                -------------- SCRIPT ----------------
+                    AS.mainframe.headerframe.nextlist:SetScript("OnClick", function()
+                        if ASsavedtable then
+                            local current = I_LISTNAMES[ACTIVE_TABLE]
+                            if LISTNAMES[current + 1] == nil then -- Go back to beginning
+                                AS_SwitchTable(LISTNAMES[1])
+                            else
+                                AS_SwitchTable(LISTNAMES[current + 1])
+                            end
+                        end
+                    end)
+                    F.ReskinArrow(AS.mainframe.headerframe.nextlist, "right") -- Aurora
+
 
         ------ LIST FRAME
             -------------- STYLE ----------------
@@ -447,7 +462,7 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                         AS.mainframe:Hide()
                     else
                         ASopenedwithah = true
-                        if ASautostart == true then
+                        if ASsavedtable.ASautostart then
                             AS.status = STATE.QUERYING
                         end
                         AS_Main()
