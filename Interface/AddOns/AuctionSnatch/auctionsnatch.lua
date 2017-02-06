@@ -169,6 +169,7 @@ OPT_LABEL = {
     end
 
     function AS_OnEvent(self, event)
+        --ASprint(MSG_C.INFO..event)
 
         if event == "VARIABLES_LOADED" then
             ASprint(MSG_C.EVENT.."Variables loaded. Initializing.")
@@ -1177,6 +1178,8 @@ OPT_LABEL = {
         if ASsavedtable.cancelauction then
             local index = self:GetID() + GetEffectiveAuctionsScrollFrameOffset()
             SetEffectiveSelectedOwnerAuctionItemIndex(index) -- updates any WoWToken offset
-            CancelAuction(GetSelectedAuctionItem("owner"))
+            if CanCancelAuction(GetSelectedAuctionItem("owner")) then
+                CancelAuction(GetSelectedAuctionItem("owner"))
+            end
         end
     end
