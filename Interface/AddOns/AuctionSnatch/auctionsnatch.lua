@@ -41,8 +41,7 @@ AS = {}
 AS.elapsed = 0
 ASfirsttime = false
 ACTIVE_TABLE = nil
-LISTNAMES = {}
-I_LISTNAMES = {}
+AS_COPY = nil
 
 STATE = {
     ['QUERYING'] = 1,
@@ -822,6 +821,18 @@ OPT_LABEL = {
     function AS_AddItem()
         --this is when they hit enter and something is in the box
         local item_name = AS.mainframe.headerframe.editbox:GetText()
+
+        if AS_COPY and AS_COPY.name == item_name then
+            ASprint(MSG_C.EVENT.."[ Succesfully copied:|r "..item_name.."]")
+            table.insert(AS.item, AS_COPY)
+            AS_COPY = nil
+            AS.mainframe.headerframe.editbox:SetText("")
+            AS_ScrollbarUpdate()
+            AS_SavedVariables()
+            return
+        elseif AS_COPY then
+            AS_COPY = nil
+        end
         
         if not item_name or (string.find(item_name,'achievement:*')) then
             ASprint(MSG_C.ERROR.."There's nothing valid in the editbox")

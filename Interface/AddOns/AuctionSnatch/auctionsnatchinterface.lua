@@ -353,11 +353,19 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                 end)
                 button_tmp:SetScript("OnClick", function(self, button, down)
                     ASprint("CLeeekkk!")
+                    current_scroll = self.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
 
                     if AS.optionframe:IsVisible() then
                         AS.optionframe:Hide()
+                    end
+                    if IsShiftKeyDown() then
+                        if AS.item[current_scroll].link then
+                            AS.mainframe.headerframe.editbox:SetText(AS.item[current_scroll].link)
+                        else
+                            AS.mainframe.headerframe.editbox:SetText(AS.item[current_scroll].name)
+                        end
                     else
-                        AS.item['LastListButtonClicked'] = self.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+                        AS.item['LastListButtonClicked'] = current_scroll
                         AS.optionframe:SetParent(self)
                         AS.optionframe:SetPoint("TOP", self, "BOTTOMRIGHT")
                         AS.optionframe:Show()
@@ -401,6 +409,15 @@ local r, g, b = C.r, C.g, C.b -- Aurora
 
                     if idx.notes then
                         strmsg = strmsg.."|cff888888\n\n---------------------|r\n"..idx.notes
+                    end
+                    if idx.sellbid or idx.sellbuyout then
+                        strmsg = strmsg.."|cff888888\n\n---------------------|r"
+                        if idx.sellbid then
+                            strmsg = strmsg.."\nBid price (unit): "..ASGSC(idx.sellbid)
+                        end
+                        if idx.sellbuyout and idx.sellbuyout > 0 then
+                            strmsg = strmsg.."\nBuyout price (unit): "..ASGSC(idx.sellbuyout)
+                        end
                     end
                     ASshowtooltip(self, strmsg)
                 end)
@@ -503,7 +520,7 @@ local r, g, b = C.r, C.g, C.b -- Aurora
         ------ OPTION FRAME
             -------------- STYLE ----------------
                 AS.optionframe = CreateFrame("Frame", "ASoptionframe", UIParent)
-                AS.optionframe:SetHeight((AS_BUTTON_HEIGHT * 6) + (AS_FRAMEWHITESPACE * 2))  --6 buttons
+                AS.optionframe:SetHeight((AS_BUTTON_HEIGHT * 7) + (AS_FRAMEWHITESPACE * 2))  --7 buttons
                 AS.optionframe:SetWidth(200)
                 AS.optionframe:SetBackdrop({    bgFile = C.media.backdrop, -- Aurora
                                                 edgeFile = C.media.backdrop, -- Aurora
@@ -592,7 +609,7 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                 AS.optionframe.movetobottombutton = CreateFrame("Button", nil, AS.optionframe)
                 AS.optionframe.movetobottombutton:SetHeight(AS_BUTTON_HEIGHT)
                 AS.optionframe.movetobottombutton:SetWidth(AS.optionframe:GetWidth())
-                AS.optionframe.movetobottombutton:SetPoint("TOP",ASoptionframe.movetotopbutton,"BOTTOM")
+                AS.optionframe.movetobottombutton:SetPoint("TOP", ASoptionframe.movetotopbutton,"BOTTOM")
                 AS.optionframe.movetobottombutton:SetNormalFontObject("GameFontNormal")
                 AS.optionframe.movetobottombutton:SetText("Move to bottom")
                 AS.optionframe.movetobottombutton:SetHighlightTexture(C.media.backdrop) -- Aurora
@@ -603,12 +620,29 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                     AS_MoveListButton(listnum, table.maxn(AS.item))
                 end)
 
+        ------ COPY ENTRY
+            -------------- STYLE ----------------
+                AS.optionframe.copyrowbutton = CreateFrame("Button", nil, AS.optionframe)
+                AS.optionframe.copyrowbutton:SetHeight(AS_BUTTON_HEIGHT)
+                AS.optionframe.copyrowbutton:SetWidth(AS.optionframe:GetWidth())
+                AS.optionframe.copyrowbutton:SetPoint("TOP", AS.optionframe.movetobottombutton, "BOTTOM")
+                AS.optionframe.copyrowbutton:SetNormalFontObject("GameFontNormal")
+                AS.optionframe.copyrowbutton:SetText("Copy entry")
+                AS.optionframe.copyrowbutton:SetHighlightTexture(C.media.backdrop) -- Aurora
+                AS.optionframe.copyrowbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
+            -------------- SCRIPT ----------------
+                AS.optionframe.copyrowbutton:SetScript("OnClick", function(self)
+                    local listnum = ASbuttontolistnum(self)
+                    AS_COPY = AS.item[listnum]
+                    AS.mainframe.headerframe.editbox:SetText(AS.item[listnum].name)
+                end)
+
         ------ DELETE ENTRY
             -------------- STYLE ----------------
                 AS.optionframe.deleterowbutton = CreateFrame("Button", nil, AS.optionframe)
                 AS.optionframe.deleterowbutton:SetHeight(AS_BUTTON_HEIGHT)
                 AS.optionframe.deleterowbutton:SetWidth(AS.optionframe:GetWidth())
-                AS.optionframe.deleterowbutton:SetPoint("TOP", AS.optionframe.movetobottombutton, "BOTTOM")
+                AS.optionframe.deleterowbutton:SetPoint("TOP", AS.optionframe.copyrowbutton, "BOTTOM")
                 AS.optionframe.deleterowbutton:SetNormalFontObject("GameFontNormal")
                 AS.optionframe.deleterowbutton:SetText(AS_BUTTONDELETE)
                 AS.optionframe.deleterowbutton:SetHighlightTexture(C.media.backdrop) -- Aurora
@@ -624,15 +658,10 @@ local r, g, b = C.r, C.g, C.b -- Aurora
         local found = false
 
         AS.optionframe:Hide()
-        if AuctionFrameAuctions.priceType == 2 then
+        if AuctionFrameAuctions.priceType ~= 1 then
             AuctionFrameAuctions.priceType = 1
             UIDropDownMenu_SetSelectedValue(PriceDropDown, AuctionFrameAuctions.priceType) -- Set to unit price
         end
-
-        BrowseResetButton:Click()
-        AuctionFrameBrowse.page = 0
-        BrowseName:SetText(AS.item[listnum].name)
-        AuctionFrameBrowse_Search()
 
         if not AS.item['LastAuctionSetup'] or (listnum ~= AS.item['LastAuctionSetup']) then
 

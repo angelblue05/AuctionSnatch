@@ -135,6 +135,25 @@ function AS_template(name)
     ACTIVE_TABLE = name
     AS.mainframe.headerframe.listlabel:SetText(ACTIVE_TABLE)
     AS_SavedVariables()
+
+    LISTNAMES = {}
+    I_LISTNAMES = {}
+    for key, value in pairs(ASsavedtable) do
+        if not OPT_LABEL[key] then-- Found a server
+            LISTNAMES[#LISTNAMES + 1] = key
+        end
+    end
+    I_LISTNAMES = table_invert(LISTNAMES)
+    ASprint(LISTNAMES)
+    ASprint(I_LISTNAMES)
+    
+    if #LISTNAMES > 1 then
+        AS.mainframe.headerframe.nextlist:Enable()
+        AS.mainframe.headerframe.prevlist:Enable()
+    else
+        AS.mainframe.headerframe.nextlist:Disable()
+        AS.mainframe.headerframe.prevlist:Disable()
+    end
 end
 
 function AS_LoadTable(name)
