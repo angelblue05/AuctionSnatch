@@ -34,7 +34,6 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                 end)
                 AS.mainframe:SetScript("OnMouseUp", function(self)
                     AS.mainframe:StopMovingOrSizing()
-                    AS_SavedVariables()
                 end)
                 AS.mainframe:SetScript("OnShow", function(self)
                     AS.mainframe:SetFrameStrata(AuctionFrameBrowse:GetFrameStrata())
@@ -386,7 +385,7 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                     end
 
                     if idx.notes then
-                        strmsg = strmsg.."|cff888888\n\n---------------------|r\n\n"..idx.notes
+                        strmsg = strmsg.."|cff888888\n\n---------------------|r\n"..idx.notes
                     end
                     ASshowtooltip(self, strmsg)
                 end)
@@ -489,7 +488,7 @@ local r, g, b = C.r, C.g, C.b -- Aurora
         ------ OPTION FRAME
             -------------- STYLE ----------------
                 AS.optionframe = CreateFrame("Frame", "ASoptionframe", UIParent)
-                AS.optionframe:SetHeight((AS_BUTTON_HEIGHT * 5) + (AS_FRAMEWHITESPACE * 2))  --5 buttons
+                AS.optionframe:SetHeight((AS_BUTTON_HEIGHT * 6) + (AS_FRAMEWHITESPACE * 2))  --6 buttons
                 AS.optionframe:SetWidth(200)
                 AS.optionframe:SetBackdrop({    bgFile = C.media.backdrop, -- Aurora
                                                 edgeFile = C.media.backdrop, -- Aurora
@@ -510,12 +509,28 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                     end
                 end)
 
+        ------ SELL ITEM
+            -------------- STYLE ----------------
+                AS.optionframe.sellbutton = CreateFrame("Button", nil, AS.optionframe)
+                AS.optionframe.sellbutton:SetHeight(AS_BUTTON_HEIGHT)
+                AS.optionframe.sellbutton:SetWidth(AS.optionframe:GetWidth())
+                AS.optionframe.sellbutton:SetPoint("TOP", 0, -AS_FRAMEWHITESPACE)
+                AS.optionframe.sellbutton:SetNormalFontObject("GameFontNormal")
+                AS.optionframe.sellbutton:SetText("Sell")
+                AS.optionframe.sellbutton:SetHighlightTexture(C.media.backdrop) -- Aurora
+                AS.optionframe.sellbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
+                AS.optionframe.sellbutton:SetFrameStrata("TOOLTIP")
+            -------------- SCRIPT ----------------
+                AS.optionframe.sellbutton:SetScript("OnClick", function(self)
+                    AS_SellItem(self)
+                end)
+
         ------ MANUAL PRICE
             -------------- STYLE ----------------
                 AS.optionframe.manualpricebutton = CreateFrame("Button", nil, AS.optionframe)
                 AS.optionframe.manualpricebutton:SetHeight(AS_BUTTON_HEIGHT)
                 AS.optionframe.manualpricebutton:SetWidth(AS.optionframe:GetWidth())
-                AS.optionframe.manualpricebutton:SetPoint("TOP", 0, -AS_FRAMEWHITESPACE)
+                AS.optionframe.manualpricebutton:SetPoint("TOP", AS.optionframe.sellbutton, "BOTTOM")
                 AS.optionframe.manualpricebutton:SetNormalFontObject("GameFontNormal")
                 AS.optionframe.manualpricebutton:SetText("Edit entry")
                 AS.optionframe.manualpricebutton:SetHighlightTexture(C.media.backdrop) -- Aurora
@@ -587,6 +602,58 @@ local r, g, b = C.r, C.g, C.b -- Aurora
                 AS.optionframe.deleterowbutton:SetScript("OnClick", function(self)
                     AS_DeleteRow(self)
                 end)
+    end
+
+    function AS_SellItem(self)
+        local listnum = ASbuttontolistnum(self)
+        local found = false
+
+        AS.optionframe:Hide()
+        if AuctionFrameAuctions.priceType == 2 then
+            AuctionFrameAuctions.priceType = 1
+            UIDropDownMenu_SetSelectedValue(PriceDropDown, AuctionFrameAuctions.priceType) -- Set to unit price
+        end
+
+        BrowseResetButton:Click()
+        AuctionFrameBrowse.page = 0
+        BrowseName:SetText(AS.item[listnum].name)
+        AuctionFrameBrowse_Search()
+
+        if not AS.item['LastAuctionSetup'] or (listnum ~= AS.item['LastAuctionSetup']) then
+
+            AS.item['LastAuctionSetup'] = listnum
+            ASprint(MSG_C.INFO.."Setting up sale:|r "..AS.item[listnum].name, 1)
+
+            for bag = 0,4,1 do -- Find item in bags and create auction
+                for slot = 1, GetContainerNumSlots(bag), 1 do
+                    local name = GetContainerItemLink(bag, slot)
+                    if name and string.find(name, AS.item[listnum].name) then
+                        found = true
+                        AuctionFrameTab3:Click()
+                        PickupContainerItem(bag, slot)
+                        ClickAuctionSellItemButton()
+                        ClearCursor()
+                        break
+                    end
+                end
+            end
+        else -- Same item is already selected
+            found = true
+            AuctionFrameTab3:Click()
+        end
+
+        if found then
+            if ASsavedtable.rememberprice then
+                if AS.item[listnum].sellbid then -- Set to unit price, since we do not set stack size
+                    MoneyInputFrame_SetCopper(StartPrice, AS.item[listnum].sellbid)
+                end
+                if AS.item[listnum].sellbuyout then
+                    MoneyInputFrame_SetCopper(BuyoutPrice, AS.item[listnum].sellbuyout)
+                end
+            end
+        else
+            ASprint(MSG_C.ERROR.."Item not found in bags")
+        end
     end
 
     function AS_ResetIgnore(self)

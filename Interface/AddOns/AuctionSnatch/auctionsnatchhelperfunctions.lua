@@ -141,6 +141,7 @@ function AS_LoadTable(name)
     ACTIVE_TABLE = name
     AS.item = {}
     AS_tcopy(AS.item, ASsavedtable[name])
+    AS.item['LastAuctionSetup'] = nil
 
     if ASsavedtable[name]["test"] then
         ASprint("test = "..ASsavedtable[name]["test"])

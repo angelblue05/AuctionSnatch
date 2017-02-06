@@ -64,7 +64,8 @@ OPT_LABEL = {
     ['ASnodoorbell'] = AS_DOORBELLSOUND,
     ['ASignorebid'] = "Ignore bids",
     ['ASignorenobuyout'] = "Ignore no buyout",
-    ['cancelauction'] = "Cancel auction"
+    ['cancelauction'] = "Cancel auction",
+    ['rememberprice'] = "Remember price"
 }
 
 
@@ -81,6 +82,7 @@ OPT_LABEL = {
 
         ----- REGISTER FOR EVENTS
             self:RegisterEvent("AUCTION_ITEM_LIST_UPDATE")
+            self:RegisterEvent("NEW_AUCTION_UPDATE")
             self:RegisterEvent("AUCTION_HOUSE_SHOW")
             self:RegisterEvent("AUCTION_HOUSE_CLOSED")
             self:RegisterEvent("VARIABLES_LOADED")
@@ -97,20 +99,6 @@ OPT_LABEL = {
                 else
                     return old_ChatEdit_InsertLink(text)
                 end
-            end
-
-        ------ AUCTION HOUSE HOOKS // TODO: Is this necessary?
-            if BrowseName then
-                local old_BrowseName = BrowseName:GetScript("OnEditFocusGained")
-                BrowseName:SetScript("OnEditFocusGained", function()
-                    
-                    if AS.status == nil then
-                        return false  --should catch the infinate loop
-                    end
-
-                    AS.status = nil  --else the mod will mess up typing
-                    return old_BrowseName() --for some reason this causes an infinate loop :( > Can't seem to trigger infinite loop -AB5
-                end)
             end
 
             --GetAuctionItemLink("owner", self:GetParent():GetID() + GetEffectiveAuctionsScrollFrameOffset())
@@ -177,6 +165,9 @@ OPT_LABEL = {
             
             AS_Initialize()
 
+        elseif event == "NEW_AUCTION_UPDATE" then
+            AS_RegisterCancelAction()
+
         elseif event == "AUCTION_ITEM_LIST_UPDATE" then
             --ASprint(MSG_C.INFO..event)
             if AS.status == STATE.BUYING then
@@ -202,16 +193,55 @@ OPT_LABEL = {
                 AS_Main()
             end
 
-            -------------- THANK YOU AUCTIONEER ----------------
-            for i = 1, 199 do
-                local owner_button = _G["AuctionsButton"..i]
-                if not owner_button then
-                    break
+            ------ AUCTION HOUSE HOOKS // TODO: Is this necessary?
+                if BrowseName then
+                    local old_BrowseName = BrowseName:GetScript("OnEditFocusGained")
+                    BrowseName:SetScript("OnEditFocusGained", function()
+                        
+                        if AS.status == nil then
+                            return false  --should catch the infinate loop
+                        end
+
+                        AS.status = nil  --else the mod will mess up typing
+                        return old_BrowseName() --for some reason this causes an infinate loop :( > Can't seem to trigger infinite loop -AB5
+                    end)
                 end
-                owner_button:RegisterForClicks("RightButtonUp")
-                _G["AuctionsButton"..i.."Item"]:RegisterForClicks("RightButtonUp")
-                owner_button:SetScript("OnClick", AS_CancelAuction)
-            end
+                if AuctionsCreateAuctionButton then
+                    local old_CreateAuction = AuctionsCreateAuctionButton:GetScript("OnClick")
+                    AuctionsCreateAuctionButton:SetScript("OnClick", function(self, button)
+                        
+                        if ASsavedtable.rememberprice then 
+                            local startPrice = MoneyInputFrame_GetCopper(StartPrice)
+                            local buyoutPrice = MoneyInputFrame_GetCopper(BuyoutPrice)
+                            local stackSize = AuctionsStackSizeEntry:GetNumber()
+
+                            ASprint(MSG_C.INFO.."StartPrice: "..startPrice)
+                            ASprint(MSG_C.INFO.."BuyoutPrice: "..buyoutPrice)
+                            
+                            if stackSize > 1 and AuctionFrameAuctions.priceType == 2 then -- Stack price convert to unit price
+                                startPrice = startPrice / stackSize
+                                buyoutPrice = buyoutPrice / stackSize
+                            end
+
+                            local save = false
+                            if tonumber(AS.item[AS.item.LastAuctionSetup].sellbid) ~= startPrice then
+                                AS.item[AS.item.LastAuctionSetup].sellbid = startPrice
+                                save = true
+                            end
+                            if tonumber(AS.item[AS.item.LastAuctionSetup].sellbuyout) ~= buyoutPrice then
+                                AS.item[AS.item.LastAuctionSetup].sellbuyout = buyoutPrice
+                                save = true
+                            end
+
+                            if save then
+                                AS_SavedVariables()
+                            end
+                        end
+                        AS.item['LastAuctionSetup'] = nil
+                        return old_CreateAuction()
+                    end)
+                end
+                AS_RegisterCancelAction()
 
         elseif event == "AUCTION_HOUSE_CLOSED" then
 
@@ -340,6 +370,8 @@ OPT_LABEL = {
        
         if AS.mainframe then
             --ASprint(MSG_C.INFO.."Frame layer: "..AS.mainframe:GetFrameLevel())
+            AS.item['LastAuctionSetup'] = nil
+            AS.item['LastListButtonClicked'] = nil
 
             if input == "test" then -- TODO: Rework testing to be more readable
                 ASdebug = true
@@ -415,6 +447,7 @@ OPT_LABEL = {
                 ASsavedtable = {}
                 ASsavedtable.copperoverride = true
                 ASsavedtable.cancelauction = false
+                ASsavedtable.rememberprice = true
             end
 
             ASsavedtable[ACTIVE_TABLE] = {}
@@ -470,6 +503,14 @@ OPT_LABEL = {
                 info.text = OPT_LABEL["cancelauction"]
                 info.value = "cancelauction"
                 info.checked = ASsavedtable.cancelauction
+                info.hasArrow = false
+                info.func =  ASdropDownMenuItem_OnClick
+                info.owner = self:GetParent()
+                UIDropDownMenu_AddButton(info, level)
+                --- Remember auction price
+                info.text = OPT_LABEL["rememberprice"]
+                info.value = "rememberprice"
+                info.checked = ASsavedtable.rememberprice
                 info.hasArrow = false
                 info.func =  ASdropDownMenuItem_OnClick
                 info.owner = self:GetParent()
@@ -534,6 +575,10 @@ OPT_LABEL = {
         elseif self.value == "cancelauction" then
             ASsavedtable.cancelauction = not ASsavedtable.cancelauction
             ASprint(MSG_C.INFO.."Cancel Auction (on right click):|r "..MSG_C.BOOL..tostring(ASsavedtable.cancelauction))
+            return
+        elseif self.value == "rememberprice" then
+            ASsavedtable.rememberprice = not ASsavedtable.rememberprice
+            ASprint(MSG_C.INFO.."Remember Price:|r "..MSG_C.BOOL..tostring(ASsavedtable.rememberprice))
             return
         elseif self.value == "ASnodoorbell" then
             ASnodoorbell = not ASnodoorbell
@@ -837,23 +882,19 @@ OPT_LABEL = {
 
     function AS_ContainerFrameItemButton_OnModifiedClick(self)
 
-        if IsShiftKeyDown() and AS.mainframe.headerframe.editbox:HasFocus() then
+        if IsShiftKeyDown() then
             local bag, item = self:GetParent():GetID(), self:GetID()
             local link = GetContainerItemLink(bag, item)
 
             ASprint(MSG_C.INFO.."OnModifiedLink Called")
             ASprint(MSG_C.INFO.."Link: "..link)
 
-            AS.mainframe.headerframe.editbox:SetText(link)
-            BrowseName:SetText(link)
-        elseif IsShiftKeyDown() and AS.manualprompt.notes:HasFocus() then
-            local bag, item = self:GetParent():GetID(), self:GetID()
-            local link = GetContainerItemLink(bag, item)
-
-            ASprint(MSG_C.INFO.."OnModifiedLink Called")
-            ASprint(MSG_C.INFO.."Link: "..link)
-
-            AS.manualprompt.notes:SetText(AS.manualprompt.notes:GetText()..link)
+            if AS.mainframe.headerframe.editbox:HasFocus() then
+                AS.mainframe.headerframe.editbox:SetText(link)
+                BrowseName:SetText(link)
+            elseif AS.manualprompt.notes:HasFocus() then
+                AS.manualprompt.notes:SetText(AS.manualprompt.notes:GetText()..link)
+            end
         end
     end
 
@@ -863,7 +904,8 @@ OPT_LABEL = {
 
     AS_QueryAH, AS_Evaluate, AS_IsEndPage,
     AS_IsEndResults, AS_IsShowPrompt, AS_CutoffPrice,
-    AS_GetCost, AS_IsAlwaysIgnore
+    AS_GetCost, AS_IsAlwaysIgnore,
+    AS_RegisterCancelAction, AS_CancelAuction
 
 ----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
     
@@ -1172,6 +1214,19 @@ OPT_LABEL = {
             end
         end
         return false
+    end
+
+    function AS_RegisterCancelAction()
+        -------------- THANK YOU AUCTIONEER ----------------
+        for i = 1, 199 do
+            local owner_button = _G["AuctionsButton"..i]
+            if not owner_button then
+                break
+            end
+            owner_button:RegisterForClicks("RightButtonUp")
+            _G["AuctionsButton"..i.."Item"]:RegisterForClicks("RightButtonUp")
+            owner_button:SetScript("OnClick", AS_CancelAuction)
+        end
     end
 
     function AS_CancelAuction(self, button)
