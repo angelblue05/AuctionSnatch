@@ -1,3 +1,5 @@
+![Auction Snatch](http://i.imgur.com/doUGyi1.jpg)
+
 # Auction Snatch (mod)
 Fully based on Auction Snatch by daxdax -- custom features, bug fixes and reskin for altz ui/aurora
 https://wow.curseforge.com/projects/auctionsnatch
