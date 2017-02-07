@@ -169,12 +169,21 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.mainframe.headerframe.editbox:SetWidth(AS.mainframe.headerframe:GetWidth()-76)
                     AS.mainframe.headerframe.editbox:SetAutoFocus(false)
                     AS.mainframe.headerframe.editbox:SetToplevel(true)
+                    AS.mainframe.headerframe.editbox:SetText("|cff737373Add item...")
                 -------------- SCRIPT ----------------
                     AS.mainframe.headerframe.editbox:SetScript("OnEscapePressed", function(self)
                         AS.mainframe.headerframe.editbox:ClearFocus()
                     end)
                     AS.mainframe.headerframe.editbox:SetScript("OnEnterPressed", function(self)
                         AS.mainframe.headerframe.additembutton:Click()
+                    end)
+                    AS.mainframe.headerframe.editbox:SetScript("OnEditFocusGained", function(self)
+                        AS.mainframe.headerframe.editbox:SetText("")
+                    end)
+                    AS.mainframe.headerframe.editbox:SetScript("OnEditFocusLost", function(self)
+                        if AS.mainframe.headerframe.editbox:GetText() == "" then
+                            AS.mainframe.headerframe.editbox:SetText("|cff737373Add item...")
+                        end
                     end)
                     if AS_SKIN then
                         AS.mainframe.headerframe.editbox:SetHeight(AS_BUTTON_HEIGHT)
