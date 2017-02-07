@@ -42,6 +42,7 @@ AS.elapsed = 0
 ASfirsttime = false
 ACTIVE_TABLE = nil
 AS_COPY = nil
+AS_SKIN = false
 
 STATE = {
     ['QUERYING'] = 1,
@@ -147,6 +148,13 @@ OPT_LABEL = {
 
             SlashCmdList["AS"] = AS_Main;
 
+        if IsAddOnLoaded("Aurora") then -- Verify if Aurora is installed/enabled
+            DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT.."AuctionSnatch|r: Aurora detected")
+            F, C = unpack(Aurora) -- Aurora
+            r, g, b = C.r, C.g, C.b -- Aurora
+            AS_backdrop = C.media.backdrop
+            AS_SKIN = true
+        end
         AS_CreateMainFrame()
         AS_CreatePrompt()
         AS_CreateManualPrompt()
@@ -213,7 +221,7 @@ OPT_LABEL = {
                     local old_CreateAuction = AuctionsCreateAuctionButton:GetScript("OnClick")
                     AuctionsCreateAuctionButton:SetScript("OnClick", function(self, button)
                         
-                        if ASsavedtable.rememberprice then 
+                        if ASsavedtable.rememberprice and AS.item.LastAuctionSetup then 
                             local startPrice = MoneyInputFrame_GetCopper(StartPrice)
                             local buyoutPrice = MoneyInputFrame_GetCopper(BuyoutPrice)
                             local stackSize = AuctionsStackSizeEntry:GetNumber()
@@ -249,6 +257,8 @@ OPT_LABEL = {
         elseif event == "AUCTION_HOUSE_CLOSED" then
 
             AS.mainframe.headerframe.editbox:SetText("")
+            AS.item['LastAuctionSetup'] = nil
+            AS.item['LastListButtonClicked'] = nil
             BrowseResetButton:Click()
             AS.prompt:Hide()
             AS.manualprompt:Hide()
@@ -367,8 +377,6 @@ OPT_LABEL = {
        
         if AS.mainframe then
             --ASprint(MSG_C.INFO.."Frame layer: "..AS.mainframe:GetFrameLevel())
-            AS.item['LastAuctionSetup'] = nil
-            AS.item['LastListButtonClicked'] = nil
 
             if input == "test" then -- TODO: Rework testing to be more readable
                 ASdebug = true
@@ -685,7 +693,7 @@ OPT_LABEL = {
                     hexcolor = "|c"..hexcolor
                 else
                     -- clear icon, link
-                    AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface/AddOns/AltzUI/media/gloss") -- Altz UI
+                    AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface/AddOns/AuctionSnatch/media/gloss")
                     AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
                     AS.mainframe.listframe.itembutton[x].link = nil
                     AS.mainframe.listframe.itembutton[x].rarity = nil

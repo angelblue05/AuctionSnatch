@@ -222,6 +222,7 @@ function ASshowtooltip(frame, notes)
         
         if notes then
             GameTooltip:SetText(notes, 0, 1, 1, 1, 1)
+            GameTooltip:SetBackdropColor(0, 0, 0, 0.85) -- Make it darker
             GameTooltip:Show()
         end
    end
@@ -229,6 +230,18 @@ end
 
 function AShidetooltip()
     GameTooltip:Hide()
+end
+
+function AS_inputclean(f)
+    -------------- THANK YOU AURORA ----------------
+        local frame = f:GetName()
+        local left = f.Left or _G[frame.."Left"]
+        local middle = f.Middle or _G[frame.."Middle"] or _G[frame.."Mid"]
+        local right = f.Right or _G[frame.."Right"]
+
+        left:Hide()
+        middle:Hide()
+        right:Hide()
 end
 
 
