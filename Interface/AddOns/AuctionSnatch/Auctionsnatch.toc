@@ -1,8 +1,8 @@
-## Interface: 70000
+## Interface: 70100
 ## Title: Auction Snatch
 ## Notes: "Get that auction!  Go! Go! Go!"
-## Author:  Dax006
-## Version: r13
+## Author:  Angelblue05,Dax006
+## Version: v1.0
 ## SavedVariables: ASsavedtable, ASsavedposition,ASfirsttime,ASdebug
 ## X-Curse-Packaged-Version: r13
 ## X-Curse-Project-Name: Auction Snatch
@@ -21,5 +21,3 @@ auctionsnatchhelperfunctions.lua
 auctionsnatchinterface.lua
 auctionsnatch.lua
 auctionsnatch.xml
-
-
