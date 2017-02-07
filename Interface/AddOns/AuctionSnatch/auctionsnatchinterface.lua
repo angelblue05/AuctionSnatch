@@ -7,7 +7,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
     MAIN INTERFACE FUNCTIONS
 
     AS_CreateMainFrame, AS_CreateListButton,
-    AS_CreateAuctionTab
+    AS_CreateAuctionTab, AS_inputclean
 
 ----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
     
@@ -541,6 +541,18 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
             -- Set geometry
             ASauctiontab:SetPoint("TOPLEFT", getglobal("AuctionFrameTab"..(index - 1)), "TOPRIGHT", -8, 0)
         end
+    end
+
+    function AS_inputclean(f)
+        -------------- THANK YOU AURORA ----------------
+            local frame = f:GetName()
+            local left = f.Left or _G[frame.."Left"]
+            local middle = f.Middle or _G[frame.."Middle"] or _G[frame.."Mid"]
+            local right = f.Right or _G[frame.."Right"]
+
+            left:Hide()
+            middle:Hide()
+            right:Hide()
     end
 
 --[[//////////////////////////////////////////////////

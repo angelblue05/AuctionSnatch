@@ -105,8 +105,6 @@ OPT_LABEL = {
                 end
             end
 
-            --GetAuctionItemLink("owner", self:GetParent():GetID() + GetEffectiveAuctionsScrollFrameOffset())
-
         ------ STATIC DIALOG // To get new list name
             StaticPopupDialogs["AS_NewList"] = {
                 text = "Enter name for the new list",
@@ -441,7 +439,6 @@ OPT_LABEL = {
         end
 
         AS.mainframe:Show()
-        --ASbringtotop() -- TODO: Is it really needed?
     end
 
     function AS_SavedVariables()
