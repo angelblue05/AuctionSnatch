@@ -254,7 +254,7 @@ OPT_LABEL = {
 
         elseif event == "AUCTION_HOUSE_CLOSED" then
 
-            AS.mainframe.headerframe.editbox:SetText("")
+            AS.mainframe.headerframe.editbox:SetText("|cff737373Add item...")
             AS.item['LastAuctionSetup'] = nil
             AS.item['LastListButtonClicked'] = nil
             BrowseResetButton:Click()
@@ -690,7 +690,7 @@ OPT_LABEL = {
                     hexcolor = "|c"..hexcolor
                 else
                     -- clear icon, link
-                    AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("Interface/AddOns/AuctionSnatch/media/gloss")
+                    AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("")
                     AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
                     AS.mainframe.listframe.itembutton[x].link = nil
                     AS.mainframe.listframe.itembutton[x].rarity = nil
@@ -826,6 +826,8 @@ OPT_LABEL = {
     function AS_AddItem()
         --this is when they hit enter and something is in the box
         local item_name = AS.mainframe.headerframe.editbox:GetText()
+        AS.mainframe.headerframe.additembutton:UnlockHighlight()
+        AS.mainframe.headerframe.additembutton:Disable()
 
         if AS_COPY and AS_COPY.name == item_name then
             ASprint(MSG_C.EVENT.."[ Succesfully copied:|r "..item_name.."]")

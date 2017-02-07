@@ -193,7 +193,8 @@
             
             if notes then
                 GameTooltip:SetText(notes, 0, 1, 1, 1, 1)
-                GameTooltip:SetBackdropColor(0, 0, 0, 0.85) -- Make it darker
+                GameTooltip:SetBackdropColor(0, 0, 0, 0.9) -- Make it darker
+                GameTooltip:SetBackdropBorderColor(1, 1, 1, 0.5)
                 GameTooltip:Show()
             end
        end

@@ -178,11 +178,23 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         AS.mainframe.headerframe.additembutton:Click()
                     end)
                     AS.mainframe.headerframe.editbox:SetScript("OnEditFocusGained", function(self)
-                        AS.mainframe.headerframe.editbox:SetText("")
+                        if AS.mainframe.headerframe.editbox:GetText() == "|cff737373Add item..." then
+                            AS.mainframe.headerframe.editbox:SetText("")
+                        end
                     end)
                     AS.mainframe.headerframe.editbox:SetScript("OnEditFocusLost", function(self)
                         if AS.mainframe.headerframe.editbox:GetText() == "" then
                             AS.mainframe.headerframe.editbox:SetText("|cff737373Add item...")
+                        end
+                    end)
+                    AS.mainframe.headerframe.editbox:SetScript("OnTextChanged", function(self, userInput)
+                        if userInput then
+                            AS.mainframe.headerframe.additembutton:UnlockHighlight()
+                            if AS.mainframe.headerframe.editbox:GetText() == "" then
+                                AS.mainframe.headerframe.additembutton:Disable()
+                            else
+                                AS.mainframe.headerframe.additembutton:Enable()
+                            end
                         end
                     end)
                     if AS_SKIN then
@@ -206,6 +218,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.mainframe.headerframe.additembutton:SetText("+")
                     AS.mainframe.headerframe.additembutton:SetWidth(30)
                     AS.mainframe.headerframe.additembutton:SetHeight(AS_BUTTON_HEIGHT)
+                    AS.mainframe.headerframe.additembutton:Disable()
                     AS.mainframe.headerframe.additembutton:SetPoint("TOPLEFT", AS.mainframe.headerframe.editbox, "TOPRIGHT", 2, 0)
                 -------------- SCRIPT ----------------
                     AS.mainframe.headerframe.additembutton:SetScript("OnClick", AS_AddItem)
@@ -631,12 +644,32 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS_ManualIgnore(self)
                 end)
 
+        ------ COPY ENTRY
+            -------------- STYLE ----------------
+                AS.optionframe.copyrowbutton = CreateFrame("Button", nil, AS.optionframe)
+                AS.optionframe.copyrowbutton:SetHeight(AS_BUTTON_HEIGHT)
+                AS.optionframe.copyrowbutton:SetWidth(AS.optionframe:GetWidth())
+                AS.optionframe.copyrowbutton:SetPoint("TOP", AS.optionframe.manualpricebutton, "BOTTOM")
+                AS.optionframe.copyrowbutton:SetNormalFontObject("GameFontNormal")
+                AS.optionframe.copyrowbutton:SetText("Copy entry")
+                AS.optionframe.copyrowbutton:SetHighlightTexture(AS_backdrop) -- Aurora
+                AS.optionframe.copyrowbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
+            -------------- SCRIPT ----------------
+                AS.optionframe.copyrowbutton:SetScript("OnClick", function(self)
+                    local listnum = ASbuttontolistnum(self)
+                    AS_COPY = AS.item[listnum]
+                    AS.mainframe.headerframe.editbox:SetText(AS.item[listnum].name)
+                    AS.mainframe.headerframe.additembutton:Enable()
+                    AS.mainframe.headerframe.additembutton:LockHighlight()
+                    AS.optionframe:Hide()
+                end)
+
         ------ RESET FILTERS
             -------------- STYLE ----------------
                 AS.optionframe.resetignorebutton = CreateFrame("Button", nil, AS.optionframe)
                 AS.optionframe.resetignorebutton:SetHeight(AS_BUTTON_HEIGHT)
                 AS.optionframe.resetignorebutton:SetWidth(AS.optionframe:GetWidth())
-                AS.optionframe.resetignorebutton:SetPoint("TOP", AS.optionframe.manualpricebutton, "BOTTOM")
+                AS.optionframe.resetignorebutton:SetPoint("TOP", AS.optionframe.copyrowbutton, "BOTTOM")
                 AS.optionframe.resetignorebutton:SetNormalFontObject("GameFontNormal")
                 AS.optionframe.resetignorebutton:SetText("Erase Ignore Conditions")
                 AS.optionframe.resetignorebutton:SetHighlightTexture(AS_backdrop) -- Aurora
@@ -678,29 +711,12 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS_MoveListButton(listnum, table.maxn(AS.item))
                 end)
 
-        ------ COPY ENTRY
-            -------------- STYLE ----------------
-                AS.optionframe.copyrowbutton = CreateFrame("Button", nil, AS.optionframe)
-                AS.optionframe.copyrowbutton:SetHeight(AS_BUTTON_HEIGHT)
-                AS.optionframe.copyrowbutton:SetWidth(AS.optionframe:GetWidth())
-                AS.optionframe.copyrowbutton:SetPoint("TOP", AS.optionframe.movetobottombutton, "BOTTOM")
-                AS.optionframe.copyrowbutton:SetNormalFontObject("GameFontNormal")
-                AS.optionframe.copyrowbutton:SetText("Copy entry")
-                AS.optionframe.copyrowbutton:SetHighlightTexture(AS_backdrop) -- Aurora
-                AS.optionframe.copyrowbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
-            -------------- SCRIPT ----------------
-                AS.optionframe.copyrowbutton:SetScript("OnClick", function(self)
-                    local listnum = ASbuttontolistnum(self)
-                    AS_COPY = AS.item[listnum]
-                    AS.mainframe.headerframe.editbox:SetText(AS.item[listnum].name)
-                end)
-
         ------ DELETE ENTRY
             -------------- STYLE ----------------
                 AS.optionframe.deleterowbutton = CreateFrame("Button", nil, AS.optionframe)
                 AS.optionframe.deleterowbutton:SetHeight(AS_BUTTON_HEIGHT)
                 AS.optionframe.deleterowbutton:SetWidth(AS.optionframe:GetWidth())
-                AS.optionframe.deleterowbutton:SetPoint("TOP", AS.optionframe.copyrowbutton, "BOTTOM")
+                AS.optionframe.deleterowbutton:SetPoint("TOP", AS.optionframe.movetobottombutton, "BOTTOM")
                 AS.optionframe.deleterowbutton:SetNormalFontObject("GameFontNormal")
                 AS.optionframe.deleterowbutton:SetText(AS_BUTTONDELETE)
                 AS.optionframe.deleterowbutton:SetHighlightTexture(AS_backdrop) -- Aurora
@@ -978,7 +994,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 -------------- STYLE ----------------
                     AS.manualprompt.priceoverride = CreateFrame("EditBox", nil, AS.manualprompt, "InputBoxTemplate")
                     AS.manualprompt.priceoverride:SetPoint("BOTTOMRIGHT", AS.manualprompt.savebutton, "TOPRIGHT", 0, 5)
-                    AS.manualprompt.priceoverride:SetHeight(25)
+                    AS.manualprompt.priceoverride:SetHeight(AS_BUTTON_HEIGHT-2)
                     AS.manualprompt.priceoverride:SetWidth(65)
                     AS.manualprompt.priceoverride:SetNumeric(true)
                     AS.manualprompt.priceoverride:SetAutoFocus(false)
@@ -1017,13 +1033,14 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         AShidetooltip()
                     end)
                     if AS_SKIN then
+                        AS.manualprompt.priceoverride:SetHeight(AS_BUTTON_HEIGHT)
                         F.ReskinInput(AS.manualprompt.priceoverride) -- Aurora
                     else
                         AS_inputclean(AS.manualprompt.priceoverride)
-                        AS.manualprompt.priceoverride:SetBackdrop({     bgFile = AS_backdrop,
-                                                                        edgeFile = AS_backdrop,
-                                                                        edgeSize = 1,
-                                                                        insets = { left = 0, right = 0, top = 0, bottom = 0 }
+                        AS.manualprompt.priceoverride:SetBackdrop({ bgFile = AS_backdrop,
+                                                                    edgeFile = AS_backdrop,
+                                                                    edgeSize = 1,
+                                                                    insets = { left = 0, right = 0, top = 0, bottom = 0 }
                         })
                         AS.manualprompt.priceoverride:SetBackdropColor(0, 0, 0)
                         AS.manualprompt.priceoverride:SetBackdropBorderColor(1, 1, 1, 0.2)
