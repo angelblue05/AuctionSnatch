@@ -34,7 +34,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     })
                 end
                 AS.mainframe:SetBackdropBorderColor(1, 1, 1, 0.2)
-                AS.mainframe:SetBackdropColor(0, 0, 0, 0.85)
+                AS.mainframe:SetBackdropColor(0, 0, 0, 0.9)
                 AS.mainframe:SetMovable(true)
                 AS.mainframe:EnableMouse(true)
             -------------- SCRIPT ----------------
