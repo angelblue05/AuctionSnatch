@@ -1,21 +1,9 @@
 ## Interface: 70100
 ## Title: Auction Snatch
 ## Notes: "Get that auction!  Go! Go! Go!"
-## Author:  Angelblue05,Dax006
-## Version: v1.0
+## Author:  Angelblue05, Dax006
+## Version: 1.0
 ## SavedVariables: ASsavedtable, ASsavedposition,ASfirsttime,ASdebug
-## X-Curse-Packaged-Version: r13
-## X-Curse-Project-Name: Auction Snatch
-## X-Curse-Project-ID: auctionsnatch
-## X-Curse-Repository-ID: wow/auctionsnatch/mainline
-## X-Curse-Packaged-Version: r14
-## X-Curse-Project-Name: Auction Snatch
-## X-Curse-Project-ID: auctionsnatch
-## X-Curse-Repository-ID: wow/auctionsnatch/mainline
-## X-Curse-Packaged-Version: r19
-## X-Curse-Project-Name: Auction Snatch
-## X-Curse-Project-ID: auctionsnatch
-## X-Curse-Repository-ID: wow/auctionsnatch/mainline
 localization.lua
 auctionsnatchhelperfunctions.lua
 auctionsnatchinterface.lua
