@@ -135,14 +135,14 @@ OPT_LABEL = {
         DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT..AS_LOADTEXT)
 
         ------ SLASH COMMANDS
-            SLASH_AS1 = "/AS";
-            SLASH_AS2 = "/as";
-            SLASH_AS3 = "/As";
-            SLASH_AS4 = "/aS";
-            SLASH_AS5 = "/Auctionsnatch";
-            SLASH_AS6 = "/AuctionSnatch";
-            SLASH_AS7 = "/AUCTIONSNATCH";
-            SLASH_AS8 = "/auctionsnatch";
+            SLASH_AS1 = "/AO";
+            SLASH_AS2 = "/ao";
+            SLASH_AS3 = "/Ao";
+            SLASH_AS4 = "/aO";
+            SLASH_AS5 = "/Auctionone";
+            SLASH_AS6 = "/AuctionOne";
+            SLASH_AS7 = "/AUCTIONONE";
+            SLASH_AS8 = "/auctionone";
 
             SlashCmdList["AS"] = AS_Main;
 
