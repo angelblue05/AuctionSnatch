@@ -147,7 +147,7 @@ OPT_LABEL = {
             SlashCmdList["AS"] = AS_Main;
 
         if IsAddOnLoaded("Aurora") then -- Verify if Aurora is installed/enabled
-            DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT.."AuctionSnatch|r: Aurora detected")
+            DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT.."AuctionOne|r: Aurora detected")
             F, C = unpack(Aurora) -- Aurora
             r, g, b = C.r, C.g, C.b -- Aurora
             AS_backdrop = C.media.backdrop
@@ -170,7 +170,7 @@ OPT_LABEL = {
 
         if event == "VARIABLES_LOADED" then
             ASprint(MSG_C.EVENT.."Variables loaded. Initializing.")
-            ASprint(MSG_C.INFO.."Running version: "..GetAddOnMetadata("Auctionsnatch", "Version"), 1)
+            ASprint(MSG_C.INFO.."Running version: "..GetAddOnMetadata("AuctionOne", "Version"), 1)
             
             AS_Initialize()
 
@@ -1044,7 +1044,7 @@ OPT_LABEL = {
                 
                 if ASnodoorbell then
                    ASprint(MSG_C.DEBUG.."Attempting to play sound file")
-                   PlaySoundFile("Interface\\Addons\\auctionsnatch\\Sounds\\DoorBell.mp3")
+                   PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\DoorBell.mp3")
                 end
 
                 SetSelectedAuctionItem("list", AScurrentahresult)

@@ -1,5 +1,5 @@
 ﻿AS_OLDTONEW = "Attempting to transfer old auctionsnatch data to the new version.  You will not see this message again."
-AS_LOADTEXT = "AuctionSnatch loaded.\nType /as or /auctionsnatch"
+AS_LOADTEXT = "AuctionOne loaded.\nType /ao or /auctionone"
 AS_NODATA = "No Data"
 AS_INTERESTEDIN = "Are you interested in"
 AS_BY = "by"
