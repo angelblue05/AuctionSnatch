@@ -24,20 +24,21 @@ A new tab will appear on the Auction House Frame. Clicking that will bring up th
 ### Options:
 * **[ Import list ]** Select which list you want to view
 * **[ List options ]** Per list options
-* **[ Doorbell sound ]** Fun sound when prompt for buying shows
-* **[ Ignore bids ]** Ignore bidding price, only consider the buyout price
-* **[ Ignore no buyouts ]** Ignore items without a buyout price
+  * **[ Doorbell sound ]** Fun sound when prompt for buying shows
+  * **[ Ignore bids ]** Ignore bidding price, only consider the buyout price
+  * **[ Ignore no buyouts ]** Ignore items without a buyout price
 * **[ Create list ]** Create a new list
 * **[ Copper override ]** Changes the value, at the time of input, between copper or gold-only
 * **[ Cancel auction ]** Cancel auction on right-click in the auctions tab
 * **[ Remember price ]** When using the sell option, remember the unit price from previous auction
-* **[ Auto open ]** Open Auction Snatch automatically when opening the Auction House
-* **[ Auto start ]** Once the Auction Snatch window is open, start searching automatically the default list
+* **[ Auto-open ]** Open Auction Snatch automatically when opening the Auction House
+* **[ Auto-start ]** Once the Auction Snatch window is open, start searching automatically the default list
 
 ### Other features:
 * 'Esc' will always close any open frames
-* Double-click will search the Auction House
-* Right-click will auto search the Auction House for the item
+* Shift-click the start search button to start where you left off
+* Double-click the item in list will search the Auction House
+* Right-click the item in list will auto search the Auction House for the item
 * Shift-click on any item in your bags, auction listing or in chat links to add that item to your list while Auction Snatch is open.
 * When opening the Auction House, holding shift will reverse the auto-search feature.
 * Re-order or Ignore items in the list
