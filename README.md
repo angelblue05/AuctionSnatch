@@ -11,7 +11,7 @@ https://wow.curseforge.com/projects/auctionsnatch
 * Remember prices for auctions (via the sell option)
 * Cancel auction on right-click
 * Create shortcut to edit entry and add notes
-* Add auto open option
+* Add an auto-open option
 * Reskin to match Altz UI/Aurora skin UI (optional): http://www.wowinterface.com/downloads/fileinfo.php?id=21263#info
 
 Auction Snatch keeps a saved list of items you want to buy from the Auction House, and automatically scans the Auction House for every item on your list. It's very fast and will happen before you even have time to type anything in. If an auction is found, a prompt will appear to ask you what you want to do.  The selections in the Prompt are self-explanatory.
