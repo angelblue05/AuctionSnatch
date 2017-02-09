@@ -45,7 +45,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.mainframe:StopMovingOrSizing()
                 end)
                 AS.mainframe:SetScript("OnShow", function(self)
-                    AS.mainframe:SetFrameStrata(AuctionFrameBrowse:GetFrameStrata())
+                    AS.mainframe:SetFrameStrata(AuctionFrameBrowse:GetFrameStrata() + 1)
                 end)
                 AS.mainframe:SetScript("OnHide", function (self)
                     AS.mainframe.headerframe.stopsearchbutton:Click()
