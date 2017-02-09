@@ -37,15 +37,14 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.mainframe:SetBackdropColor(0, 0, 0, 0.9)
                 AS.mainframe:SetMovable(true)
                 AS.mainframe:EnableMouse(true)
+                AS.mainframe:SetFrameStrata("HIGH")
+                AS.mainframe:SetScale(0.8)
             -------------- SCRIPT ----------------
                 AS.mainframe:SetScript("OnMouseDown", function(self)
                     AS.mainframe:StartMoving()
                 end)
                 AS.mainframe:SetScript("OnMouseUp", function(self)
                     AS.mainframe:StopMovingOrSizing()
-                end)
-                AS.mainframe:SetScript("OnShow", function(self)
-                    AS.mainframe:SetFrameStrata(AuctionFrameBrowse:GetFrameStrata() + 1)
                 end)
                 AS.mainframe:SetScript("OnHide", function (self)
                     AS.mainframe.headerframe.stopsearchbutton:Click()
@@ -168,7 +167,6 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.mainframe.headerframe.editbox:SetHeight(AS_BUTTON_HEIGHT-2)
                     AS.mainframe.headerframe.editbox:SetWidth(AS.mainframe.headerframe:GetWidth()-76)
                     AS.mainframe.headerframe.editbox:SetAutoFocus(false)
-                    AS.mainframe.headerframe.editbox:SetToplevel(true)
                     AS.mainframe.headerframe.editbox:SetText("|cff737373Add item...")
                 -------------- SCRIPT ----------------
                     AS.mainframe.headerframe.editbox:SetScript("OnEscapePressed", function(self)
@@ -622,7 +620,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.sellbutton:SetText("Sell")
                 AS.optionframe.sellbutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.sellbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
-                AS.optionframe.sellbutton:SetFrameStrata("TOOLTIP")
+                --AS.optionframe.sellbutton:SetFrameStrata("TOOLTIP")
             -------------- SCRIPT ----------------
                 AS.optionframe.sellbutton:SetScript("OnClick", function(self)
                     AS_SellItem(self)
@@ -638,7 +636,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.manualpricebutton:SetText("Edit entry")
                 AS.optionframe.manualpricebutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.manualpricebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
-                AS.optionframe.manualpricebutton:SetFrameStrata("TOOLTIP")
+                --AS.optionframe.manualpricebutton:SetFrameStrata("TOOLTIP")
             -------------- SCRIPT ----------------
                 AS.optionframe.manualpricebutton:SetScript("OnClick", function(self)
                     AS_ManualIgnore(self)
@@ -833,7 +831,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
 
             ------ MANUAL PROMPT FRAME
                 -------------- STYLE ----------------
-                    AS.manualprompt = CreateFrame("Frame", "ASmanualpromptframe", UIParent)
+                    AS.manualprompt = CreateFrame("Frame", "ASmanualpromptframe", AS.mainframe)
                     AS.manualprompt:SetPoint("TOPLEFT", AS.mainframe, "TOPRIGHT", 3,0)
                     AS.manualprompt:SetHeight(150)  --some addons change font size, so this will be overridden in ASinitialize
                     AS.manualprompt:SetWidth(200)
@@ -854,6 +852,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.manualprompt:SetBackdropColor(0,0,0,0.85)
                     AS.manualprompt:SetMovable(true)
                     AS.manualprompt:EnableMouse(true)
+                    AS.manualprompt:SetFrameStrata("DIALOG")
                 -------------- SCRIPT ----------------
                     AS.manualprompt:SetScript("OnMouseDown", function(self)
                         AS.manualprompt:StartMoving()
@@ -861,12 +860,12 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.manualprompt:SetScript("OnMouseUp", function(self)
                         AS.manualprompt:StopMovingOrSizing()
                     end)
-                    AS.manualprompt:SetScript("OnShow",function(self)
+                    AS.manualprompt:SetScript("OnShow", function(self)
                         ASprint(MSG_C.INFO.."Manual prompt is shown")
                         AS.mainframe.headerframe.stopsearchbutton:Click()
                         AS.manualprompt.priceoverride:SetFocus()
                     end)
-                    AS.manualprompt:SetScript("OnHide",function(self)
+                    AS.manualprompt:SetScript("OnHide", function(self)
                         ASprint(MSG_C.INFO.."Manual prompt is hidden")
                         if AS.save then
                             AS.save = nil
@@ -1144,6 +1143,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.prompt:SetBackdropColor(0,0,0,0.85)
                 AS.prompt:SetMovable(true)
                 AS.prompt:EnableMouse(true)
+                AS.prompt:SetFrameStrata("TOOLTIP")
             -------------- SCRIPT ----------------
                 AS.prompt:SetScript("OnMouseDown", function(self)
                     AS.prompt:StartMoving()
