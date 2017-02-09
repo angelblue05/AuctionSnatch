@@ -1,0 +1,11 @@
+------------------------------------------------------------------------
+1.1 | angelblue05 | 2017-02-09
+
+- Fix the frame layering
+- Fix cancel auction on right-click (to refresh when new auctions are setup)
+- Attempt to scale for lower resolutions
+------------------------------------------------------------------------
+1.0 | angelblue05 | 2017-02-07
+
+Initial build
+------------------------------------------------------------------------
