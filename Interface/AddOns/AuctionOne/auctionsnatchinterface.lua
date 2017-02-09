@@ -742,7 +742,8 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
         for bag = 0, 4, 1 do -- Find item in bags and create auction
             for slot = 1, GetContainerNumSlots(bag), 1 do
                 local name = GetContainerItemLink(bag, slot)
-                if name and string.find(name, AS.item[listnum].name) then
+
+                if name and (string.find(name, AS.item[listnum].name) or name == AS.item[listnum].link) then -- string.find ignores dashes
                     found = true
                     ASprint(MSG_C.INFO.."Setting up sale:|r "..AS.item[listnum].name, 1)
                     AuctionFrameTab3:Click()
