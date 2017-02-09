@@ -86,7 +86,7 @@ OPT_LABEL = {
 
         ----- REGISTER FOR EVENTS
             self:RegisterEvent("AUCTION_ITEM_LIST_UPDATE")
-            self:RegisterEvent("NEW_AUCTION_UPDATE")
+            self:RegisterEvent("AUCTION_OWNED_LIST_UPDATE")
             self:RegisterEvent("AUCTION_HOUSE_SHOW")
             self:RegisterEvent("AUCTION_HOUSE_CLOSED")
             self:RegisterEvent("VARIABLES_LOADED")
@@ -174,7 +174,7 @@ OPT_LABEL = {
             
             AS_Initialize()
 
-        elseif event == "NEW_AUCTION_UPDATE" then
+        elseif event == "AUCTION_OWNED_LIST_UPDATE" then
             AS_RegisterCancelAction()
 
         elseif event == "AUCTION_ITEM_LIST_UPDATE" then
@@ -250,7 +250,6 @@ OPT_LABEL = {
                         return old_CreateAuction()
                     end)
                 end
-                AS_RegisterCancelAction()
 
         elseif event == "AUCTION_HOUSE_CLOSED" then
 
