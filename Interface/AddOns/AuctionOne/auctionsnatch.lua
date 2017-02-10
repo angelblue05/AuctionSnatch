@@ -112,7 +112,6 @@ OPT_LABEL = {
                 button1 = "Create",
                 button2 = "Cancel",
                 OnShow = function (self, data)
-                    --self.editBox:SetText("")
                     self.button1:Disable()
                 end,
                 OnAccept = function (self, data, data2)
@@ -130,6 +129,32 @@ OPT_LABEL = {
                 timeout = 0,
                 whileDead = true,
                 hideOnEscape = true,
+                exclusive = true,
+                preferredIndex = 3  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
+            }
+            StaticPopupDialogs["AO_RenameList"] = {
+                text = "Enter new name for the list",
+                button1 = "Rename",
+                button2 = "Cancel",
+                OnShow = function (self, data)
+                    self.button1:Disable()
+                end,
+                OnAccept = function (self, data, data2)
+                    AO_RenameList(self.editBox:GetText())
+                end,
+                EditBoxOnTextChanged = function (self, data)
+                    text = self:GetParent().editBox:GetText()
+                    if text == "" then
+                        self:GetParent().button1:Disable()
+                    else
+                        self:GetParent().button1:Enable()
+                    end
+                end,
+                hasEditBox = true,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+                exclusive = true,
                 preferredIndex = 3  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
             }
 
@@ -466,6 +491,7 @@ OPT_LABEL = {
             ASsavedtable[ACTIVE_TABLE].ASignorebid = ASignorebid
             ASsavedtable[ACTIVE_TABLE].ASignorenobuyout = ASignorenobuyout
             ASsavedtable[ACTIVE_TABLE].AOicontooltip = AOicontooltip
+            ASsavedtable[ACTIVE_TABLE].AOserver = AOserver
         else
             ASprint(MSG_C.ERROR.."Checkboxes not found to save")
         end
@@ -566,6 +592,16 @@ OPT_LABEL = {
             local info = UIDropDownMenu_CreateInfo()
             local key, value
 
+            --- Rename current list
+            if not AOserver then
+                info.text = "Rename list"
+                info.hasArrow = false
+                info.value = "AOrenamelist"
+                info.func =  ASdropDownMenuItem_OnClick
+                info.owner = self:GetParent()
+                UIDropDownMenu_AddButton(info, level)
+            end
+
             if ASsavedtable then
                 for key, value in pairs(ASsavedtable[ACTIVE_TABLE]) do
                     if OPT_LABEL[key] then -- options
@@ -607,6 +643,9 @@ OPT_LABEL = {
         elseif self.value == "rememberprice" then
             ASsavedtable.rememberprice = not ASsavedtable.rememberprice
             ASprint(MSG_C.INFO.."Remember Price:|r "..MSG_C.BOOL..tostring(ASsavedtable.rememberprice))
+            return
+        elseif self.value == "AOrenamelist" then
+            StaticPopup_Show("AO_RenameList")
             return
         elseif self.value == "ASnodoorbell" then
             ASnodoorbell = not ASnodoorbell

@@ -23,6 +23,13 @@
         ASignorenobuyout = false
         AOicontooltip = true
 
+        local serverName = GetRealmName()
+        if serverName == name then
+            AOserver = true
+        else
+            AOserver = false
+        end
+
         ACTIVE_TABLE = name
         AS.mainframe.headerframe.listlabel:SetText(ACTIVE_TABLE)
         AS_SavedVariables()
@@ -35,8 +42,6 @@
             end
         end
         I_LISTNAMES = table_invert(LISTNAMES)
-        ASprint(LISTNAMES)
-        ASprint(I_LISTNAMES)
         
         if #LISTNAMES > 1 then
             AS.mainframe.headerframe.nextlist:Enable()
@@ -49,6 +54,7 @@
 
     function AS_LoadTable(name)
 
+        local serverName = GetRealmName()
         ACTIVE_TABLE = name
         AS.mainframe.headerframe.listlabel:SetText(ACTIVE_TABLE)
         AS.item = {}
@@ -87,11 +93,20 @@
             AOicontooltip = true
             AS_SavedVariables()
         end
+        if serverName == name then
+            AOserver = true
+            AS_SavedVariables()
+        elseif ASsavedtable[name].AOserver ~= nil then
+            AOserver = ASsavedtable[name].AOserver
+        else
+            AOserver = false
+            AS_SavedVariables()
+        end
 
         LISTNAMES = {}
         I_LISTNAMES = {}
         for key, value in pairs(ASsavedtable) do
-            if not OPT_LABEL[key] then-- Found a server
+            if not OPT_LABEL[key] then-- Found a list
                 LISTNAMES[#LISTNAMES + 1] = key
             end
         end

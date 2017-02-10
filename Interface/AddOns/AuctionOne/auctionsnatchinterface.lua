@@ -1458,3 +1458,18 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
         AS_template(listname)
         AS_ScrollbarUpdate()
     end
+
+    function AO_RenameList(listname)
+        ASprint(MSG_C.EVENT.."Renaming list "..ACTIVE_TABLE.." to:|r "..listname)
+        for _, v in pairs(LISTNAMES) do
+            if v == listname then
+                ASprint(MSG_C.ERROR.."List name already in use")
+                return
+            end
+        end
+
+        ASsavedtable[listname] = ASsavedtable[ACTIVE_TABLE]
+        ASsavedtable[ACTIVE_TABLE] = nil
+        AS_LoadTable(listname)
+        AS_SavedVariables()
+    end
