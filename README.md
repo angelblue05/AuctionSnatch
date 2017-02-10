@@ -24,9 +24,11 @@ A new tab will appear on the Auction House Frame. Clicking that will bring up th
 ### Options:
 * **[ Import list ]** Select which list you want to view
 * **[ List options ]** Per list options
+  * **[ Rename list ]** Rename the currently loaded list
   * **[ Doorbell sound ]** Fun sound when prompt for buying shows
   * **[ Ignore bids ]** Ignore bidding price, only consider the buyout price
   * **[ Ignore no buyouts ]** Ignore items without a buyout price
+  * **[ Icon tooltip ]** Enable tooltip on mouseover for icons in the list
 * **[ Create list ]** Create a new list
 * **[ Copper override ]** Changes the value, at the time of input, between copper or gold-only
 * **[ Cancel auction ]** Cancel auction on right-click in the auctions tab

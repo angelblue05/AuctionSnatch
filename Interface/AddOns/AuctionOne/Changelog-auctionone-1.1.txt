@@ -1,4 +1,12 @@
 ------------------------------------------------------------------------
+1.2 | angelblue05 | 2017-02-10
+
+- Add option to rename current list (options > list options > Rename list)
+  ** Can't change the default server named list
+- Add option to enable/disable tooltips on mouseover for icons in the list
+- Fix sell item names with hyphens not being detected correctly for selling
+
+------------------------------------------------------------------------
 1.1 | angelblue05 | 2017-02-09
 
 - Fix the frame layering
