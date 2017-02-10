@@ -69,7 +69,8 @@ OPT_LABEL = {
     ['cancelauction'] = "Cancel auction",
     ['rememberprice'] = "Remember price",
     ['ASautostart'] = AS_AUTOSEARCH,
-    ['ASautoopen'] = AS_AUTOOPEN
+    ['ASautoopen'] = AS_AUTOOPEN,
+    ['AOicontooltip'] = "Icon tooltip"
 }
 
 
@@ -464,6 +465,7 @@ OPT_LABEL = {
             ASsavedtable[ACTIVE_TABLE].ASnodoorbell = ASnodoorbell
             ASsavedtable[ACTIVE_TABLE].ASignorebid = ASignorebid
             ASsavedtable[ACTIVE_TABLE].ASignorenobuyout = ASignorenobuyout
+            ASsavedtable[ACTIVE_TABLE].AOicontooltip = AOicontooltip
         else
             ASprint(MSG_C.ERROR.."Checkboxes not found to save")
         end
@@ -620,6 +622,11 @@ OPT_LABEL = {
             ASignorenobuyout = not ASignorenobuyout
             AS_SavedVariables()
             ASprint(MSG_C.INFO.."Ignore no buyouts:|r "..MSG_C.BOOL..tostring(ASignorenobuyout))
+            return
+        elseif self.value == "AOicontooltip" then
+            AOicontooltip = not AOicontooltip
+            AS_SavedVariables()
+            ASprint(MSG_C.INFO.."Display icon tooltip:|r "..MSG_C.BOOL..tostring(AOicontooltip))
             return
         elseif self.value == "ASautostart" then
             ASsavedtable.ASautostart = not ASsavedtable.ASautostart

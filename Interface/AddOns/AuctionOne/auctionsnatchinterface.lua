@@ -503,7 +503,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 button_tmp.icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)
             -------------- SCRIPT ----------------
                 button_tmp.icon:SetScript("OnEnter", function(self)
-                    if button_tmp.link then
+                    if AOicontooltip and button_tmp.link then
                         local link = button_tmp.link
                         GameTooltip:SetOwner(self, "ANCHOR_NONE")
                         GameTooltip:SetHyperlink(link)

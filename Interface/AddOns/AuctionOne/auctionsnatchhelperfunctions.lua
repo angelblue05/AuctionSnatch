@@ -21,6 +21,7 @@
         ASnodoorbell = true
         ASignorebid = false
         ASignorenobuyout = false
+        AOicontooltip = true
 
         ACTIVE_TABLE = name
         AS.mainframe.headerframe.listlabel:SetText(ACTIVE_TABLE)
@@ -62,14 +63,29 @@
         if ASsavedtable[name].ASnodoorbell ~= nil then
             ASnodoorbell = ASsavedtable[name].ASnodoorbell
             --ASprint("Doorbell sound = "..MSG_C.BOOL..""..tostring(ASnodoorbell))
+        else
+            ASnodoorbell = true
+            AS_SavedVariables()
         end
         if ASsavedtable[name].ASignorebid ~= nil then
             ASignorebid = ASsavedtable[name].ASignorebid
             --ASprint("Ignore bid = "..MSG_C.BOOL..""..tostring(ASignorebid))
+        else
+            ASignorebid = false
+            AS_SavedVariables()
         end
         if ASsavedtable[name].ASignorenobuyout ~= nil then
             ASignorenobuyout = ASsavedtable[name].ASignorenobuyout
             --ASprint("Ignore no buyout = "..MSG_C.BOOL..""..tostring(ASignorenobuyout))
+        else
+            ASignorenobuyout = false
+            AS_SavedVariables()
+        end
+        if ASsavedtable[name].AOicontooltip ~= nil then
+            AOicontooltip = ASsavedtable[name].AOicontooltip
+        else
+            AOicontooltip = true
+            AS_SavedVariables()
         end
 
         LISTNAMES = {}
