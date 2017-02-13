@@ -455,7 +455,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     if idx.ignoretable and idx.ignoretable[idx.name] then
                         if idx.ignoretable[idx.name].cutoffprice and idx.ignoretable[idx.name].cutoffprice > 0 then
                             strmsg = strmsg.."\nCutoff price: "..ASGSC(tonumber(idx.ignoretable[idx.name].cutoffprice))
-                        else
+                        elseif idx.ignoretable[idx.name].cutoffprice and idx.ignoretable[idx.name].cutoffprice == 0 then
                             strmsg = strmsg.."\n"..AS_IGNORECONDITIONS..": "
                             strmsg = strmsg.."|cff9d9d9d"..AS_ALWAYS.."|r"
                         end
@@ -1476,8 +1476,9 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
 
         ------ CUTOFF PRICE LABEL
             -------------- STYLE ----------------
-                AS.prompt.lowerstring= AS.prompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+                AS.prompt.lowerstring = AS.prompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")
                 AS.prompt.lowerstring:SetJustifyH("CENTER")
+                AS.prompt.lowerstring:SetJustifyV("TOP")
                 AS.prompt.lowerstring:SetWidth(AS.prompt.separator:GetWidth() + AS.prompt.rseparator:GetWidth())
                 AS.prompt.lowerstring:SetPoint("TOP", AS.prompt[AS_BUTTONBID], "BOTTOMRIGHT", 1, -7)
                 AS.prompt.lowerstring:SetSpacing(2)
