@@ -608,6 +608,9 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         AS.optionframe:Hide()
                     end
                 end)
+                AS.optionframe:SetScript("OnShow", function(self)
+                    AS.optionframe:SetFrameStrata("TOOLTIP")
+                end)
 
         ------ SELL ITEM
             -------------- STYLE ----------------
