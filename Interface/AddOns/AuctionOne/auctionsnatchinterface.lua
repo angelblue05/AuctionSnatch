@@ -988,9 +988,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.manualprompt.savebutton:SetScript("OnEnter",function(self)
                         ASshowtooltip(AS.manualprompt.savebutton, AS_BUTTONTEXT8)
                     end)
-                    AS.manualprompt.savebutton:SetScript("OnLeave", function(self)
-                        AShidetooltip()
-                    end)
+                    AS.manualprompt.savebutton:SetScript("OnLeave", AShidetooltip)
                     if AS_SKIN then
                         F.Reskin(AS.manualprompt.savebutton) -- Aurora
                     end
@@ -1295,9 +1293,9 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
             -------------- STYLE ----------------
                 AS.prompt.ilvlbg = AS.prompt.icon:CreateTexture(nil, "OVERLAY")
                 AS.prompt.ilvlbg:SetColorTexture(0, 0, 0, 0.80)
-                AS.prompt.ilvlbg:SetWidth(AS.prompt.icon:GetWidth())
+                AS.prompt.ilvlbg:SetWidth(AS.prompt.icon:GetWidth() + 2)
                 AS.prompt.ilvlbg:SetHeight(15)
-                AS.prompt.ilvlbg:SetPoint("BOTTOMLEFT", AS.prompt.icon, "BOTTOMLEFT")
+                AS.prompt.ilvlbg:SetPoint("TOPLEFT", AS.prompt.icon, "BOTTOMLEFT")
 
         ------ ITEM ILVL
             -------------- STYLE ----------------
@@ -1306,7 +1304,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.prompt.ilvl:SetWordWrap(false)
                 AS.prompt.ilvl:SetWidth(AS.prompt.icon:GetWidth())
                 AS.prompt.ilvl:SetTextColor(r, g, b, 1) -- Aurora
-                AS.prompt.ilvl:SetPoint("BOTTOMLEFT", AS.prompt.icon, "BOTTOMLEFT", 0, 1)
+                AS.prompt.ilvl:SetPoint("BOTTOMLEFT", AS.prompt.ilvlbg, "BOTTOMLEFT", 0, 1)
 
         ------ ITEM LABEL
             -------------- STYLE ----------------

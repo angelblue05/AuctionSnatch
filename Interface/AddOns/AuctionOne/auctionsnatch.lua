@@ -1206,6 +1206,7 @@ OPT_LABEL = {
         end
 
         -- Fill prompt info, title, icon, bid or buyout text/buttons
+        AS.prompt.ilvl:SetText(ilvl)
         AS.prompt.quantity:SetText(count)
         AS.prompt.vendor:SetText(AS_BY..": "..(owner or "Unavailable"))
         AS.prompt.icon:SetNormalTexture(auction_item[2])
