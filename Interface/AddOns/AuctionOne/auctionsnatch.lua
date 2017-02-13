@@ -798,10 +798,11 @@ OPT_LABEL = {
                 if not AS.item[listnumber].ignoretable then
                     AS.item[listnumber].ignoretable = {}
                 end
-                
-                AS.item[listnumber].ignoretable[name] = {}
+                if not AS.item[listnumber].ignoretable[name] then
+                    AS.item[listnumber].ignoretable[name] = {}
+                end
+
                 AS.item[listnumber].ignoretable[name].cutoffprice = 0
-                AS.item[listnumber].ignoretable[name].quality = quality
                 AS.item[listnumber].priceoverride = nil
                 AS.item['ASmanualedit'] = nil
                 AS_SavedVariables()
@@ -812,18 +813,25 @@ OPT_LABEL = {
                 local name = AS.item['ASmanualedit'].name
                 local listnumber = AS.item['ASmanualedit'].listnumber
 
-                if AS.item['ASmanualedit'].priceoverride == nil then
+                if AS.item['ASmanualedit'].priceoverride == nil and AS.item['ASmanualedit'].ilvl == nil then
                     AS.manualprompt:Hide()
                     return
                 end
 
                 if not AS.item[listnumber].ignoretable then
-                   AS.item[listnumber].ignoretable = {}
+                    AS.item[listnumber].ignoretable = {}
+                end
+                if not AS.item[listnumber].ignoretable[name] then
+                    AS.item[listnumber].ignoretable[name] = {}
                 end
 
-                AS.item[listnumber].ignoretable[name] = {}
-                AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualedit'].priceoverride
-                AS.item[listnumber].ignoretable[name].quality = quality
+                if AS.item['ASmanualedit'].priceoverride then
+                    AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualedit'].priceoverride
+                end
+                if AS.item['ASmanualedit'].ilvl then
+                    AS.item[listnumber].ignoretable[name].ilvl = AS.item['ASmanualedit'].ilvl
+                end
+
                 AS.item[listnumber].priceoverride = nil
                 AS.item['ASmanualedit'] = nil
                 AS_SavedVariables()
@@ -1084,6 +1092,7 @@ OPT_LABEL = {
             --                  [8]minBid, [9]minIncrement, [10]buyoutPrice, [11]bidAmount, [12]highBidder,
             --                  [13]highBidderFullName, [14]owner, [15]ownerFullName, [16]saleStatus, [17]itemId, [18]hasAllInfo
             auction_item = {GetAuctionItemInfo("list", AScurrentahresult)}
+            ASprint(auction_item)
 
             if AS_IsShowPrompt() then
                 
@@ -1188,6 +1197,14 @@ OPT_LABEL = {
         end
 
         auction_iteminfo = {GetItemInfo(auction_item[17])}
+        local ilvl = auction_iteminfo[4]
+        ASprint(auction_iteminfo)
+
+        --[[if AS.item[AScurrentauctionsnatchitem].ignoretable and AS.item[AScurrentauctionsnatchitem].ignoretable[name] then
+            if AS.item[AScurrentauctionsnatchitem].ignoretable[name].ilvl and AS.item[AScurrentauctionsnatchitem].ignoretable[name].ilvl > ilvl then
+                return false
+            end
+        end]]
         -- Fill prompt info, title, icon, bid or buyout text/buttons
         AS.prompt.quantity:SetText(count)
         AS.prompt.ilvl:SetText(auction_iteminfo[4])

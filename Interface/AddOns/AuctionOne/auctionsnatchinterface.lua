@@ -453,11 +453,14 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     strmsg = AS_INFO
 
                     if idx.ignoretable and idx.ignoretable[idx.name] then
-                        if idx.ignoretable[idx.name].cutoffprice > 0 then
+                        if idx.ignoretable[idx.name].cutoffprice and idx.ignoretable[idx.name].cutoffprice > 0 then
                             strmsg = strmsg.."\nCutoff price: "..ASGSC(tonumber(idx.ignoretable[idx.name].cutoffprice))
                         else
                             strmsg = strmsg.."\n"..AS_IGNORECONDITIONS..": "
                             strmsg = strmsg.."|cff9d9d9d"..AS_ALWAYS.."|r"
+                        end
+                        if idx.ignoretable[idx.name].ilvl then
+                            strmsg = strmsg.."\nMin iLvl: ".."|cffffffff"..idx.ignoretable[idx.name].ilvl
                         end
                     end
 
@@ -607,6 +610,9 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     if(x < AS.optionframe:GetLeft() or x > AS.optionframe:GetRight() or y < AS.optionframe:GetBottom() or y > AS.optionframe:GetTop()) then
                         AS.optionframe:Hide()
                     end
+                end)
+                AS.optionframe:SetScript("OnShow", function(self)
+                    AS.optionframe:SetFrameStrata("TOOLTIP")
                 end)
 
         ------ SELL ITEM
@@ -953,7 +959,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.manualprompt.ignorebutton:SetText(AS_BUTTONIGNORE)
                     AS.manualprompt.ignorebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
                     AS.manualprompt.ignorebutton:SetHeight(AS_BUTTON_HEIGHT)
-                    AS.manualprompt.ignorebutton:SetPoint("TOPLEFT", AS.manualprompt.lowerstring, "BOTTOMLEFT", 0, -30)
+                    AS.manualprompt.ignorebutton:SetPoint("TOPLEFT", AS.manualprompt.lowerstring, "BOTTOMLEFT", 0, -60)
                 -------------- SCRIPT ----------------
                     AS.manualprompt.ignorebutton:SetScript("OnClick", function(self)
                         AS[AS_BUTTONIGNORE]()
@@ -992,7 +998,8 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
             ------ INPUT BOX
                 -------------- STYLE ----------------
                     AS.manualprompt.priceoverride = CreateFrame("EditBox", nil, AS.manualprompt, "InputBoxTemplate")
-                    AS.manualprompt.priceoverride:SetPoint("BOTTOMRIGHT", AS.manualprompt.savebutton, "TOPRIGHT", 0, 5)
+                    AS.manualprompt.priceoverride:SetPoint("TOP", AS.manualprompt.lowerstring, "TOP", 0, -AS_BUTTON_HEIGHT-7)
+                    AS.manualprompt.priceoverride:SetPoint("RIGHT", AS.manualprompt.savebutton, "RIGHT")
                     AS.manualprompt.priceoverride:SetHeight(AS_BUTTON_HEIGHT-2)
                     AS.manualprompt.priceoverride:SetWidth(65)
                     AS.manualprompt.priceoverride:SetNumeric(true)
@@ -1045,6 +1052,67 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         AS.manualprompt.priceoverride:SetBackdropBorderColor(1, 1, 1, 0.2)
                         AS.manualprompt.priceoverride:SetFontObject("GameFontNormal")
                     end
+
+            ------ INPUT BOX ILVL
+                -------------- STYLE ----------------
+                    AS.manualprompt.ilvlinput = CreateFrame("EditBox", nil, AS.manualprompt, "InputBoxTemplate")
+                    AS.manualprompt.ilvlinput:SetPoint("TOPRIGHT", AS.manualprompt.priceoverride, "BOTTOMRIGHT", 0, -5)
+                    AS.manualprompt.ilvlinput:SetHeight(AS_BUTTON_HEIGHT-2)
+                    AS.manualprompt.ilvlinput:SetWidth(65)
+                    AS.manualprompt.ilvlinput:SetNumeric(true)
+                    AS.manualprompt.ilvlinput:SetAutoFocus(false)
+                -------------- SCRIPT ----------------
+                    AS.manualprompt.ilvlinput:SetScript("OnEscapePressed", function(self)
+                        AS.manualprompt.ilvlinput:ClearFocus()
+                    end)
+                    AS.manualprompt.ilvlinput:SetScript("OnEnterPressed", function(self)
+                        AS.manualprompt.savebutton:Click()
+                    end)
+                    AS.manualprompt.ilvlinput:SetScript("OnTextChanged", function(self)
+                        local messagestring
+
+                        if AS.manualprompt.ilvlinput:GetText() == "" then
+                            AS.item["ASmanualedit"].ilvl = nil
+                        else
+                            AS.item["ASmanualedit"].ilvl = tonumber(AS.manualprompt.ilvlinput:GetText())
+                        end
+
+                        if AS.item["ASmanualedit"].ilvl then
+                            messagestring = "Min iLvl:\n"
+                            messagestring = messagestring.."|cffffffff"..AS.item["ASmanualedit"].ilvl
+                            AS.manualprompt.ilvllabel:SetText(messagestring)
+                        end
+                    end)
+                    AS.manualprompt.ilvlinput:SetScript("OnEnter", function(self)
+                        ASshowtooltip(self, "Ignore items with a lower iLvl")
+                    end)
+                    AS.manualprompt.ilvlinput:SetScript("OnLeave", function(self)
+                        AShidetooltip()
+                    end)
+                    if AS_SKIN then
+                        AS.manualprompt.ilvlinput:SetHeight(AS_BUTTON_HEIGHT)
+                        F.ReskinInput(AS.manualprompt.ilvlinput) -- Aurora
+                    else
+                        AS_inputclean(AS.manualprompt.ilvlinput)
+                        AS.manualprompt.ilvlinput:SetBackdrop({ bgFile = AS_backdrop,
+                                                                    edgeFile = AS_backdrop,
+                                                                    edgeSize = 1,
+                                                                    insets = { left = 0, right = 0, top = 0, bottom = 0 }
+                        })
+                        AS.manualprompt.ilvlinput:SetBackdropColor(0, 0, 0)
+                        AS.manualprompt.ilvlinput:SetBackdropBorderColor(1, 1, 1, 0.2)
+                        AS.manualprompt.ilvlinput:SetFontObject("GameFontNormal")
+                    end
+
+            ------ ILVL LABEL
+                -------------- STYLE ----------------
+                    AS.manualprompt.ilvllabel = AS.manualprompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+                    AS.manualprompt.ilvllabel:SetJustifyH("Left")
+                    AS.manualprompt.ilvllabel:SetJustifyV("Top")
+                    AS.manualprompt.ilvllabel:SetPoint("LEFT", AS.manualprompt.icon, "LEFT", 0, 2)
+                    AS.manualprompt.ilvllabel:SetPoint("TOP", AS.manualprompt.ilvlinput, "TOP", 0, 2)
+                    AS.manualprompt.ilvllabel:SetText("Min iLvl:")
+                    AS.manualprompt.ilvllabel:SetTextColor(r, g, b) -- Aurora
 
             ------ NOTES BOX
                 -------------- STYLE ----------------
@@ -1107,13 +1175,20 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.manualprompt.upperstring:SetText(item.name)
             end
             
-            if item.ignoretable then
+            if item.ignoretable and item.ignoretable[item.name].cutoffprice then
                 AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
             else
                 AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n")
             end
 
+            if item.ignoretable and item.ignoretable[item.name].ilvl then
+                AS.manualprompt.ilvllabel:SetText("Min iLvl:\n".."|cffffffff"..item.ignoretable[item.name].ilvl)
+            else
+                AS.manualprompt.ilvllabel:SetText("Min iLvl:\n")
+            end
+
             AS.manualprompt.priceoverride:SetText("")
+            AS.manualprompt.ilvlinput:SetText("")
             AS.manualprompt:Show()
         end
     end
