@@ -1291,23 +1291,6 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     GameTooltip:Hide()
                 end)
 
-        ------ ITEM ILVL BACKDROP
-            -------------- STYLE ----------------
-                AS.prompt.ilvlbg = AS.prompt.icon:CreateTexture(nil, "OVERLAY")
-                AS.prompt.ilvlbg:SetColorTexture(0, 0, 0, 0.80)
-                AS.prompt.ilvlbg:SetWidth(AS.prompt.icon:GetWidth())
-                AS.prompt.ilvlbg:SetHeight(15)
-                AS.prompt.ilvlbg:SetPoint("BOTTOMLEFT", AS.prompt.icon, "BOTTOMLEFT")
-
-        ------ ITEM ILVL
-            -------------- STYLE ----------------
-                AS.prompt.ilvl = AS.prompt.icon:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-                AS.prompt.ilvl:SetJustifyH("CENTER")
-                AS.prompt.ilvl:SetWordWrap(false)
-                AS.prompt.ilvl:SetWidth(AS.prompt.icon:GetWidth())
-                AS.prompt.ilvl:SetTextColor(r, g, b, 1) -- Aurora
-                AS.prompt.ilvl:SetPoint("BOTTOMLEFT", AS.prompt.icon, "BOTTOMLEFT", 0, 1)
-
         ------ ITEM LABEL
             -------------- STYLE ----------------
                 AS.prompt.upperstring = AS.prompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")

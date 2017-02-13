@@ -1204,9 +1204,9 @@ OPT_LABEL = {
             -- ilvl item is lower than filter
             return false
         end
+
         -- Fill prompt info, title, icon, bid or buyout text/buttons
         AS.prompt.quantity:SetText(count)
-        AS.prompt.ilvl:SetText(auction_iteminfo[4])
         AS.prompt.vendor:SetText(AS_BY..": "..(owner or "Unavailable"))
         AS.prompt.icon:SetNormalTexture(auction_item[2])
         -- Filter string
