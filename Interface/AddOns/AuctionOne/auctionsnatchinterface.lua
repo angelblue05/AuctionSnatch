@@ -170,6 +170,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 -------------- SCRIPT ----------------
                     AS.mainframe.headerframe.editbox:SetScript("OnEscapePressed", function(self)
                         AS.mainframe.headerframe.editbox:ClearFocus()
+                        AO_RENAME = nil
                     end)
                     AS.mainframe.headerframe.editbox:SetScript("OnEnterPressed", function(self)
                         AS.mainframe.headerframe.additembutton:Click()
@@ -183,6 +184,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         if AS.mainframe.headerframe.editbox:GetText() == "" then
                             AS.mainframe.headerframe.editbox:SetText("|cff737373Add item...")
                         end
+                        AO_RENAME = nil
                     end)
                     AS.mainframe.headerframe.editbox:SetScript("OnTextChanged", function(self, userInput)
                         if userInput then
@@ -591,7 +593,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
         ------ OPTION FRAME
             -------------- STYLE ----------------
                 AS.optionframe = CreateFrame("Frame", "ASoptionframe", UIParent)
-                AS.optionframe:SetHeight((AS_BUTTON_HEIGHT * 7) + (AS_FRAMEWHITESPACE * 2))  --7 buttons
+                AS.optionframe:SetHeight((AS_BUTTON_HEIGHT * 8) + (AS_FRAMEWHITESPACE * 2))  --8 buttons
                 AS.optionframe:SetWidth(200)
                 AS.optionframe:SetBackdrop({    bgFile = AS_backdrop, -- Aurora
                                                 edgeFile = AS_backdrop, -- Aurora
@@ -625,7 +627,6 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.sellbutton:SetText("Sell")
                 AS.optionframe.sellbutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.sellbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
-                --AS.optionframe.sellbutton:SetFrameStrata("TOOLTIP")
             -------------- SCRIPT ----------------
                 AS.optionframe.sellbutton:SetScript("OnClick", function(self)
                     AS_SellItem(self)
@@ -638,13 +639,27 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.manualpricebutton:SetWidth(AS.optionframe:GetWidth())
                 AS.optionframe.manualpricebutton:SetPoint("TOP", AS.optionframe.sellbutton, "BOTTOM")
                 AS.optionframe.manualpricebutton:SetNormalFontObject("GameFontNormal")
-                AS.optionframe.manualpricebutton:SetText("Edit entry")
+                AS.optionframe.manualpricebutton:SetText("Edit filters")
                 AS.optionframe.manualpricebutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.manualpricebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
-                --AS.optionframe.manualpricebutton:SetFrameStrata("TOOLTIP")
             -------------- SCRIPT ----------------
                 AS.optionframe.manualpricebutton:SetScript("OnClick", function(self)
                     AS_ManualIgnore(self)
+                end)
+
+        ------ CHANGE SEARCH TERMS
+            -------------- STYLE ----------------
+                AS.optionframe.renamebutton = CreateFrame("Button", nil, AS.optionframe)
+                AS.optionframe.renamebutton:SetHeight(AS_BUTTON_HEIGHT)
+                AS.optionframe.renamebutton:SetWidth(AS.optionframe:GetWidth())
+                AS.optionframe.renamebutton:SetPoint("TOP", AS.optionframe.manualpricebutton, "BOTTOM")
+                AS.optionframe.renamebutton:SetNormalFontObject("GameFontNormal")
+                AS.optionframe.renamebutton:SetText("Modify Search terms")
+                AS.optionframe.renamebutton:SetHighlightTexture(AS_backdrop) -- Aurora
+                AS.optionframe.renamebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
+            -------------- SCRIPT ----------------
+                AS.optionframe.renamebutton:SetScript("OnClick", function(self)
+                    AS_RenameItem(self)
                 end)
 
         ------ COPY ENTRY
@@ -652,7 +667,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.copyrowbutton = CreateFrame("Button", nil, AS.optionframe)
                 AS.optionframe.copyrowbutton:SetHeight(AS_BUTTON_HEIGHT)
                 AS.optionframe.copyrowbutton:SetWidth(AS.optionframe:GetWidth())
-                AS.optionframe.copyrowbutton:SetPoint("TOP", AS.optionframe.manualpricebutton, "BOTTOM")
+                AS.optionframe.copyrowbutton:SetPoint("TOP", AS.optionframe.renamebutton, "BOTTOM")
                 AS.optionframe.copyrowbutton:SetNormalFontObject("GameFontNormal")
                 AS.optionframe.copyrowbutton:SetText("Copy entry")
                 AS.optionframe.copyrowbutton:SetHighlightTexture(AS_backdrop) -- Aurora
@@ -785,6 +800,14 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
             AS.optionframe:Hide()
             AS_SavedVariables()
         end
+    end
+
+    function AS_RenameItem(self) -- manual price menu option
+        local listnum = ASbuttontolistnum(self)
+        AS.mainframe.headerframe.editbox:SetFocus()
+        ASshowtooltip(AS.mainframe.headerframe.editbox, "Enter replacement and press Enter or the Add (+) button")
+        AO_RENAME = listnum
+        AS.optionframe:Hide()
     end
 
     function AS_ManualIgnore(self) -- manual price menu option
@@ -1173,7 +1196,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.manualprompt.upperstring:SetText(item.name)
             end
             
-            if item.ignoretable and item.ignoretable[item.name].cutoffprice then
+            if item.ignoretable and item.ignoretable[item.name] and item.ignoretable[item.name].cutoffprice then
                 AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
             else
                 AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n")

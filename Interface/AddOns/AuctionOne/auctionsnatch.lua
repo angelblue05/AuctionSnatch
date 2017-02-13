@@ -43,6 +43,7 @@ ASfirsttime = false
 ACTIVE_TABLE = nil
 AS_COPY = nil
 AS_SKIN = false
+AO_RENAME = nil
 
 STATE = {
     ['QUERYING'] = 1,
@@ -854,7 +855,7 @@ OPT_LABEL = {
         end
 
         AS[AS_BUTTONUPDATE] = function()  -- Update saved item with prompt item
-                local  name, texture, _, quality = GetAuctionItemInfo("list", AScurrentahresult);
+                local  name, texture, _, quality = GetAuctionItemInfo("list", AScurrentahresult)
                 local link = GetAuctionItemLink("list", AScurrentahresult)
                 
                 if AS.item[AScurrentauctionsnatchitem] then
@@ -897,15 +898,34 @@ OPT_LABEL = {
         if not item_name or (string.find(item_name,'achievement:*')) then
             ASprint(MSG_C.ERROR.."There's nothing valid in the editbox")
             AS.mainframe.headerframe.editbox:SetText("")
+            AO_RENAME = nil
             return false
         end
 
         ASprint(MSG_C.INFO.."Item name: "..item_name, 1)
 
         local itemName, itemLink, itemRarity, _, _, _, _, _, _, itemTexture = GetItemInfo(item_name)
+        local _, _, itemString = string.find(item_name, "^|c%x+|H(.+)|h%[.*%]")  --see wowwiki, itemlink.  removes brackets and crap
         local new_id = table.maxn(AS.item) + 1
         
-        AS.item[new_id] = {}
+        if AO_RENAME then -- Modify search terms via options
+            local old_item = AS.item[AO_RENAME]
+            new_id = AO_RENAME
+            AS.item[new_id] = {}
+            AS.item[new_id].notes = old_item.notes
+            AS.item[new_id].sellbuyout = old_item.sellbuyout
+            AS.item[new_id].sellbid = old_item.sellbid
+            -- Transfer filters
+            if old_item.ignoretable and old_item.ignoretable[old_item.name] then
+                ASprint(MSG_C.EVENT.."[ Modifying Search terms ]")
+                AS.item[new_id].ignoretable = {}
+                ASprint(old_item.ignoretable[old_item.name])
+                AS.item[new_id].ignoretable[itemName or itemString or item_name] = old_item.ignoretable[old_item.name]
+            end
+            AO_RENAME = nil
+        else
+            AS.item[new_id] = {}
+        end
 
         if itemLink then
             ASprint(MSG_C.INFO.."New Item name: "..itemName)
@@ -916,7 +936,6 @@ OPT_LABEL = {
             AS.item[new_id].rarity = itemRarity
         else
             ASprint(MSG_C.INFO.."nothing found for "..item_name)
-            local _, _, itemString = string.find(item_name, "^|c%x+|H(.+)|h%[.*%]")  --see wowwiki, itemlink.  removes brackets and crap
             
             if not itemString then
                 itemString = item_name

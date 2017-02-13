@@ -217,7 +217,7 @@
         if frame then
             
             if frame:GetRight() >= (GetScreenWidth() * 0.5) then
-                GameTooltip:SetOwner(frame, "ANCHOR_LEFT")
+                GameTooltip:SetOwner(frame, "ANCHOR_BOTTOMLEFT")
             else
                 GameTooltip:SetOwner(frame, "ANCHOR_RIGHT")
             end
