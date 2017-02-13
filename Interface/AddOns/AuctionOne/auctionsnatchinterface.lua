@@ -1143,7 +1143,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.prompt:SetBackdropColor(0,0,0,0.85)
                 AS.prompt:SetMovable(true)
                 AS.prompt:EnableMouse(true)
-                AS.prompt:SetFrameStrata("TOOLTIP")
+                AS.prompt:SetFrameStrata("DIALOG")
             -------------- SCRIPT ----------------
                 AS.prompt:SetScript("OnMouseDown", function(self)
                     AS.prompt:StartMoving()
@@ -1218,7 +1218,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
 
         ------ ITEM ILVL BACKDROP
             -------------- STYLE ----------------
-                AS.prompt.ilvlbg = AS.prompt.icon:CreateTexture()
+                AS.prompt.ilvlbg = AS.prompt.icon:CreateTexture(nil, "OVERLAY")
                 AS.prompt.ilvlbg:SetColorTexture(0, 0, 0, 0.80)
                 AS.prompt.ilvlbg:SetWidth(AS.prompt.icon:GetWidth())
                 AS.prompt.ilvlbg:SetHeight(15)
