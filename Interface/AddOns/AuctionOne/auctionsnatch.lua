@@ -798,10 +798,11 @@ OPT_LABEL = {
                 if not AS.item[listnumber].ignoretable then
                     AS.item[listnumber].ignoretable = {}
                 end
-                
-                AS.item[listnumber].ignoretable[name] = {}
+                if not AS.item[listnumber].ignoretable[name] then
+                    AS.item[listnumber].ignoretable[name] = {}
+                end
+
                 AS.item[listnumber].ignoretable[name].cutoffprice = 0
-                AS.item[listnumber].ignoretable[name].quality = quality
                 AS.item[listnumber].priceoverride = nil
                 AS.item['ASmanualedit'] = nil
                 AS_SavedVariables()
@@ -812,18 +813,25 @@ OPT_LABEL = {
                 local name = AS.item['ASmanualedit'].name
                 local listnumber = AS.item['ASmanualedit'].listnumber
 
-                if AS.item['ASmanualedit'].priceoverride == nil then
+                if AS.item['ASmanualedit'].priceoverride == nil and AS.item['ASmanualedit'].ilvl == nil then
                     AS.manualprompt:Hide()
                     return
                 end
 
                 if not AS.item[listnumber].ignoretable then
-                   AS.item[listnumber].ignoretable = {}
+                    AS.item[listnumber].ignoretable = {}
+                end
+                if not AS.item[listnumber].ignoretable[name] then
+                    AS.item[listnumber].ignoretable[name] = {}
                 end
 
-                AS.item[listnumber].ignoretable[name] = {}
-                AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualedit'].priceoverride
-                AS.item[listnumber].ignoretable[name].quality = quality
+                if AS.item['ASmanualedit'].priceoverride then
+                    AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualedit'].priceoverride
+                end
+                if AS.item['ASmanualedit'].ilvl then
+                    AS.item[listnumber].ignoretable[name].ilvl = AS.item['ASmanualedit'].ilvl
+                end
+
                 AS.item[listnumber].priceoverride = nil
                 AS.item['ASmanualedit'] = nil
                 AS_SavedVariables()
@@ -1084,6 +1092,7 @@ OPT_LABEL = {
             --                  [8]minBid, [9]minIncrement, [10]buyoutPrice, [11]bidAmount, [12]highBidder,
             --                  [13]highBidderFullName, [14]owner, [15]ownerFullName, [16]saleStatus, [17]itemId, [18]hasAllInfo
             auction_item = {GetAuctionItemInfo("list", AScurrentahresult)}
+            SetSelectedAuctionItem("list", AScurrentahresult)
 
             if AS_IsShowPrompt() then
                 
@@ -1092,7 +1101,6 @@ OPT_LABEL = {
                    PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\DoorBell.mp3")
                 end
 
-                SetSelectedAuctionItem("list", AScurrentahresult)
                 AuctionFrameBrowse_Update()
 
                 AS.status = STATE.WAITINGFORPROMPT
@@ -1142,6 +1150,7 @@ OPT_LABEL = {
     function AS_IsShowPrompt()
         -- Primary conditional and fill info for prompt if returns true
         local auction_item = auction_item
+        local item = AS.item[AScurrentauctionsnatchitem]
         local cutoffprice = AS_CutoffPrice(auction_item[1])
         local bid, _, peritembid, peritembuyout = AS_GetCost()
 
@@ -1181,9 +1190,18 @@ OPT_LABEL = {
             ASprint(MSG_C.INFO.."We are the high bidder!")
             return false
 
-        elseif AS.item[AScurrentauctionsnatchitem].link and AS.item[AScurrentauctionsnatchitem].name ~= name then
+        elseif item.link and item.name ~= name then
             -- if update was set (A link is provided) then
             -- if the name does NOT match the link, do not show prompt
+            return false
+        end
+
+        -- Use the actual auction house link to get info, to get proper ilvl and other infos
+        auction_iteminfo = {GetItemInfo(GetAuctionItemLink("list", GetSelectedAuctionItem("list")))}
+        local ilvl = auction_iteminfo[4]
+
+        if item.ignoretable and item.ignoretable[name] and item.ignoretable[name].ilvl and item.ignoretable[name].ilvl > ilvl then
+            -- ilvl item is lower than filter
             return false
         end
 
@@ -1191,12 +1209,17 @@ OPT_LABEL = {
         AS.prompt.quantity:SetText(count)
         AS.prompt.vendor:SetText(AS_BY..": "..(owner or "Unavailable"))
         AS.prompt.icon:SetNormalTexture(auction_item[2])
+        -- Filter string
+        local strcutoffprice = "Filters\n"
         if cutoffprice then
-            local strcutoffprice = AS_CUTOFF.."\n"..ASGSC(cutoffprice)
-            AS.prompt.lowerstring:SetText(strcutoffprice)
-        else
-            AS.prompt.lowerstring:SetText("")
+            strcutoffprice = strcutoffprice.."Price: "..ASGSC(cutoffprice)
         end
+        if cutoffprice and item.ignoretable and item.ignoretable[name] and item.ignoretable[name].ilvl then
+            strcutoffprice = strcutoffprice.." | iLvl: |cffffffff"..item.ignoretable[name].ilvl
+        elseif item.ignoretable and item.ignoretable[name] and item.ignoretable[name].ilvl then
+            strcutoffprice = strcutoffprice.."iLvl: |cffffffff"..item.ignoretable[name].ilvl
+        end
+        AS.prompt.lowerstring:SetText(strcutoffprice)
         -- Set the title
         if quality then
             local _, _, _, hexcolor = GetItemQualityColor(auction_item[4])
