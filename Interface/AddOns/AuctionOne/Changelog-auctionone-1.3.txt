@@ -1,4 +1,12 @@
 ------------------------------------------------------------------------
+1.3 | angelblue05 | 2017-02-14
+
+- Add ilvl filter
+- Add a way to edit search terms
+- Add localization (French)
+- Fix layering
+
+------------------------------------------------------------------------
 1.2 | angelblue05 | 2017-02-10
 
 - Add option to rename current list (options > list options > Rename list)
