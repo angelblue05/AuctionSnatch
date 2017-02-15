@@ -4,7 +4,12 @@
 ## Author:  Angelblue05
 ## Version: 1.2
 ## SavedVariables: ASsavedtable, ASsavedposition,ASfirsttime,ASdebug
-localization.lua
+
+locale\localization.lua
+locale\english.lua
+locale\russian.lua
+locale\french.lua
+
 auctionsnatchhelperfunctions.lua
 auctionsnatchinterface.lua
 auctionsnatch.lua

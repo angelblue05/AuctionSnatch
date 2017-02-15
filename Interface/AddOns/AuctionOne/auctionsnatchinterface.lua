@@ -95,7 +95,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
             ------ START BUTTON
                 -------------- STYLE ----------------
                     AS.mainframe.headerframe.startsearchbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelbuttontemplate")
-                    AS.mainframe.headerframe.startsearchbutton:SetText(AS_START)
+                    AS.mainframe.headerframe.startsearchbutton:SetText(L[10061])
                     AS.mainframe.headerframe.startsearchbutton:SetWidth(100)
                     AS.mainframe.headerframe.startsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
                     AS.mainframe.headerframe.startsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe, "TOPLEFT", 17, -45)
@@ -119,7 +119,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         ASprint(MSG_C.ERROR.."Auction window is not visible")
                     end)
                     AS.mainframe.headerframe.startsearchbutton:SetScript("OnEnter", function(self)
-                        tooltip = "Start the search from the top of your list (You can hold 'shift' to continue where you left off from last scan)"
+                        tooltip = L[10021]
                         ASshowtooltip( AS.mainframe.headerframe.startsearchbutton,tooltip)
                     end)
                     AS.mainframe.headerframe.startsearchbutton:SetScript("OnLeave", function(self)
@@ -132,7 +132,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
             ------ STOP BUTTON
                 -------------- STYLE ----------------
                     AS.mainframe.headerframe.stopsearchbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelbuttontemplate")
-                    AS.mainframe.headerframe.stopsearchbutton:SetText(AS_STOP)
+                    AS.mainframe.headerframe.stopsearchbutton:SetText(L[10060])
                     AS.mainframe.headerframe.stopsearchbutton:SetWidth(50)
                     AS.mainframe.headerframe.stopsearchbutton:SetHeight(AS_BUTTON_HEIGHT)
                     AS.mainframe.headerframe.stopsearchbutton:Disable()
@@ -149,7 +149,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         AuctionFrame_SetSort("list", "quality", false)
                     end)
                     AS.mainframe.headerframe.stopsearchbutton:SetScript("OnEnter", function(self)
-                        tooltip = "Stop the current search. It can be resumed by shift-clicking Start Search."
+                        tooltip = L[10022]
                         ASshowtooltip(AS.mainframe.headerframe.stopsearchbutton, tooltip)
                     end)
                     AS.mainframe.headerframe.stopsearchbutton:SetScript("OnLeave", function(self)
@@ -166,7 +166,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.mainframe.headerframe.editbox:SetHeight(AS_BUTTON_HEIGHT-2)
                     AS.mainframe.headerframe.editbox:SetWidth(AS.mainframe.headerframe:GetWidth()-76)
                     AS.mainframe.headerframe.editbox:SetAutoFocus(false)
-                    AS.mainframe.headerframe.editbox:SetText("|cff737373Add item...")
+                    AS.mainframe.headerframe.editbox:SetText("|cff737373"..L[10015])
                 -------------- SCRIPT ----------------
                     AS.mainframe.headerframe.editbox:SetScript("OnEscapePressed", function(self)
                         AS.mainframe.headerframe.editbox:ClearFocus()
@@ -176,13 +176,13 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         AS.mainframe.headerframe.additembutton:Click()
                     end)
                     AS.mainframe.headerframe.editbox:SetScript("OnEditFocusGained", function(self)
-                        if AS.mainframe.headerframe.editbox:GetText() == "|cff737373Add item..." then
+                        if AS.mainframe.headerframe.editbox:GetText() == "|cff737373"..L[10015] then
                             AS.mainframe.headerframe.editbox:SetText("")
                         end
                     end)
                     AS.mainframe.headerframe.editbox:SetScript("OnEditFocusLost", function(self)
                         if AS.mainframe.headerframe.editbox:GetText() == "" then
-                            AS.mainframe.headerframe.editbox:SetText("|cff737373Add item...")
+                            AS.mainframe.headerframe.editbox:SetText("|cff737373"..L[10015])
                         end
                         AO_RENAME = nil
                     end)
@@ -228,8 +228,8 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
             ------ DELETE BUTTON
                 -------------- STYLE ----------------
                     AS.mainframe.headerframe.deletelistbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelbuttontemplate")
-                    AS.mainframe.headerframe.deletelistbutton:SetText("Delete List")
-                    AS.mainframe.headerframe.deletelistbutton:SetWidth(90)
+                    AS.mainframe.headerframe.deletelistbutton:SetText(L[10066])
+                    AS.mainframe.headerframe.deletelistbutton:SetWidth(100)
                     AS.mainframe.headerframe.deletelistbutton:SetHeight(AS_BUTTON_HEIGHT)
                     AS.mainframe.headerframe.deletelistbutton:SetPoint("BOTTOMLEFT", AS.mainframe,"BOTTOMLEFT", 17, 3)
                 -------------- SCRIPT ----------------
@@ -249,7 +249,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         end
                     end)
                     AS.mainframe.headerframe.deletelistbutton:SetScript("OnEnter", function(self)
-                        ASshowtooltip(AS.mainframe.headerframe.deletelistbutton, AS_DELETETEXT)
+                        ASshowtooltip(AS.mainframe.headerframe.deletelistbutton, L[10058])
                     end)
                     AS.mainframe.headerframe.deletelistbutton:SetScript("OnLeave", function(self)
                         AShidetooltip()
@@ -364,7 +364,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
         ------ DROPDOWN MENU LABEL
             -------------- STYLE ----------------
                 ASdropdownmenubutton = CreateFrame("Button", nil, ASdropDownMenu)
-                ASdropdownmenubutton:SetText(AS_IMPORT)
+                ASdropdownmenubutton:SetText(L[10062])
                 ASdropdownmenubutton:SetNormalFontObject("GameFontNormal")
                 ASdropdownmenubutton:SetPoint("CENTER", ASdropDownMenu, "CENTER", -7, 1)
                 ASdropdownmenubutton:SetWidth(80)
@@ -452,27 +452,27 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     local scrollvalue = FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
                     local idx = AS.item[self.buttonnumber + scrollvalue]
 
-                    strmsg = AS_INFO
+                    strmsg = L[10059]
 
                     if idx.ignoretable and idx.ignoretable[idx.name] then
                         if idx.ignoretable[idx.name].cutoffprice and idx.ignoretable[idx.name].cutoffprice > 0 then
-                            strmsg = strmsg.."\nCutoff price: "..ASGSC(tonumber(idx.ignoretable[idx.name].cutoffprice))
+                            strmsg = strmsg.."\n"..L[10023]..": "..ASGSC(tonumber(idx.ignoretable[idx.name].cutoffprice))
                         elseif idx.ignoretable[idx.name].cutoffprice and idx.ignoretable[idx.name].cutoffprice == 0 then
-                            strmsg = strmsg.."\n"..AS_IGNORECONDITIONS..": "
-                            strmsg = strmsg.."|cff9d9d9d"..AS_ALWAYS.."|r"
+                            strmsg = strmsg.."\n"..L[10024]..": "
+                            strmsg = strmsg.."|cff9d9d9d"..L[10025].."|r"
                         end
                         if idx.ignoretable[idx.name].ilvl then
-                            strmsg = strmsg.."\nMin iLvl: ".."|cffffffff"..idx.ignoretable[idx.name].ilvl
+                            strmsg = strmsg.."\n"..L[10026]..": |cffffffff"..idx.ignoretable[idx.name].ilvl
                         end
                     end
 
                     if idx.sellbid or idx.sellbuyout then
                         strmsg = strmsg.."|cff888888\n\n---------------------|r"
                         if idx.sellbid then
-                            strmsg = strmsg.."\nBid price (unit): "..ASGSC(idx.sellbid)
+                            strmsg = strmsg.."\n"..L[10027]..": "..ASGSC(idx.sellbid)
                         end
                         if idx.sellbuyout and idx.sellbuyout > 0 then
-                            strmsg = strmsg.."\nBuyout price (unit): "..ASGSC(idx.sellbuyout)
+                            strmsg = strmsg.."\n"..L[10028]..": "..ASGSC(idx.sellbuyout)
                         end
                     end
                     if idx.notes then
@@ -624,7 +624,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.sellbutton:SetWidth(AS.optionframe:GetWidth())
                 AS.optionframe.sellbutton:SetPoint("TOP", 0, -AS_FRAMEWHITESPACE)
                 AS.optionframe.sellbutton:SetNormalFontObject("GameFontNormal")
-                AS.optionframe.sellbutton:SetText("Sell")
+                AS.optionframe.sellbutton:SetText(L[10029])
                 AS.optionframe.sellbutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.sellbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
             -------------- SCRIPT ----------------
@@ -639,7 +639,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.manualpricebutton:SetWidth(AS.optionframe:GetWidth())
                 AS.optionframe.manualpricebutton:SetPoint("TOP", AS.optionframe.sellbutton, "BOTTOM")
                 AS.optionframe.manualpricebutton:SetNormalFontObject("GameFontNormal")
-                AS.optionframe.manualpricebutton:SetText("Edit filters")
+                AS.optionframe.manualpricebutton:SetText(L[10030])
                 AS.optionframe.manualpricebutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.manualpricebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
             -------------- SCRIPT ----------------
@@ -654,7 +654,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.renamebutton:SetWidth(AS.optionframe:GetWidth())
                 AS.optionframe.renamebutton:SetPoint("TOP", AS.optionframe.manualpricebutton, "BOTTOM")
                 AS.optionframe.renamebutton:SetNormalFontObject("GameFontNormal")
-                AS.optionframe.renamebutton:SetText("Modify Search terms")
+                AS.optionframe.renamebutton:SetText(L[10031])
                 AS.optionframe.renamebutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.renamebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
             -------------- SCRIPT ----------------
@@ -669,7 +669,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.copyrowbutton:SetWidth(AS.optionframe:GetWidth())
                 AS.optionframe.copyrowbutton:SetPoint("TOP", AS.optionframe.renamebutton, "BOTTOM")
                 AS.optionframe.copyrowbutton:SetNormalFontObject("GameFontNormal")
-                AS.optionframe.copyrowbutton:SetText("Copy entry")
+                AS.optionframe.copyrowbutton:SetText(L[10032])
                 AS.optionframe.copyrowbutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.copyrowbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
             -------------- SCRIPT ----------------
@@ -689,7 +689,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.resetignorebutton:SetWidth(AS.optionframe:GetWidth())
                 AS.optionframe.resetignorebutton:SetPoint("TOP", AS.optionframe.copyrowbutton, "BOTTOM")
                 AS.optionframe.resetignorebutton:SetNormalFontObject("GameFontNormal")
-                AS.optionframe.resetignorebutton:SetText("Erase Ignore Conditions")
+                AS.optionframe.resetignorebutton:SetText(L[10033])
                 AS.optionframe.resetignorebutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.resetignorebutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
             -------------- SCRIPT ----------------
@@ -704,7 +704,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.movetotopbutton:SetWidth(AS.optionframe:GetWidth())
                 AS.optionframe.movetotopbutton:SetPoint("TOP", AS.optionframe.resetignorebutton,"BOTTOM")
                 AS.optionframe.movetotopbutton:SetNormalFontObject("GameFontNormal")
-                AS.optionframe.movetotopbutton:SetText("Move to top")
+                AS.optionframe.movetotopbutton:SetText(L[10034])
                 AS.optionframe.movetotopbutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.movetotopbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
             -------------- SCRIPT ----------------
@@ -720,7 +720,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.movetobottombutton:SetWidth(AS.optionframe:GetWidth())
                 AS.optionframe.movetobottombutton:SetPoint("TOP", ASoptionframe.movetotopbutton,"BOTTOM")
                 AS.optionframe.movetobottombutton:SetNormalFontObject("GameFontNormal")
-                AS.optionframe.movetobottombutton:SetText("Move to bottom")
+                AS.optionframe.movetobottombutton:SetText(L[10035])
                 AS.optionframe.movetobottombutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.movetobottombutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
             -------------- SCRIPT ----------------
@@ -736,7 +736,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.optionframe.deleterowbutton:SetWidth(AS.optionframe:GetWidth())
                 AS.optionframe.deleterowbutton:SetPoint("TOP", AS.optionframe.movetobottombutton, "BOTTOM")
                 AS.optionframe.deleterowbutton:SetNormalFontObject("GameFontNormal")
-                AS.optionframe.deleterowbutton:SetText(AS_BUTTONDELETE)
+                AS.optionframe.deleterowbutton:SetText(L[10036])
                 AS.optionframe.deleterowbutton:SetHighlightTexture(AS_backdrop) -- Aurora
                 AS.optionframe.deleterowbutton:GetHighlightTexture():SetVertexColor(r, b, g, 0.2) -- Aurora
             -------------- SCRIPT ----------------
@@ -805,7 +805,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
     function AS_RenameItem(self) -- manual price menu option
         local listnum = ASbuttontolistnum(self)
         AS.mainframe.headerframe.editbox:SetFocus()
-        ASshowtooltip(AS.mainframe.headerframe.editbox, "Enter replacement and press Enter or the Add (+) button")
+        ASshowtooltip(AS.mainframe.headerframe.editbox, L[10037])
         AO_RENAME = listnum
         AS.optionframe:Hide()
     end
@@ -890,12 +890,10 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         AS.manualprompt:StopMovingOrSizing()
                     end)
                     AS.manualprompt:SetScript("OnShow", function(self)
-                        ASprint(MSG_C.INFO.."Manual prompt is shown")
                         AS.mainframe.headerframe.stopsearchbutton:Click()
                         AS.manualprompt.priceoverride:SetFocus()
                     end)
                     AS.manualprompt:SetScript("OnHide", function(self)
-                        ASprint(MSG_C.INFO.."Manual prompt is hidden")
                         if AS.save then
                             AS.save = nil
                             AS_SavedVariables()
@@ -973,22 +971,22 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.manualprompt.lowerstring:SetJustifyV("Top")
                     AS.manualprompt.lowerstring:SetWidth(AS.manualprompt:GetWidth() - (2*AS_FRAMEWHITESPACE))
                     AS.manualprompt.lowerstring:SetPoint("TOPLEFT", AS.manualprompt.icon, "BOTTOMLEFT", 0, 2)
-                    AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":")
+                    AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":")
                     AS.manualprompt.lowerstring:SetTextColor(r, g, b) -- Aurora
 
             ------ IGNORE BUTTON
                 -------------- STYLE ----------------
                     AS.manualprompt.ignorebutton = CreateFrame("Button", nil, AS.manualprompt, "UIPanelbuttontemplate")
-                    AS.manualprompt.ignorebutton:SetText(AS_BUTTONIGNORE)
+                    AS.manualprompt.ignorebutton:SetText(L[10039])
                     AS.manualprompt.ignorebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
                     AS.manualprompt.ignorebutton:SetHeight(AS_BUTTON_HEIGHT)
                     AS.manualprompt.ignorebutton:SetPoint("TOPLEFT", AS.manualprompt.lowerstring, "BOTTOMLEFT", 0, -60)
                 -------------- SCRIPT ----------------
                     AS.manualprompt.ignorebutton:SetScript("OnClick", function(self)
-                        AS[AS_BUTTONIGNORE]()
+                        AS[L[10039]]()
                     end)
                     AS.manualprompt.ignorebutton:SetScript("OnEnter",function(self)
-                        ASshowtooltip(AS.manualprompt.ignorebutton, AS_BUTTONTEXT3)
+                        ASshowtooltip(AS.manualprompt.ignorebutton, L[10040])
                     end)
                     AS.manualprompt.ignorebutton:SetScript("OnLeave",function(self)
                         AShidetooltip()
@@ -1000,16 +998,16 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
             ------ SAVE BUTTON
                 -------------- STYLE ----------------
                     AS.manualprompt.savebutton = CreateFrame("Button", nil, AS.manualprompt, "UIPanelbuttontemplate")
-                    AS.manualprompt.savebutton:SetText(AS_BUTTONEXPENSIVE)
+                    AS.manualprompt.savebutton:SetText(L[10045])
                     AS.manualprompt.savebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
                     AS.manualprompt.savebutton:SetHeight(AS_BUTTON_HEIGHT)
                     AS.manualprompt.savebutton:SetPoint("LEFT", AS.manualprompt.ignorebutton, "RIGHT", 2, 0)
                 -------------- SCRIPT ----------------
                     AS.manualprompt.savebutton:SetScript("OnClick", function(self)
-                        AS[AS_BUTTONEXPENSIVE]()
+                        AS[L[10045]]()
                     end)
                     AS.manualprompt.savebutton:SetScript("OnEnter",function(self)
-                        ASshowtooltip(AS.manualprompt.savebutton, AS_BUTTONTEXT8)
+                        ASshowtooltip(AS.manualprompt.savebutton, L[10048])
                     end)
                     AS.manualprompt.savebutton:SetScript("OnLeave", AShidetooltip)
                     if AS_SKIN then
@@ -1044,16 +1042,16 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         end
 
                         if AS.item["ASmanualedit"].priceoverride and (tonumber(AS.item["ASmanualedit"].priceoverride) > 0) then
-                            messagestring = "\n"..AS_CUTOFF..":\n"
+                            messagestring = "\n"..L[10038]..":\n"
                             messagestring = messagestring..ASGSC(tonumber(AS.item["ASmanualedit"].priceoverride))
                             AS.manualprompt.lowerstring:SetText(messagestring)
                         end
                     end)
                     AS.manualprompt.priceoverride:SetScript("OnEnter", function(self)
                         if ASsavedtable and ASsavedtable.copperoverride then
-                            ASshowtooltip(self,"A value here, in COPPER, overrides all other ignore conditions")
+                            ASshowtooltip(self, L[10049])
                         else
-                            ASshowtooltip(self,"A value here, in gold, overrides all other ignore conditions")
+                            ASshowtooltip(self, L[10050])
                         end
                     end)
                     AS.manualprompt.priceoverride:SetScript("OnLeave", function(self)
@@ -1099,13 +1097,13 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         end
 
                         if AS.item["ASmanualedit"].ilvl then
-                            messagestring = "Min iLvl:\n"
+                            messagestring = L[10026]..":\n"
                             messagestring = messagestring.."|cffffffff"..AS.item["ASmanualedit"].ilvl
                             AS.manualprompt.ilvllabel:SetText(messagestring)
                         end
                     end)
                     AS.manualprompt.ilvlinput:SetScript("OnEnter", function(self)
-                        ASshowtooltip(self, "Ignore items with a lower iLvl")
+                        ASshowtooltip(self, L[10051])
                     end)
                     AS.manualprompt.ilvlinput:SetScript("OnLeave", function(self)
                         AShidetooltip()
@@ -1116,9 +1114,9 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     else
                         AS_inputclean(AS.manualprompt.ilvlinput)
                         AS.manualprompt.ilvlinput:SetBackdrop({ bgFile = AS_backdrop,
-                                                                    edgeFile = AS_backdrop,
-                                                                    edgeSize = 1,
-                                                                    insets = { left = 0, right = 0, top = 0, bottom = 0 }
+                                                                edgeFile = AS_backdrop,
+                                                                edgeSize = 1,
+                                                                insets = { left = 0, right = 0, top = 0, bottom = 0 }
                         })
                         AS.manualprompt.ilvlinput:SetBackdropColor(0, 0, 0)
                         AS.manualprompt.ilvlinput:SetBackdropBorderColor(1, 1, 1, 0.2)
@@ -1132,7 +1130,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.manualprompt.ilvllabel:SetJustifyV("Top")
                     AS.manualprompt.ilvllabel:SetPoint("LEFT", AS.manualprompt.icon, "LEFT", 0, 2)
                     AS.manualprompt.ilvllabel:SetPoint("TOP", AS.manualprompt.ilvlinput, "TOP", 0, 2)
-                    AS.manualprompt.ilvllabel:SetText("Min iLvl:")
+                    AS.manualprompt.ilvllabel:SetText(L[10026]..":")
                     AS.manualprompt.ilvllabel:SetTextColor(r, g, b) -- Aurora
 
             ------ NOTES BOX
@@ -1176,7 +1174,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.manualprompt.notes.label = AS.manualprompt:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
                     AS.manualprompt.notes.label:SetJustifyH("LEFT")
                     AS.manualprompt.notes.label:SetPoint("BOTTOMLEFT", AS.manualprompt.notes, "TOPLEFT", 0, 2)
-                    AS.manualprompt.notes.label:SetText("Notes")
+                    AS.manualprompt.notes.label:SetText(L[10052])
                     AS.manualprompt.notes.label:SetTextColor(r, g, b) -- Aurora
         end
 
@@ -1197,15 +1195,15 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
             end
             
             if item.ignoretable and item.ignoretable[item.name] and item.ignoretable[item.name].cutoffprice then
-                AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
+                AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
             else
-                AS.manualprompt.lowerstring:SetText("\n"..AS_CUTOFF..":\n")
+                AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n")
             end
 
             if item.ignoretable and item.ignoretable[item.name].ilvl then
-                AS.manualprompt.ilvllabel:SetText("Min iLvl:\n".."|cffffffff"..item.ignoretable[item.name].ilvl)
+                AS.manualprompt.ilvllabel:SetText(L[10026]..":\n".."|cffffffff"..item.ignoretable[item.name].ilvl)
             else
-                AS.manualprompt.ilvllabel:SetText("Min iLvl:\n")
+                AS.manualprompt.ilvllabel:SetText(L[10026]..":\n")
             end
 
             AS.manualprompt.priceoverride:SetText("")
@@ -1247,12 +1245,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.prompt:SetScript("OnMouseUp", function(self)
                     AS.prompt:StopMovingOrSizing()
                 end)
-                AS.prompt:SetScript("OnShow", function(self)
-                    ASprint(MSG_C.INFO.."Prompt is shown")
-                end)
                 AS.prompt:SetScript("OnHide", function(self)
-                    ASprint(MSG_C.INFO.."Prompt is hidden")
-
                     if AS.status == nil then
                         AS.mainframe.headerframe.stopsearchbutton:Click()
                     end
@@ -1377,7 +1370,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 -------------- STYLE ----------------
                     AS.prompt.bidbuyout.bid = AS.prompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
                     AS.prompt.bidbuyout.bid:SetJustifyH("CENTER")
-                    AS.prompt.bidbuyout.bid:SetText(string.upper("Bid"))
+                    AS.prompt.bidbuyout.bid:SetText(string.upper(L[10042]))
                     AS.prompt.bidbuyout.bid:SetPoint("BOTTOM", AS.prompt.separator, "TOP", 0, 2)
 
             ------ BID AMOUNT EACH
@@ -1398,7 +1391,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 -------------- STYLE ----------------
                     AS.prompt.bidbuyout.buyout = AS.prompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
                     AS.prompt.bidbuyout.buyout:SetJustifyH("CENTER")
-                    AS.prompt.bidbuyout.buyout:SetText(string.upper("Buyout"))
+                    AS.prompt.bidbuyout.buyout:SetText(string.upper(L[10041]))
                     AS.prompt.bidbuyout.buyout:SetPoint("BOTTOM", AS.prompt.rseparator, "TOP", 0, 2)
 
             ------ BUYOUT AMOUNT EACH
@@ -1428,10 +1421,9 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         AS.prompt.bidbuyout.each:SetHeight(AS.prompt.bidbuyout.bid.single:GetHeight() + 10)
                         AS.prompt.bidbuyout.each:SetJustifyH("CENTER")
                         AS.prompt.bidbuyout.each:SetJustifyV("BOTTOM")
-                        AS.prompt.bidbuyout.each:SetText(AS_EACH)
+                        AS.prompt.bidbuyout.each:SetText(L[10053])
                         AS.prompt.bidbuyout.each:SetTextColor(r, g, b, 1) -- Aurora
                         AS.prompt.bidbuyout.each:SetPoint("CENTER", AS.prompt.bidbuyout.vseparator)
-                        --AS.prompt.bidbuyout.each:SetPoint("BOTTOM", AS.prompt.bidbuyout.bid.single, "BOTTOM")
 
                 ------ MIDDLE HORIZONTAL SEPARATOR
                     -------------- STYLE ----------------
@@ -1448,7 +1440,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 -------------- STYLE ----------------
                     AS.prompt.buyoutonly.buyout = AS.prompt.buyoutonly:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
                     AS.prompt.buyoutonly.buyout:SetJustifyH("CENTER")
-                    AS.prompt.buyoutonly.buyout:SetText("|c00ffffff"..string.upper("Buyout").."|r")
+                    AS.prompt.buyoutonly.buyout:SetText("|c00ffffff"..string.upper(L[10041]).."|r")
                     AS.prompt.buyoutonly.buyout:SetPoint("BOTTOM", AS.prompt.separator, "TOPRIGHT", 0, 2)
 
             ------ BUYOUT AMOUNT EACH
@@ -1467,32 +1459,32 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
 
         ------ BID BUTTON
             -------------- STYLE ----------------
-                AS.prompt[AS_BUTTONBID] = CreateFrame("Button", nil, AS.prompt, "UIPanelbuttontemplate")
-                AS.prompt[AS_BUTTONBID]:SetText(AS_BUTTONBID)
-                AS.prompt[AS_BUTTONBID]:SetWidth((AS.prompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
-                AS.prompt[AS_BUTTONBID]:SetHeight(AS_BUTTON_HEIGHT)
-                AS.prompt[AS_BUTTONBID]:SetPoint("TOP", AS.prompt.separator, "BOTTOM", 0, -60)
+                AS.prompt.bid = CreateFrame("Button", nil, AS.prompt, "UIPanelbuttontemplate")
+                AS.prompt.bid:SetText(L[10042])
+                AS.prompt.bid:SetWidth((AS.prompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
+                AS.prompt.bid:SetHeight(AS_BUTTON_HEIGHT)
+                AS.prompt.bid:SetPoint("TOP", AS.prompt.separator, "BOTTOM", 0, -60)
             -------------- SCRIPT ----------------
-                AS.prompt[AS_BUTTONBID]:SetScript("OnClick", function(self)
-                    AS[AS_BUTTONBID]()
+                AS.prompt.bid:SetScript("OnClick", function(self)
+                    AS[L[10042]]()
                 end)
                 if AS_SKIN then
-                    F.Reskin(AS.prompt[AS_BUTTONBID]) -- Aurora
+                    F.Reskin(AS.prompt.bid) -- Aurora
                 end
 
         ------ BUYOUT BUTTON
             -------------- STYLE ----------------
-                AS.prompt[AS_BUTTONBUYOUT] = CreateFrame("Button", nil, AS.prompt, "UIPanelbuttontemplate")
-                AS.prompt[AS_BUTTONBUYOUT]:SetText(AS_BUTTONBUYOUT)
-                AS.prompt[AS_BUTTONBUYOUT]:SetWidth((AS.prompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
-                AS.prompt[AS_BUTTONBUYOUT]:SetHeight(AS_BUTTON_HEIGHT)
-                AS.prompt[AS_BUTTONBUYOUT]:SetPoint("LEFT", AS.prompt[AS_BUTTONBID], "RIGHT")
+                AS.prompt.buyout = CreateFrame("Button", nil, AS.prompt, "UIPanelbuttontemplate")
+                AS.prompt.buyout:SetText(L[10041])
+                AS.prompt.buyout:SetWidth((AS.prompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
+                AS.prompt.buyout:SetHeight(AS_BUTTON_HEIGHT)
+                AS.prompt.buyout:SetPoint("LEFT", AS.prompt.bid, "RIGHT")
             -------------- SCRIPT ----------------
-                AS.prompt[AS_BUTTONBUYOUT]:SetScript("OnClick", function(self)
-                    AS[AS_BUTTONBUYOUT]()
+                AS.prompt.buyout:SetScript("OnClick", function(self)
+                    AS[L[10041]]()
                 end)
                 if AS_SKIN then
-                    F.Reskin(AS.prompt[AS_BUTTONBUYOUT]) -- Aurora
+                    F.Reskin(AS.prompt.buyout) -- Aurora
                 end
 
         ------ CUTOFF PRICE LABEL
@@ -1501,17 +1493,16 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.prompt.lowerstring:SetJustifyH("CENTER")
                 AS.prompt.lowerstring:SetJustifyV("TOP")
                 AS.prompt.lowerstring:SetWidth(AS.prompt.separator:GetWidth() + AS.prompt.rseparator:GetWidth())
-                AS.prompt.lowerstring:SetPoint("TOP", AS.prompt[AS_BUTTONBID], "BOTTOMRIGHT", 1, -7)
+                AS.prompt.lowerstring:SetPoint("TOP", AS.prompt.bid, "BOTTOMRIGHT", 1, -7)
                 AS.prompt.lowerstring:SetSpacing(2)
                 AS.prompt.lowerstring:SetTextColor(r, g, b) -- Aurora
 
         ------ EXTRA BUTTONS
             AS_CreateButtonHandlers()
 
-            local buttonnames
-            local buttontooltips = {AS_BUTTONTEXT9, AS_BUTTONTEXT4, AS_BUTTONTEXT1, AS_BUTTONTEXT11}
-            AS.prompt.buttonnames = {AS_BUTTONNEXTLIST, AS_BUTTONNEXTAH, AS_BUTTONUPDATE, AS_BUTTONFILTERS}
-            buttonnames = AS.prompt.buttonnames
+            AS.prompt.buttonnames = {L[10044], L[10043], L[10047], L[10019]}
+            local buttontooltips = {L[10054], L[10055], L[10056], L[10057]}
+            local buttonnames = AS.prompt.buttonnames
 
             buttonwidth = (AS.prompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE)  --basically half its frame size
 
@@ -1557,7 +1548,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 parent:Hide()
             end)
             parent[name]:SetScript("OnEnter", function(self)
-                ASshowtooltip(parent[name],tooltip)
+                ASshowtooltip(parent[name], tooltip)
             end)
             parent[name]:SetScript("OnLeave", function(self)
                 AShidetooltip()

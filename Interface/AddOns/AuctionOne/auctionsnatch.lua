@@ -63,15 +63,15 @@ MSG_C = {
 }
 
 OPT_LABEL = {
-    ['copperoverride'] = "Copper override",
-    ['ASnodoorbell'] = AS_DOORBELLSOUND,
-    ['ASignorebid'] = "Ignore bids",
-    ['ASignorenobuyout'] = "Ignore no buyout",
-    ['cancelauction'] = "Cancel auction",
-    ['rememberprice'] = "Remember price",
-    ['ASautostart'] = AS_AUTOSEARCH,
-    ['ASautoopen'] = AS_AUTOOPEN,
-    ['AOicontooltip'] = "Icon tooltip"
+    ['copperoverride'] = L[10004],
+    ['ASnodoorbell'] = L[10001],
+    ['ASignorebid'] = L[10002],
+    ['ASignorenobuyout'] = L[10003],
+    ['cancelauction'] = L[10005],
+    ['rememberprice'] = L[10006],
+    ['ASautostart'] = L[10007],
+    ['ASautoopen'] = L[10008],
+    ['AOicontooltip'] = L[10009]
 }
 
 
@@ -109,9 +109,9 @@ OPT_LABEL = {
 
         ------ STATIC DIALOG // To get new list name
             StaticPopupDialogs["AS_NewList"] = {
-                text = "Enter name for the new list",
-                button1 = "Create",
-                button2 = "Cancel",
+                text = L[10010],
+                button1 = L[10011],
+                button2 = L[10012],
                 OnShow = function (self, data)
                     self.button1:Disable()
                 end,
@@ -134,9 +134,9 @@ OPT_LABEL = {
                 preferredIndex = 3  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
             }
             StaticPopupDialogs["AO_RenameList"] = {
-                text = "Enter new name for the list",
-                button1 = "Rename",
-                button2 = "Cancel",
+                text = L[10013],
+                button1 = L[10014],
+                button2 = L[10012],
                 OnShow = function (self, data)
                     self.button1:Disable()
                 end,
@@ -159,7 +159,7 @@ OPT_LABEL = {
                 preferredIndex = 3  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
             }
 
-        DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT..AS_LOADTEXT)
+        DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT..L[10000])
 
         ------ SLASH COMMANDS
             SLASH_AS1 = "/AO";
@@ -251,8 +251,8 @@ OPT_LABEL = {
                             local buyoutPrice = MoneyInputFrame_GetCopper(BuyoutPrice)
                             local stackSize = AuctionsStackSizeEntry:GetNumber()
 
-                            ASprint(MSG_C.INFO.."StartPrice: "..startPrice)
-                            ASprint(MSG_C.INFO.."BuyoutPrice: "..buyoutPrice)
+                            ASprint(MSG_C.INFO.."StartPrice:|r "..startPrice)
+                            ASprint(MSG_C.INFO.."BuyoutPrice:|r "..buyoutPrice)
                             
                             if stackSize > 1 and AuctionFrameAuctions.priceType == 2 then -- Stack price convert to unit price
                                 startPrice = startPrice / stackSize
@@ -280,7 +280,7 @@ OPT_LABEL = {
 
         elseif event == "AUCTION_HOUSE_CLOSED" then
 
-            AS.mainframe.headerframe.editbox:SetText("|cff737373Add item...")
+            AS.mainframe.headerframe.editbox:SetText("|cff737373"..L[10015])
             AS.item['LastAuctionSetup'] = nil
             AS.item['LastListButtonClicked'] = nil
             BrowseResetButton:Click()
@@ -359,7 +359,7 @@ OPT_LABEL = {
     function AS_Initialize()
         local playerName = UnitName("player")
         local serverName = GetRealmName()
-
+        ASprint(L)
         hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", AS_ContainerFrameItemButton_OnModifiedClick)
         hooksecurefunc("ChatFrame_OnHyperlinkShow", AS_ChatFrame_OnHyperlinkShow)
 
@@ -507,17 +507,17 @@ OPT_LABEL = {
             local key, value
 
             --- Profile/Server list
-            info.text = "Import list"
+            info.text = L[10063]
             info.hasArrow = true
             info.value = "Import"
             UIDropDownMenu_AddButton(info, level)
             --- Edit list options
-            info.text = "List options"
+            info.text = L[10064]
             info.hasArrow = true
             info.value = "ASlistoptions"
             UIDropDownMenu_AddButton(info, level)
             --- Create new list
-            info.text = "Create list"
+            info.text = L[10065]
             info.hasArrow = false
             info.value = "ASnewlist"
             info.func =  ASdropDownMenuItem_OnClick
@@ -595,7 +595,7 @@ OPT_LABEL = {
 
             --- Rename current list
             if not AOserver then
-                info.text = "Rename list"
+                info.text = L[10016]
                 info.hasArrow = false
                 info.value = "AOrenamelist"
                 info.func =  ASdropDownMenuItem_OnClick
@@ -623,7 +623,7 @@ OPT_LABEL = {
         else
             local info = UIDropDownMenu_CreateInfo()
             
-            info.text = AS_NODATA
+            info.text = L[10017]
             info.value = nil
             info.hasArrow = false
             info.owner = self:GetParent()
@@ -756,7 +756,7 @@ OPT_LABEL = {
         ------------------------------------------------------------------
         --  Create all the script handlers for the buttons
         ------------------------------------------------------------------
-        AS[AS_BUTTONBUYOUT] = function()  -- Buyout prompt item
+        AS[L[10041]] = function()  -- Buyout prompt item
                 local _, buyout = AS_GetCost()
                 selected_auction = GetSelectedAuctionItem("list") -- The only way it works correctly...
                 ASprint(MSG_C.DEBUG.."Buying price: "..ASGSC(buyout), 1)
@@ -768,7 +768,7 @@ OPT_LABEL = {
                 AS.status = STATE.BUYING
         end
 
-        AS[AS_BUTTONBID] = function() -- Bid prompt item
+        AS[L[10042]] = function() -- Bid prompt item
                 local bid = AS_GetCost()
                 selected_auction = GetSelectedAuctionItem("list") -- The only way it works correctly...
                 ASprint(MSG_C.DEBUG.."Bidding price: "..ASGSC(bid), 1)
@@ -778,21 +778,21 @@ OPT_LABEL = {
                 AS.status = STATE.BUYING
         end
 
-        AS[AS_BUTTONNEXTAH] = function()  -- Go to next item in AH
+        AS[L[10043]] = function()  -- Go to next item in AH
                 ASprint(MSG_C.INFO.."Skipping item...")
 
                 AS.prompt:Hide()
                 AS.status = STATE.EVALUATING
         end
 
-        AS[AS_BUTTONNEXTLIST] = function()  -- Go to next item in snatch list
+        AS[L[10044]] = function()  -- Go to next item in snatch list
                 AScurrentauctionsnatchitem = AScurrentauctionsnatchitem + 1
                 AScurrentahresult = 0
                 AS.prompt:Hide()
                 AS.status = STATE.QUERYING
         end
 
-        AS[AS_BUTTONIGNORE] = function()  -- Ignore this item by setting cutoffprice to 0
+        AS[L[10039]] = function()  -- Ignore this item by setting cutoffprice to 0
                 local name = AS.item["ASmanualedit"].name
                 local listnumber = AS.item['ASmanualedit'].listnumber
                 
@@ -810,7 +810,7 @@ OPT_LABEL = {
                 AS.manualprompt:Hide()
         end
 
-        AS[AS_BUTTONEXPENSIVE] = function()  -- Save price filter in manualprompt
+        AS[L[10045]] = function()  -- Save price filter in manualprompt
                 local name = AS.item['ASmanualedit'].name
                 local listnumber = AS.item['ASmanualedit'].listnumber
 
@@ -839,13 +839,13 @@ OPT_LABEL = {
                 AS.manualprompt:Hide()
         end
 
-        AS[AS_BUTTONDELETE] = function()  -- Delete item
+        AS[L[10036]] = function()  -- Delete item
                 table.remove(AS.item, AScurrentauctionsnatchitem)
                 AS.status = STATE.QUERYING
                 AS_ScrollbarUpdate()
         end
 
-        AS[AS_BUTTONDELETEALL] = function()  -- Delete list
+        AS[L[10046]] = function()  -- Delete list
                 if IsControlKeyDown() then
                     AS.item = {}
                     AS.status = nil
@@ -854,7 +854,7 @@ OPT_LABEL = {
                 end
         end
 
-        AS[AS_BUTTONUPDATE] = function()  -- Update saved item with prompt item
+        AS[L[10047]] = function()  -- Update saved item with prompt item
                 local  name, texture, _, quality = GetAuctionItemInfo("list", AScurrentahresult)
                 local link = GetAuctionItemLink("list", AScurrentahresult)
                 
@@ -870,7 +870,7 @@ OPT_LABEL = {
                 end
         end
 
-        AS[AS_BUTTONFILTERS] = function()  -- Open manualprompt filters
+        AS[L[10019]] = function()  -- Open manualprompt filters
                 ASprint(MSG_C.EVENT.."Opening manual edit filters")
                 AS.prompt:Hide()
                 AS.optionframe.manualpricebutton:Click()
@@ -919,7 +919,6 @@ OPT_LABEL = {
             if old_item.ignoretable and old_item.ignoretable[old_item.name] then
                 ASprint(MSG_C.EVENT.."[ Modifying Search terms ]")
                 AS.item[new_id].ignoretable = {}
-                ASprint(old_item.ignoretable[old_item.name])
                 AS.item[new_id].ignoretable[itemName or itemString or item_name] = old_item.ignoretable[old_item.name]
             end
             AO_RENAME = nil
@@ -986,8 +985,6 @@ OPT_LABEL = {
     function AS_ChatFrame_OnHyperlinkShow(self, link, text, button)
 
         if IsShiftKeyDown() and link then
-            ASprint(MSG_C.INFO.."OnHyperLinkShow Called")
-
             if string.find(link, 'achievement:*') or string.find(link,'spell:*') then
                 return false
             end
@@ -1006,7 +1003,6 @@ OPT_LABEL = {
             local bag, item = self:GetParent():GetID(), self:GetID()
             local link = GetContainerItemLink(bag, item)
 
-            ASprint(MSG_C.INFO.."OnModifiedLink Called")
             ASprint(MSG_C.INFO.."Link: "..link)
 
             if AS.mainframe.headerframe.editbox:HasFocus() then
@@ -1206,7 +1202,7 @@ OPT_LABEL = {
             return false
 
         elseif auction_item[12] then -- If we are highest bidder
-            ASprint(MSG_C.INFO.."We are the high bidder!")
+            ASprint(MSG_C.INFO.."We are the highest bidder!")
             return false
 
         elseif item.link and item.name ~= name then
@@ -1227,12 +1223,12 @@ OPT_LABEL = {
         -- Fill prompt info, title, icon, bid or buyout text/buttons
         AS.prompt.ilvl:SetText(ilvl)
         AS.prompt.quantity:SetText(count)
-        AS.prompt.vendor:SetText(AS_BY..": "..(owner or "Unavailable"))
+        AS.prompt.vendor:SetText(AS_BY..": "..(owner or L[10018]))
         AS.prompt.icon:SetNormalTexture(auction_item[2])
         -- Filter string
-        local strcutoffprice = "Filters\n"
+        local strcutoffprice = L[10019].."\n"
         if cutoffprice then
-            strcutoffprice = strcutoffprice.."Price: "..ASGSC(cutoffprice)
+            strcutoffprice = strcutoffprice..L[10020]..": "..ASGSC(cutoffprice)
         end
         if cutoffprice and item.ignoretable and item.ignoretable[name] and item.ignoretable[name].ilvl then
             strcutoffprice = strcutoffprice.." | iLvl: |cffffffff"..item.ignoretable[name].ilvl
