@@ -1223,7 +1223,7 @@ OPT_LABEL = {
         -- Fill prompt info, title, icon, bid or buyout text/buttons
         AS.prompt.ilvl:SetText(ilvl)
         AS.prompt.quantity:SetText(count)
-        AS.prompt.vendor:SetText(AS_BY..": "..(owner or L[10018]))
+        AS.prompt.vendor:SetText(L[10067]..": "..(owner or L[10018]))
         AS.prompt.icon:SetNormalTexture(auction_item[2])
         -- Filter string
         local strcutoffprice = L[10019].."\n"
@@ -1247,16 +1247,16 @@ OPT_LABEL = {
         -- The buyout button
         if (buyoutPrice == 0) or (cutoffprice and (cutoffprice > peritembid) and (cutoffprice < peritembuyout)) then
             -- Buyout does not exist or cutoff meets bid but not buyout
-            AS.prompt[AS_BUTTONBUYOUT]:Disable()
+            AS.prompt.buyout:Disable()
         else
-            AS.prompt[AS_BUTTONBUYOUT]:Enable()
+            AS.prompt.buyout:Enable()
         end
         -- The bid button
         if ASignorebid or (peritembid == peritembuyout) then
             -- Ignore bid or bid is the same as buyout
-            AS.prompt[AS_BUTTONBID]:Disable()
+            AS.prompt.bid:Disable()
         else
-            AS.prompt[AS_BUTTONBID]:Enable()
+            AS.prompt.bid:Enable()
         end
 
         if ASignorebid then -- Show buyout only
