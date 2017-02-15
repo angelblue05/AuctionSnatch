@@ -1210,8 +1210,12 @@ OPT_HIDDEN = {
             -- Ignore bid, item buyout higher than cutoff price
             return false
 
-        elseif cutoffprice and (cutoffprice <= peritembid) then
+        elseif cutoffprice and (cutoffprice < peritembid) then
             -- Item bid higher than cutoff price
+            return false
+
+        elseif cutoffprice and (cutoffprice < peritembuyout) then
+            -- Item buyout higher than cutoff price
             return false
 
         elseif AS_IsAlwaysIgnore(name) then
