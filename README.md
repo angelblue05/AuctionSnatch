@@ -30,7 +30,7 @@ A new tab will appear on the Auction House Frame. Clicking that will bring up th
   * **[ Ignore no buyouts ]** Ignore items without a buyout price
   * **[ Icon tooltip ]** Enable tooltip on mouseover for icons in the list
 * **[ Create list ]** Create a new list
-* **[ Copper override ]** Changes the value, at the time of input, between copper or gold-only
+* **[ Value in copper ]** Changes the value, at the time of input, between copper or gold-only
 * **[ Cancel auction ]** Cancel auction on right-click in the auctions tab
 * **[ Remember price ]** When using the sell option, remember the unit price from previous auction
 * **[ Auto-open ]** Open Auction One automatically when opening the Auction House
@@ -45,3 +45,4 @@ A new tab will appear on the Auction House Frame. Clicking that will bring up th
 * When opening the Auction House, holding shift will reverse the auto-search feature.
 * Re-order or Ignore items in the list
 * Set maximum buyout price per item. Auction One will not prompt your for items above that price.
+* Localization available: English, French
