@@ -1153,12 +1153,14 @@
                         end
                     end)
                     AS.manualprompt.stackone:SetScript("OnEnter", function(self)
-                        ASshowtooltip(self, "Save my carpal tunnel!")
+                        ASshowtooltip(self, L[10068])
                     end)
                     AS.manualprompt.stackone:SetScript("OnLeave", function(self)
                         AShidetooltip()
                     end)
-                    F.ReskinCheck(AS.manualprompt.stackone)
+                    if AS_SKIN then
+                        F.ReskinCheck(AS.manualprompt.stackone)
+                    end
 
             ------ IGNORE STACK OF 1 LABEL
                 -- Only because I want the text to appear on the left instead of the right...
@@ -1167,7 +1169,7 @@
                     AS.manualprompt.stackone.label:SetJustifyH("LEFT")
                     AS.manualprompt.stackone.label:SetPoint("LEFT", AS.manualprompt.icon, "LEFT")
                     AS.manualprompt.stackone.label:SetPoint("TOP", AS.manualprompt.stackone, "TOP", 0, -5)
-                    AS.manualprompt.stackone.label:SetText("Ignore stacks of 1:")
+                    AS.manualprompt.stackone.label:SetText(L[10069]..":")
                     AS.manualprompt.stackone.label:SetTextColor(r, g, b) -- Aurora
 
             ------ NOTES BOX

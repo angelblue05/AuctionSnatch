@@ -31,7 +31,6 @@ A new tab will appear on the Auction House Frame. Clicking that will bring up th
   * **[ Icon tooltip ]** Enable tooltip on mouseover for icons in the list
 * **[ Create list ]** Create a new list
 * **[ Value in copper ]** Changes the value, at the time of input, between copper or gold-only
-* **[ Cancel auction ]** Cancel auction on right-click in the auctions tab
 * **[ Remember price ]** When using the sell option, remember the unit price from previous auction
 * **[ Auto-open ]** Open Auction One automatically when opening the Auction House
 * **[ Auto-start ]** Once the Auction One window is open, start searching automatically the default list
@@ -46,3 +45,8 @@ A new tab will appear on the Auction House Frame. Clicking that will bring up th
 * Re-order or Ignore items in the list
 * Set maximum buyout price per item. Auction One will not prompt your for items above that price.
 * Localization available: English, French
+
+Slash commands:
+/ao debug: Toggle debug
+/ao cancelauction: Cancel auction on right-click in the auctions tab
+/ao searchoncreate: Search the item in the Auction House after creating the auction in our list
