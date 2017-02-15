@@ -46,7 +46,7 @@ A new tab will appear on the Auction House Frame. Clicking that will bring up th
 * Set maximum buyout price per item. Auction One will not prompt your for items above that price.
 * Localization available: English, French
 
-Slash commands:
-/ao debug: Toggle debug
-/ao cancelauction: Cancel auction on right-click in the auctions tab
-/ao searchoncreate: Search the item in the Auction House after creating the auction in our list
+### Slash commands: *(example: /ao debug)* 
+**debug**: Toggle debug  
+**cancelauction**: Toggle Cancel auction on right-click in the auctions tab  
+**searchoncreate**: Toggle Search the item in the Auction House after creating the auction in our list
