@@ -67,11 +67,14 @@ OPT_LABEL = {
     ['ASnodoorbell'] = L[10001],
     ['ASignorebid'] = L[10002],
     ['ASignorenobuyout'] = L[10003],
-    ['cancelauction'] = L[10005],
     ['rememberprice'] = L[10006],
     ['ASautostart'] = L[10007],
     ['ASautoopen'] = L[10008],
     ['AOicontooltip'] = L[10009]
+}
+OPT_HIDDEN = {
+    ['searchoncreate'] = "",
+    ['cancelauction'] = ""
 }
 
 
@@ -179,7 +182,11 @@ OPT_LABEL = {
             r, g, b = C.r, C.g, C.b -- Aurora
             AS_backdrop = C.media.backdrop
             AS_SKIN = true
+        else -- default skin
+            AS_backdrop = "Interface\\ChatFrame\\ChatFrameBackground"
+            r, g, b = 0.035, 1, 0.78 -- Aurora
         end
+
         AS_CreateMainFrame()
         AS_CreatePrompt()
         AS_CreateManualPrompt()
@@ -229,7 +236,7 @@ OPT_LABEL = {
                 AS_Main()
             end
 
-            ------ AUCTION HOUSE HOOKS // TODO: Is this necessary?
+            ------ AUCTION HOUSE HOOKS
                 if BrowseName then
                     local old_BrowseName = BrowseName:GetScript("OnEditFocusGained")
                     BrowseName:SetScript("OnEditFocusGained", function()
@@ -273,8 +280,17 @@ OPT_LABEL = {
                                 AS_SavedVariables()
                             end
                         end
+
+                        old_CreateAuction()
+
+                        -- Search item to view new auctions
+                        if ASsavedtable.searchoncreate and AS.item.LastAuctionSetup then
+                            AuctionFrameBrowse.page = 0
+                            BrowseName:SetText(ASsanitize(AS.item[AS.item.LastAuctionSetup].name))
+                            AuctionFrameBrowse_Search()
+                        end
                         AS.item['LastAuctionSetup'] = nil
-                        return old_CreateAuction()
+                        return
                     end)
                 end
 
@@ -359,7 +375,7 @@ OPT_LABEL = {
     function AS_Initialize()
         local playerName = UnitName("player")
         local serverName = GetRealmName()
-        ASprint(L)
+
         hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", AS_ContainerFrameItemButton_OnModifiedClick)
         hooksecurefunc("ChatFrame_OnHyperlinkShow", AS_ChatFrame_OnHyperlinkShow)
 
@@ -451,11 +467,19 @@ OPT_LABEL = {
 
             elseif input == "debug" then
                 ASdebug = not ASdebug
-                ASprint(MSG_C.BOOL.."Debug: "..tostring(ASdebug), 1)
+                ASprint(MSG_C.INFO.."Debug:|r "..MSG_C.BOOL..tostring(ASdebug), 1)
                 return
             elseif input == "copperoverride" then
                 ASsavedtable.copperoverride = not ASsavedtable.copperoverride
-                ASprint(MSG_C.BOOL.."CopperOverride: "..tostring(ASsavedtable.copperoverride), 1)
+                ASprint(MSG_C.INFO.."Value in copper:|r "..MSG_C.BOOL..tostring(ASsavedtable.copperoverride), 1)
+                return
+            elseif input == "searchoncreate" then
+                ASsavedtable.searchoncreate = not ASsavedtable.searchoncreate
+                ASprint(MSG_C.INFO.."Search on creating auction: "..MSG_C.BOOL..tostring(ASsavedtable.searchoncreate), 1)
+                return
+            elseif input == "cancelauction" then
+                ASsavedtable.cancelauction = not ASsavedtable.cancelauction
+                ASprint(MSG_C.INFO.."Cancel auction on right-click: "..MSG_C.BOOL..tostring(ASsavedtable.cancelauction), 1)
                 return
             end
 
@@ -473,11 +497,15 @@ OPT_LABEL = {
         if AS and AS.item then
             if not ASsavedtable then
                 ASsavedtable = {}
+                ASsavedtable.searchoncreate = true
                 ASsavedtable.copperoverride = true
-                ASsavedtable.cancelauction = false
+                ASsavedtable.cancelauction = true
                 ASsavedtable.rememberprice = true
                 ASsavedtable.ASautostart = false
                 ASsavedtable.ASautoopen = true
+            end
+            if ASsavedtable.searchoncreate == nil then -- Option that should be set by default
+                ASsavedtable.searchoncreate = true
             end
 
             ASsavedtable[ACTIVE_TABLE] = {}
@@ -533,14 +561,6 @@ OPT_LABEL = {
                 info.func =  ASdropDownMenuItem_OnClick
                 info.owner = self:GetParent()
                 UIDropDownMenu_AddButton(info, level)
-                --- Cancel auction on right click
-                info.text = OPT_LABEL["cancelauction"]
-                info.value = "cancelauction"
-                info.checked = ASsavedtable.cancelauction
-                info.hasArrow = false
-                info.func =  ASdropDownMenuItem_OnClick
-                info.owner = self:GetParent()
-                UIDropDownMenu_AddButton(info, level)
                 --- Remember auction price
                 info.text = OPT_LABEL["rememberprice"]
                 info.value = "rememberprice"
@@ -572,7 +592,7 @@ OPT_LABEL = {
 
             if ASsavedtable then
                 for key, value in pairs(ASsavedtable) do
-                    if not OPT_LABEL[key] then -- Found a server
+                    if not OPT_LABEL[key] and not OPT_HIDDEN[key] then -- Found a server
     
                         if key == ACTIVE_TABLE then -- indicate which list is being used
                             info.checked = true
@@ -636,10 +656,6 @@ OPT_LABEL = {
         if self.value == "copperoverride" then
             ASsavedtable.copperoverride = not ASsavedtable.copperoverride
             ASprint(MSG_C.INFO.."Copper Override:|r "..MSG_C.BOOL..tostring(ASsavedtable.copperoverride))
-            return
-        elseif self.value == "cancelauction" then
-            ASsavedtable.cancelauction = not ASsavedtable.cancelauction
-            ASprint(MSG_C.INFO.."Cancel Auction (on right click):|r "..MSG_C.BOOL..tostring(ASsavedtable.cancelauction))
             return
         elseif self.value == "rememberprice" then
             ASsavedtable.rememberprice = not ASsavedtable.rememberprice
@@ -814,7 +830,7 @@ OPT_LABEL = {
                 local name = AS.item['ASmanualedit'].name
                 local listnumber = AS.item['ASmanualedit'].listnumber
 
-                if AS.item['ASmanualedit'].priceoverride == nil and AS.item['ASmanualedit'].ilvl == nil then
+                if AS.item['ASmanualedit'].priceoverride == nil and AS.item['ASmanualedit'].ilvl == nil and AS.item['ASmanualedit'].stackone == nil then
                     AS.manualprompt:Hide()
                     return
                 end
@@ -831,6 +847,11 @@ OPT_LABEL = {
                 end
                 if AS.item['ASmanualedit'].ilvl then
                     AS.item[listnumber].ignoretable[name].ilvl = AS.item['ASmanualedit'].ilvl
+                end
+                if AS.item['ASmanualedit'].stackone then
+                    AS.item[listnumber].ignoretable[name].stackone = AS.item['ASmanualedit'].stackone
+                else
+                    AS.item[listnumber].ignoretable[name].stackone = nil
                 end
 
                 AS.item[listnumber].priceoverride = nil
@@ -1038,6 +1059,7 @@ OPT_LABEL = {
             AS.status = nil
             AScurrentauctionsnatchitem = 1
             AS.mainframe.headerframe.stopsearchbutton:Disable()
+            BrowseResetButton:Click()
             return false
         end
 
@@ -1054,7 +1076,6 @@ OPT_LABEL = {
                 AS.item['LastListButtonClicked'] = AScurrentauctionsnatchitem -- Setup in advanced for manual filters prompt
                 AS.mainframe.headerframe.stopsearchbutton:Enable()
 
-                BrowseResetButton:Click()
                 BrowseName:SetText(ASsanitize(item.name))
                 -- Sort auctions by buyout price, or minimum bid if there's no buyout price
                 SortAuctionSetSort("list", "minbidbuyout")
@@ -1215,9 +1236,14 @@ OPT_LABEL = {
         auction_iteminfo = {GetItemInfo(GetAuctionItemLink("list", GetSelectedAuctionItem("list")))}
         local ilvl = auction_iteminfo[4]
 
-        if item.ignoretable and item.ignoretable[name] and item.ignoretable[name].ilvl and item.ignoretable[name].ilvl > ilvl then
-            -- ilvl item is lower than filter
-            return false
+        if item.ignoretable and item.ignoretable[name] then
+            if item.ignoretable[name].ilvl and item.ignoretable[name].ilvl > ilvl then
+                -- ilvl item is lower than filter
+                return false
+            elseif item.ignoretable[name].stackone and count == 1 then
+                -- Ignore stacks of 1
+                return false
+            end
         end
 
         -- Fill prompt info, title, icon, bid or buyout text/buttons
@@ -1230,10 +1256,12 @@ OPT_LABEL = {
         if cutoffprice then
             strcutoffprice = strcutoffprice..L[10020]..": "..ASGSC(cutoffprice)
         end
-        if cutoffprice and item.ignoretable and item.ignoretable[name] and item.ignoretable[name].ilvl then
-            strcutoffprice = strcutoffprice.." | iLvl: |cffffffff"..item.ignoretable[name].ilvl
-        elseif item.ignoretable and item.ignoretable[name] and item.ignoretable[name].ilvl then
-            strcutoffprice = strcutoffprice.."iLvl: |cffffffff"..item.ignoretable[name].ilvl
+        if item.ignoretable and item.ignoretable[name] and item.ignoretable[name].ilvl then
+            if cutoffprice then
+                strcutoffprice = strcutoffprice.." | iLvl: |cffffffff"..item.ignoretable[name].ilvl
+            else
+                strcutoffprice = strcutoffprice.."iLvl: |cffffffff"..item.ignoretable[name].ilvl
+            end
         end
         AS.prompt.lowerstring:SetText(strcutoffprice)
         -- Set the title
@@ -1362,6 +1390,7 @@ OPT_LABEL = {
     end
 
     function AS_CancelAuction(self, button)
+
         if ASsavedtable.cancelauction then
             local index = self:GetID() + GetEffectiveAuctionsScrollFrameOffset()
             SetEffectiveSelectedOwnerAuctionItemIndex(index) -- updates any WoWToken offset

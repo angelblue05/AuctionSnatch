@@ -1,7 +1,4 @@
 
-AS_backdrop = "Interface\\ChatFrame\\ChatFrameBackground"
-r, g, b = 0.035, 1, 0.78 -- Aurora
-
 --[[//////////////////////////////////////////////////
 
     MAIN INTERFACE FUNCTIONS
@@ -464,6 +461,9 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                         if idx.ignoretable[idx.name].ilvl then
                             strmsg = strmsg.."\n"..L[10026]..": |cffffffff"..idx.ignoretable[idx.name].ilvl
                         end
+                        if idx.ignoretable[idx.name].stackone then
+                            strmsg = strmsg.."\n".."Ignoring stacks of 1"
+                        end
                     end
 
                     if idx.sellbid or idx.sellbuyout then
@@ -564,6 +564,13 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
 
             -- Set geometry
             ASauctiontab:SetPoint("TOPLEFT", getglobal("AuctionFrameTab"..(index - 1)), "TOPRIGHT", -8, 0)
+
+            -- Set Event for Owner Auction tab
+            old_auctiontab = AuctionFrameTab3:GetScript("OnClick")
+            AuctionFrameTab3:SetScript("OnClick", function(self, button, down)
+                old_auctiontab(self, button, down)
+                AS_RegisterCancelAction()
+            end)
         end
     end
 
@@ -980,7 +987,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.manualprompt.ignorebutton:SetText(L[10039])
                     AS.manualprompt.ignorebutton:SetWidth((AS.manualprompt:GetWidth() / 2) - (2 * AS_FRAMEWHITESPACE))
                     AS.manualprompt.ignorebutton:SetHeight(AS_BUTTON_HEIGHT)
-                    AS.manualprompt.ignorebutton:SetPoint("TOPLEFT", AS.manualprompt.lowerstring, "BOTTOMLEFT", 0, -60)
+                    AS.manualprompt.ignorebutton:SetPoint("TOPLEFT", AS.manualprompt.lowerstring, "BOTTOMLEFT", 0, -80)
                 -------------- SCRIPT ----------------
                     AS.manualprompt.ignorebutton:SetScript("OnClick", function(self)
                         AS[L[10039]]()
@@ -1133,6 +1140,36 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                     AS.manualprompt.ilvllabel:SetText(L[10026]..":")
                     AS.manualprompt.ilvllabel:SetTextColor(r, g, b) -- Aurora
 
+            ------ IGNORE STACK OF 1
+                -------------- STYLE ----------------
+                    AS.manualprompt.stackone = CreateFrame("CheckButton", "AOstackone", AS.manualprompt, "OptionsCheckButtonTemplate")
+                    AS.manualprompt.stackone:SetPoint("TOPRIGHT", AS.manualprompt.ilvlinput, "BOTTOMRIGHT", 0, -5)
+                -------------- SCRIPT ----------------
+                    AS.manualprompt.stackone:SetScript("OnClick", function(self)
+                        if AS.manualprompt.stackone:GetChecked() then
+                            AS.item['ASmanualedit'].stackone = true
+                        else
+                            AS.item['ASmanualedit'].stackone = false
+                        end
+                    end)
+                    AS.manualprompt.stackone:SetScript("OnEnter", function(self)
+                        ASshowtooltip(self, "Save my carpal tunnel!")
+                    end)
+                    AS.manualprompt.stackone:SetScript("OnLeave", function(self)
+                        AShidetooltip()
+                    end)
+                    F.ReskinCheck(AS.manualprompt.stackone)
+
+            ------ IGNORE STACK OF 1 LABEL
+                -- Only because I want the text to appear on the left instead of the right...
+                -------------- STYLE ----------------
+                    AS.manualprompt.stackone.label = AS.manualprompt.stackone:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+                    AS.manualprompt.stackone.label:SetJustifyH("LEFT")
+                    AS.manualprompt.stackone.label:SetPoint("LEFT", AS.manualprompt.icon, "LEFT")
+                    AS.manualprompt.stackone.label:SetPoint("TOP", AS.manualprompt.stackone, "TOP", 0, -5)
+                    AS.manualprompt.stackone.label:SetText("Ignore stacks of 1:")
+                    AS.manualprompt.stackone.label:SetTextColor(r, g, b) -- Aurora
+
             ------ NOTES BOX
                 -------------- STYLE ----------------
                     AS.manualprompt.notes = CreateFrame("EditBox", nil, AS.manualprompt, "InputBoxTemplate")
@@ -1179,6 +1216,7 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
         end
 
         if item then
+            AS.manualprompt.stackone:SetChecked(false)
             AS.manualprompt.icon:SetNormalTexture(item.icon)
 
             if item.notes then
@@ -1194,18 +1232,23 @@ r, g, b = 0.035, 1, 0.78 -- Aurora
                 AS.manualprompt.upperstring:SetText(item.name)
             end
             
-            if item.ignoretable and item.ignoretable[item.name] and item.ignoretable[item.name].cutoffprice then
-                AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
-            else
-                AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n")
-            end
+            if item.ignoretable and item.ignoretable[item.name] then
+                if item.ignoretable[item.name].cutoffprice then
+                    AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
+                else
+                    AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n")
+                end
 
-            if item.ignoretable and item.ignoretable[item.name].ilvl then
-                AS.manualprompt.ilvllabel:SetText(L[10026]..":\n".."|cffffffff"..item.ignoretable[item.name].ilvl)
-            else
-                AS.manualprompt.ilvllabel:SetText(L[10026]..":\n")
-            end
+                if item.ignoretable[item.name].ilvl then
+                    AS.manualprompt.ilvllabel:SetText(L[10026]..":\n".."|cffffffff"..item.ignoretable[item.name].ilvl)
+                else
+                    AS.manualprompt.ilvllabel:SetText(L[10026]..":\n")
+                end
 
+                if item.ignoretable[item.name].stackone then
+                    AS.manualprompt.stackone:SetChecked(true)
+                end
+            end
             AS.manualprompt.priceoverride:SetText("")
             AS.manualprompt.ilvlinput:SetText("")
             AS.manualprompt:Show()
