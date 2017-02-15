@@ -106,7 +106,7 @@
         LISTNAMES = {}
         I_LISTNAMES = {}
         for key, value in pairs(ASsavedtable) do
-            if not OPT_LABEL[key] then-- Found a list
+            if not OPT_LABEL[key] and not OPT_HIDDEN[key] then-- Found a list
                 LISTNAMES[#LISTNAMES + 1] = key
             end
         end
