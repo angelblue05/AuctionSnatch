@@ -44,7 +44,7 @@ A new tab will appear on the Auction House Frame. Clicking that will bring up th
 * When opening the Auction House, holding shift will reverse the auto-search feature.
 * Re-order or Ignore items in the list
 * Set maximum buyout price per item. Auction One will not prompt your for items above that price.
-* Localization available: English, French
+* Localization available: English, French, Russian
 
 ### Slash commands: *(example: /ao debug)* 
 **debug**: Toggle debug  
