@@ -851,7 +851,7 @@ OPT_HIDDEN = {
                 end
                 if AS.item['ASmanualedit'].stackone then
                     AS.item[listnumber].ignoretable[name].stackone = AS.item['ASmanualedit'].stackone
-                else
+                elseif AS.item['ASmanualedit'].stackone == false then
                     AS.item[listnumber].ignoretable[name].stackone = nil
                 end
 
