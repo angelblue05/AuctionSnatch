@@ -1,4 +1,11 @@
 ------------------------------------------------------------------------
+1.4 | angelblue05 | 2017-02-15
+
+- Add filter for stacks of 1 (set this option per individual item in your list)
+- Add slash commands (/ao [debug|cancelauction|searchoncreate]) Find more info on the main page.
+- Add Russian Translation
+
+------------------------------------------------------------------------
 1.3 | angelblue05 | 2017-02-14
 
 - Add ilvl filter
