@@ -252,11 +252,13 @@ OPT_HIDDEN = {
                 if AuctionsCreateAuctionButton then
                     local old_CreateAuction = AuctionsCreateAuctionButton:GetScript("OnClick")
                     AuctionsCreateAuctionButton:SetScript("OnClick", function(self, button)
-                        
-                        if ASsavedtable.rememberprice and AS.item.LastAuctionSetup then 
+                        local listnumber = AS.item['LastAuctionSetup']
+
+                        if ASsavedtable.rememberprice and listnumber then
                             local startPrice = MoneyInputFrame_GetCopper(StartPrice)
                             local buyoutPrice = MoneyInputFrame_GetCopper(BuyoutPrice)
                             local stackSize = AuctionsStackSizeEntry:GetNumber()
+                            AS.item['LastAuctionSetup'] = nil
 
                             ASprint(MSG_C.INFO.."StartPrice:|r "..startPrice)
                             ASprint(MSG_C.INFO.."BuyoutPrice:|r "..buyoutPrice)
@@ -267,12 +269,12 @@ OPT_HIDDEN = {
                             end
 
                             local save = false
-                            if tonumber(AS.item[AS.item.LastAuctionSetup].sellbid) ~= startPrice then
-                                AS.item[AS.item.LastAuctionSetup].sellbid = startPrice
+                            if tonumber(AS.item[listnumber].sellbid) ~= startPrice then
+                                AS.item[listnumber].sellbid = startPrice
                                 save = true
                             end
-                            if tonumber(AS.item[AS.item.LastAuctionSetup].sellbuyout) ~= buyoutPrice then
-                                AS.item[AS.item.LastAuctionSetup].sellbuyout = buyoutPrice
+                            if tonumber(AS.item[listnumber].sellbuyout) ~= buyoutPrice then
+                                AS.item[listnumber].sellbuyout = buyoutPrice
                                 save = true
                             end
 
@@ -284,13 +286,12 @@ OPT_HIDDEN = {
                         old_CreateAuction()
 
                         -- Search item to view new auctions
-                        if ASsavedtable.searchoncreate and AS.item.LastAuctionSetup then
+                        if ASsavedtable.searchoncreate and listnumber then
                             AuctionFrameBrowse.page = 0
-                            BrowseName:SetText(ASsanitize(AS.item[AS.item.LastAuctionSetup].name))
+                            BrowseName:SetText(ASsanitize(AS.item[listnumber].name))
                             AuctionFrameBrowse_Search()
                         end
-                        AS.item['LastAuctionSetup'] = nil
-                        return
+                        return true
                     end)
                 end
 
