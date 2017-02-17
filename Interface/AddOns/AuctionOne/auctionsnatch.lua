@@ -1388,8 +1388,6 @@ OPT_HIDDEN = {
             if not owner_button then
                 break
             end
-            owner_button:RegisterForClicks("RightButtonUp")
-            _G["AuctionsButton"..i.."Item"]:RegisterForClicks("RightButtonUp")
             owner_button:SetScript("OnClick", AS_CancelAuction)
         end
     end
