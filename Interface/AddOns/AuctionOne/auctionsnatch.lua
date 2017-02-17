@@ -39,11 +39,14 @@ AS_HEADERHEIGHT = 120
 AS_LISTHEIGHT = AS_GROSSHEIGHT - AS_HEADERHEIGHT
 AS = {}
 AS.elapsed = 0
-ASfirsttime = false
+AO_FIRSTRUN_AH = false
 ACTIVE_TABLE = nil
 AS_COPY = nil
 AS_SKIN = false
 AO_RENAME = nil
+AO_AUCTIONS = {}
+AO_AUCTIONS_SOLD = {}
+
 
 STATE = {
     ['QUERYING'] = 1,
@@ -51,6 +54,11 @@ STATE = {
     ['EVALUATING'] = 3,
     ['WAITINGFORPROMPT'] = 4,
     ['BUYING'] = 5
+}
+
+AUC_EVENTS = {
+    ['SOLD'] = {},
+    ['EXPIRED'] = {}
 }
 
 MSG_C = {
@@ -96,19 +104,10 @@ OPT_HIDDEN = {
             self:RegisterEvent("AUCTION_HOUSE_CLOSED")
             self:RegisterEvent("VARIABLES_LOADED")
 
-        ------ CHAT HOOKS
-            -------------- THANK YOU TINY PAD ----------------
-            self:RegisterEvent("ADDON_LOADED") -- tradeskill and achievement hooks need to wait for LoD bits
-            local old_ChatEdit_InsertLink = ChatEdit_InsertLink
-            function ChatEdit_InsertLink(text)
-
-                if AS.mainframe.headerframe.editbox:HasFocus() then
-                    AS.mainframe.headerframe.editbox:Insert(text)
-                    return true -- prevents the stacksplit frame from showing
-                else
-                    return old_ChatEdit_InsertLink(text)
-                end
-            end
+        ------ SOLD/CANCELLED AUCTION
+            AS.AO_AuctionSoldFrame = CreateFrame("Frame")
+            AS.AO_AuctionSoldFrame:RegisterEvent("CHAT_MSG_SYSTEM")
+            AS.AO_AuctionSoldFrame:SetScript("OnEvent", AO_AuctionSold)
 
         ------ STATIC DIALOG // To get new list name
             StaticPopupDialogs["AS_NewList"] = {
@@ -165,16 +164,16 @@ OPT_HIDDEN = {
         DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT..L[10000])
 
         ------ SLASH COMMANDS
-            SLASH_AS1 = "/AO";
-            SLASH_AS2 = "/ao";
-            SLASH_AS3 = "/Ao";
-            SLASH_AS4 = "/aO";
-            SLASH_AS5 = "/Auctionone";
-            SLASH_AS6 = "/AuctionOne";
-            SLASH_AS7 = "/AUCTIONONE";
-            SLASH_AS8 = "/auctionone";
+            SLASH_AS1 = "/AO"
+            SLASH_AS2 = "/ao"
+            SLASH_AS3 = "/Ao"
+            SLASH_AS4 = "/aO"
+            SLASH_AS5 = "/Auctionone"
+            SLASH_AS6 = "/AuctionOne"
+            SLASH_AS7 = "/AUCTIONONE"
+            SLASH_AS8 = "/auctionone"
 
-            SlashCmdList["AS"] = AS_Main;
+            SlashCmdList["AS"] = AS_Main
 
         if IsAddOnLoaded("Aurora") then -- Verify if Aurora is installed/enabled
             DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT.."AuctionOne|r: Aurora detected")
@@ -210,6 +209,116 @@ OPT_HIDDEN = {
 
         elseif event == "AUCTION_OWNED_LIST_UPDATE" then
             AS_RegisterCancelAction()
+            -- Get current owner auctions
+            if not AO_FIRSTRUN_AH then
+                AO_FIRSTRUN_AH = true
+
+                local numBatchAuctions, totalAuctions = GetNumAuctionItems("owner")
+                local x
+                for x = 1, totalAuctions do
+                    local auction = {GetAuctionItemInfo("owner", x)}
+                    if not AO_AUCTIONS[auction[1]] then
+                        AO_AUCTIONS[auction[1]] = {}
+                        AO_AUCTIONS[auction[1]]['icon'] = auction[2]
+                    end
+                    table.insert(AO_AUCTIONS[auction[1]], {
+                        ['quantity'] = auction[3],
+                        ['price'] = auction[10]
+                    })
+                    if auction[16] == 1 or auction[3] == 0 then -- Auction is sold
+                        table.insert(AO_AUCTIONS_SOLD, {
+                            ['name'] = auction[1],
+                            ['quantity'] = auction[3],
+                            ['icon'] = auction[2],
+                            ['price'] = auction[10]
+                        })
+                    end
+                end
+            end
+
+            if AUC_EVENTS['EXPIRED'] ~= {} then -- Expired Auctions
+                local expired = {}
+                AS_tcopy(expired, AUC_EVENTS['EXPIRED'])
+                AUC_EVENTS['EXPIRED'] = {}
+
+                local x, key, key2, value, value2
+
+                for x = 1, #expired do
+                    local item = expired[x]
+                    local current_auctions = AO_CurrentOwnedAuctions(item)
+
+                    local saved_auctions = {} -- Copy original auctions to compare
+                    AS_tcopy(saved_auctions, AO_AUCTIONS[item])
+
+                    if current_auctions then
+                        AO_CompareAuctionsTable(current_auctions, saved_auctions)
+                    end
+
+                    for key, value in pairs(saved_auctions) do
+                        for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item expired
+                            if type(value2) == "table" then
+                                if value.quantity == value2.quantity and value.price == value2.price then
+                                    -- Found match
+                                    table.remove(AO_AUCTIONS[item], key2)
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            if AUC_EVENTS['SOLD'] ~= {} then -- Sold Auctions
+                local sold = {}
+                AS_tcopy(sold, AUC_EVENTS['SOLD'])
+                AUC_EVENTS['SOLD'] = {}
+
+                local x, y, key, key2, value, value2
+
+                for x = 1, #sold do
+                    local item = sold[x]
+                    local current_auctions = AO_CurrentOwnedAuctions(item)
+
+                    local saved_auctions = {}
+                    AS_tcopy(saved_auctions, AO_AUCTIONS[item])
+
+                    if current_auctions then
+                        for key, value in pairs(current_auctions) do
+                            for y = #saved_auctions, 1, -1 do
+                                value2 = saved_auctions[y]
+                                if type(value2) == "table" then
+                                    if value.price == value2.price and value.quantity == value2.quantity and value.sold == 0 then
+                                        -- Found match, still exists
+                                        table.remove(saved_auctions, y)
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    end
+
+                    for key, value in pairs(saved_auctions) do
+                        if type(value) == "table" then
+
+                            AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
+                                ['name'] = item,
+                                ['quantity'] = value.quantity,
+                                ['icon'] = saved_auctions.icon,
+                                ['price'] = value.price,
+                                ['time'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) end) -- 60min countdown
+                            }
+                            for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
+                                if type(value2) == "table" then
+                                    if value.price == value2.price and value.quantity == value2.quantity then
+                                        -- Found match
+                                        table.remove(AO_AUCTIONS[item], key2)
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
 
         elseif event == "AUCTION_ITEM_LIST_UPDATE" then
             --ASprint(MSG_C.INFO..event)
@@ -246,20 +355,33 @@ OPT_HIDDEN = {
                         end
 
                         AS.status = nil  --else the mod will mess up typing
-                        return old_BrowseName() --for some reason this causes an infinate loop :( > Can't seem to trigger infinite loop -AB5
+                        return old_BrowseName()
+                    end)
+                end
+                -- CANCEL AUCTION BUTTON / STATICPOPUP LISTENER
+                if AuctionsCancelAuctionButton then
+                    AuctionsCancelAuctionButton:SetScript("PostClick", function(self, button)
+                        if button == "LeftButton" then
+                            local cancel_frame = _G["StaticPopup1"]
+                            if cancel_frame and cancel_frame.which == "CANCEL_AUCTION" then
+
+                                local accept_button = _G["StaticPopup1Button1"]
+                                accept_button:SetScript("PreClick", function(self, button)
+                                    AO_UntrackCancelledAuction()
+                                end)
+                            end
+                        end
                     end)
                 end
                 if AuctionsCreateAuctionButton then
-                    local old_CreateAuction = AuctionsCreateAuctionButton:GetScript("OnClick")
-                    AuctionsCreateAuctionButton:SetScript("OnClick", function(self, button)
+                    AuctionsCreateAuctionButton:SetScript("PreClick", function(self, button)
                         local listnumber = AS.item['LastAuctionSetup']
+                        local startPrice = MoneyInputFrame_GetCopper(StartPrice)
+                        local buyoutPrice = MoneyInputFrame_GetCopper(BuyoutPrice)
+                        local stackSize = AuctionsStackSizeEntry:GetNumber()
+                        local stackNum = AuctionsNumStacksEntry:GetNumber()
 
-                        if ASsavedtable.rememberprice and listnumber then
-                            local startPrice = MoneyInputFrame_GetCopper(StartPrice)
-                            local buyoutPrice = MoneyInputFrame_GetCopper(BuyoutPrice)
-                            local stackSize = AuctionsStackSizeEntry:GetNumber()
-                            AS.item['LastAuctionSetup'] = nil
-
+                        if ASsavedtable.rememberprice and listnumber then                     
                             ASprint(MSG_C.INFO.."StartPrice:|r "..startPrice)
                             ASprint(MSG_C.INFO.."BuyoutPrice:|r "..buyoutPrice)
                             
@@ -283,15 +405,28 @@ OPT_HIDDEN = {
                             end
                         end
 
-                        old_CreateAuction()
-
+                        -- Add auctions to our saved list of auctions
+                        for x = 1, stackNum do
+                            local auction = {GetAuctionSellItemInfo()}
+                            if not AO_AUCTIONS[auction[1]] then
+                                AO_AUCTIONS[auction[1]] = {}
+                                AO_AUCTIONS[auction[1]]['icon'] = auction[2]
+                            end
+                            table.insert(AO_AUCTIONS[auction[1]], {
+                                ['quantity'] = auction[3],
+                                ['price'] = buyoutPrice
+                            })
+                        end
+                    end)
+                    AuctionsCreateAuctionButton:SetScript("PostClick", function(self, button)
                         -- Search item to view new auctions
+                        local listnumber = AS.item['LastAuctionSetup']
                         if ASsavedtable.searchoncreate and listnumber then
+                            AS.item['LastAuctionSetup'] = nil
                             AuctionFrameBrowse.page = 0
                             BrowseName:SetText(ASsanitize(AS.item[listnumber].name))
                             AuctionFrameBrowse_Search()
                         end
-                        return true
                     end)
                 end
 
@@ -379,6 +514,7 @@ OPT_HIDDEN = {
 
         hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", AS_ContainerFrameItemButton_OnModifiedClick)
         hooksecurefunc("ChatFrame_OnHyperlinkShow", AS_ChatFrame_OnHyperlinkShow)
+        hooksecurefunc("ChatEdit_InsertLink", AO_InsertLink)
 
         if (playerName == nil) or (playerName == UNKNOWNOBJECT) or (playerName == UNKNOWNBEING) then
             return
@@ -711,7 +847,8 @@ OPT_HIDDEN = {
     AS_ScrollbarUpdate, AS_CreateButtonHandlers,
     AS_AddItem, AS_MoveListButton,
     AS_ChatFrame_OnHyperlinkShow,
-    AS_ContainerFrameItemButton_OnModifiedClick
+    AS_ContainerFrameItemButton_OnModifiedClick,
+    AO_InsertLink
 
 ----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
 
@@ -725,6 +862,54 @@ OPT_HIDDEN = {
         AS.optionframe:Hide()
 
         local ASnumberofitems = table.maxn(AS.item)
+        local currentscrollbarvalue = FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+
+        FauxScrollFrame_Update(AS.mainframe.listframe.scrollFrame, ASnumberofitems, ASrowsthatcanfit(), AS_BUTTON_HEIGHT)
+
+        local x, idx, link, hexcolor, itemRarity
+
+        for x = 1, ASrowsthatcanfit() do
+            -- Get the appropriate item, which will be x + value
+            idx = x + currentscrollbarvalue
+
+            if AS.item[idx] and AS.item[idx].name then
+                hexcolor = ""
+
+                if AS.item[idx].icon then -- Set the item icon and link
+                    AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture(AS.item[idx].icon)
+                    AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+
+                    link = AS.item[idx].link
+                    AS.mainframe.listframe.itembutton[x].link = link
+                    if not AS.item[idx].rarity then --updated for 3.1 to include colors
+                        _, _, itemRarity = GetItemInfo(link)
+                        AS.item[idx].rarity = itemRarity
+                    end
+
+                    _,_,_,hexcolor = GetItemQualityColor(AS.item[idx].rarity)
+                    hexcolor = "|c"..hexcolor
+                else
+                    -- clear icon, link
+                    AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("")
+                    AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+                    AS.mainframe.listframe.itembutton[x].link = nil
+                    AS.mainframe.listframe.itembutton[x].rarity = nil
+                end
+
+                AS.mainframe.listframe.itembutton[x].leftstring:SetText(hexcolor..tostring(AS.item[idx].name))
+                AS.mainframe.listframe.itembutton[x]:Show()
+
+            else
+                --ASprint(MSG_C.DEBUG.."No item, hiding button: "..x)
+                AS.mainframe.listframe.itembutton[x]:Hide()
+            end
+        end
+    end
+
+    function AO_OwnerScrollbarUpdate()
+        -- This redraws all the buttons and make sure they're showing the right stuff
+        ASprint(AO_AUCTIONS_SOLD)
+        --[[local ASnumberofitems = table.maxn(AS.item)
         local currentscrollbarvalue = FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
 
         FauxScrollFrame_Update(AS.mainframe.listframe.scrollFrame, ASnumberofitems, ASrowsthatcanfit(), AS_BUTTON_HEIGHT)
@@ -766,7 +951,7 @@ OPT_HIDDEN = {
                 --ASprint(MSG_C.DEBUG.."No item, hiding button: "..x)
                 AS.mainframe.listframe.itembutton[x]:Hide()
             end
-        end
+        end]]
     end
 
     function AS_CreateButtonHandlers()
@@ -1032,6 +1217,15 @@ OPT_HIDDEN = {
                 BrowseName:SetText(link)
             elseif AS.manualprompt.notes:HasFocus() then
                 AS.manualprompt.notes:SetText(AS.manualprompt.notes:GetText()..link)
+            end
+        end
+    end
+
+    function AO_InsertLink(text)
+
+        if IsShiftKeyDown() then
+            if AS.mainframe.headerframe.editbox:HasFocus() then
+                AS.mainframe.headerframe.editbox:Insert(text)
             end
         end
     end
@@ -1388,17 +1582,88 @@ OPT_HIDDEN = {
             if not owner_button then
                 break
             end
-            owner_button:SetScript("OnClick", AS_CancelAuction)
+            owner_button:SetScript("PreClick", AS_CancelAuction)
         end
     end
 
     function AS_CancelAuction(self, button)
 
-        if ASsavedtable.cancelauction then
+        if ASsavedtable.cancelauction and button == "RightButton" then
             local index = self:GetID() + GetEffectiveAuctionsScrollFrameOffset()
             SetEffectiveSelectedOwnerAuctionItemIndex(index) -- updates any WoWToken offset
             if CanCancelAuction(GetSelectedAuctionItem("owner")) then
+
+                AO_UntrackCancelledAuction()
                 CancelAuction(GetSelectedAuctionItem("owner"))
             end
         end
+    end
+
+    function AO_UntrackCancelledAuction()
+        local auction = {GetAuctionItemInfo("owner", GetSelectedAuctionItem('owner'))}
+        local key, value
+
+        for key, value in pairs(AO_AUCTIONS[auction[1]]) do
+            if type(value) == "table" then
+                if auction[3] == value.quantity and auction[9] == value.price then
+                    -- Found auction, remove
+                    table.remove(AO_AUCTIONS[auction[1]], key)
+                end
+            end
+        end
+    end
+
+    function AO_AuctionSold(self, event, arg1)
+        -- Workaround because auction sold doesn't work properly since Cross Server support
+        -- We want: ERR_AUCTION_SOLD_S, ERR_AUCTION_EXPIRED_S
+        if string.match(arg1, string.gsub(ERR_AUCTION_SOLD_S, "(%%s)", ".+")) ~= nil then
+            -- Find sold item name
+            local item = string.match(arg1, string.gsub(ERR_AUCTION_SOLD_S, "(%%s)", "(.*)"))
+            table.insert(AUC_EVENTS['SOLD'], item)
+
+        elseif string.match(arg1, string.gsub(ERR_AUCTION_EXPIRED_S, "(%%s)", ".+")) ~= nil then
+            -- Find expired item name
+            local item = string.match(arg1, string.gsub(ERR_AUCTION_EXPIRED_S, "(%%s)", "(.*)"))
+            table.insert(AUC_EVENTS['EXPIRED'], item)
+        end
+    end
+
+    function AO_CurrentOwnedAuctions(name)
+        local x, current
+        local _, totalAuctions = GetNumAuctionItems("owner")
+        
+        for x = 1, totalAuctions do
+            local auction = {GetAuctionItemInfo("owner", x)}
+            
+            if name == auction[1] then
+                if not current then
+                    current = {}
+                end
+                table.insert(current, {
+                    ['quantity'] = auction[3],
+                    ['price'] = auction[10],
+                    ['sold'] = auction[16]
+                })
+            end
+        end
+        return current
+    end
+
+    function AO_CompareAuctionsTable(newtable, oldtable)
+        -- Return old table, but will only contain the difference between new and old
+        local key, key2, value, value2
+        for key, value in pairs(newtable) do
+            for y = #oldtable, 1, -1 do -- Go in reverse so we can probably delete tables
+                value2 = oldtable[y]
+                
+                if type(value2) == "table" then
+                    if value.quantity == value2.quantity and value.price == value2.price then
+                        -- Found match, still exists
+                        table.remove(oldtable, y)
+                        break
+                    end
+                end
+            end
+        end
+        return oldtable
     end

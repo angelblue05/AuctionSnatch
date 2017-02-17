@@ -306,6 +306,26 @@
                     if AS_SKIN then
                         F.ReskinArrow(AS.mainframe.headerframe.nextlist, "right") -- Aurora
                     end
+        
+            ------ SOLD AUCTIONS BUTTON
+                -------------- STYLE ----------------
+                    AS.mainframe.headerframe.soldbutton = CreateFrame("Button", nil, AS.mainframe.headerframe,"UIPanelbuttontemplate")
+                    AS.mainframe.headerframe.soldbutton:SetText("|TInterface\\MoneyFrame\\UI-GoldIcon:16:16:2:0|t")
+                    AS.mainframe.headerframe.soldbutton:SetWidth(30)
+                    AS.mainframe.headerframe.soldbutton:SetHeight(AS_BUTTON_HEIGHT)
+                    AS.mainframe.headerframe.soldbutton:SetPoint("TOP", AS.mainframe.headerframe.startsearchbutton, "TOP")
+                    AS.mainframe.headerframe.soldbutton:SetPoint("RIGHT", AS.mainframe.headerframe.additembutton, "RIGHT")
+                -------------- SCRIPT ----------------
+                    AS.mainframe.headerframe.soldbutton:SetScript("OnClick", function()
+                        AO_OwnerScrollbarUpdate()
+                    end)
+                    AS.mainframe.headerframe.soldbutton:SetScript("OnEnter", function(self)
+                        ASshowtooltip(self, L[10070])
+                    end)
+                    AS.mainframe.headerframe.soldbutton:SetScript("OnLeave", AShidetooltip)
+                    if AS_SKIN then
+                        F.Reskin(AS.mainframe.headerframe.soldbutton) -- Aurora
+                    end
 
 
         ------ LIST FRAME
@@ -566,9 +586,9 @@
             ASauctiontab:SetPoint("TOPLEFT", getglobal("AuctionFrameTab"..(index - 1)), "TOPRIGHT", -8, 0)
 
             -- Set Event for Owner Auction tab
-            old_auctiontab = AuctionFrameTab3:GetScript("OnClick")
-            AuctionFrameTab3:SetScript("OnClick", function(self, button, down)
-                old_auctiontab(self, button, down)
+            --old_auctiontab = AuctionFrameTab3:GetScript("OnClick")
+            AuctionFrameTab3:SetScript("PreClick", function(self, button, down)
+                --old_auctiontab(self, button, down)
                 AS_RegisterCancelAction()
             end)
         end

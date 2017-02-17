@@ -1,4 +1,4 @@
-﻿-- Primary localization (default)
+-- Primary localization (default)
 
 L[10000] = "AuctionOne loaded.\nType /ao or /auctionone"
 L[10001] = "Doorbell sound"
@@ -70,3 +70,4 @@ L[10066] = "Delete list"
 L[10067] = "by"
 L[10068] = "Save me from carpal tunnel!"
 L[10069] = "Ignore stacks of 1"
+L[10070] = "Sold auctions"

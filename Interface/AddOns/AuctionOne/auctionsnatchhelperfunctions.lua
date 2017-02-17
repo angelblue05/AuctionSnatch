@@ -261,7 +261,7 @@
     end
 
     function table_invert(t)
-        local u = { }
+        local u = {}
         for k, v in pairs(t) do u[v] = k end
         return u
     end
