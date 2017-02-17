@@ -226,11 +226,14 @@ OPT_HIDDEN = {
                         ['price'] = auction[10]
                     })
                     if auction[16] == 1 or auction[3] == 0 then -- Auction is sold
+
                         table.insert(AO_AUCTIONS_SOLD, {
                             ['name'] = auction[1],
                             ['quantity'] = auction[3],
                             ['icon'] = auction[2],
-                            ['price'] = auction[10]
+                            ['price'] = auction[10],
+                            ['buyer'] = auction[12],
+                            ['time'] = C_Timer.After(GetAuctionItemTimeLeft("owner", x), function() table.remove(AO_AUCTIONS_SOLD, 1) end)
                         })
                     end
                 end
@@ -292,6 +295,7 @@ OPT_HIDDEN = {
                                         break
                                     end
                                 end
+                                value2['buyer'] = value.buyer
                             end
                         end
                     end
@@ -304,6 +308,7 @@ OPT_HIDDEN = {
                                 ['quantity'] = value.quantity,
                                 ['icon'] = saved_auctions.icon,
                                 ['price'] = value.price,
+                                ['buyer'] = value.buyer,
                                 ['time'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) end) -- 60min countdown
                             }
                             for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
@@ -1642,7 +1647,8 @@ OPT_HIDDEN = {
                 table.insert(current, {
                     ['quantity'] = auction[3],
                     ['price'] = auction[10],
-                    ['sold'] = auction[16]
+                    ['sold'] = auction[16],
+                    ['buyer'] = auction[12]
                 })
             end
         end
