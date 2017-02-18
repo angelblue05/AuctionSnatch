@@ -52,7 +52,8 @@ AO_AUCTIONS_SOLD = {--[[{
                             ['price'] = 22500000,
                             ['link'] = "|cffa335ee|Hitem:124125::::::::110:102::::::|h[Obliterum]|h|r",
                             ['buyer'] = nil,
-                            ['time'] = GetTime() + 1500
+                            ['time'] = GetTime() + 20,
+                            ['timer'] = C_Timer.After(20, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
                         },
                     {
                             ['name'] = "Shal'dorei Silk",
@@ -61,7 +62,8 @@ AO_AUCTIONS_SOLD = {--[[{
                             ['price'] = 110000,
                             ['link'] = "|cffffffff|Hitem:124437::::::::110:102::::::|h[Shal'dorei Silk]|h|r",
                             ['buyer'] = "Morvevel",
-                            ['time'] = GetTime() + 3600
+                            ['time'] = GetTime() + 25,
+                            ['timer'] = C_Timer.After(25, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
                         }]]}
 
 
@@ -248,7 +250,7 @@ OPT_HIDDEN = {
                             ['link'] = GetAuctionItemLink("owner", x),
                             ['buyer'] = auction[12],
                             ['time'] = GetTime() + GetAuctionItemTimeLeft("owner", x),
-                            ['timer'] = C_Timer.After(GetAuctionItemTimeLeft("owner", x), function() table.remove(AO_AUCTIONS_SOLD, 1) end)
+                            ['timer'] = C_Timer.After(GetAuctionItemTimeLeft("owner", x), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
                         })
                     else
                         table.insert(AO_AUCTIONS[auction[1]], {
@@ -331,7 +333,7 @@ OPT_HIDDEN = {
                                 ['price'] = value.price,
                                 ['buyer'] = value.buyer,
                                 ['time'] = GetTime() + 3600,
-                                ['timer'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) end) -- 60min countdown
+                                ['timer'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                             }
                             for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
                                 if type(value) == "table" and type(value2) == "table" then
