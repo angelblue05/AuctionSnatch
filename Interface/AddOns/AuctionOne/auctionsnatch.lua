@@ -230,12 +230,13 @@ OPT_HIDDEN = {
             AS_Initialize()
 
         elseif event == "AUCTION_OWNED_LIST_UPDATE" then
+            --ASprint(MSG_C.EVENT..event)
             AS_RegisterCancelAction()
             -- Get current owner auctions
             if not AO_FIRSTRUN_AH then
                 AO_FIRSTRUN_AH = true
 
-                local numBatchAuctions, totalAuctions = GetNumAuctionItems("owner")
+                local _, totalAuctions = GetNumAuctionItems("owner")
                 local x
                 for x = 1, totalAuctions do
                     local auction = {GetAuctionItemInfo("owner", x)}
@@ -265,7 +266,8 @@ OPT_HIDDEN = {
                 end
             end
 
-            if AUC_EVENTS['REMOVE'] ~= {} then -- REMOVE Auctions
+            if #AUC_EVENTS['REMOVE'] > 0 then -- REMOVE Auctions
+                ASprint(MSG_C.EVENT.."[ Found removed auction(s) ]")
                 local remove = {}
                 AS_tcopy(REMOVE, AUC_EVENTS['REMOVE'])
                 AUC_EVENTS['REMOVE'] = {}
@@ -296,7 +298,8 @@ OPT_HIDDEN = {
                     end
                 end
             end
-            if AUC_EVENTS['SOLD'] ~= {} then -- Sold Auctions
+            if #AUC_EVENTS['SOLD'] > 0 then -- Sold Auctions
+                ASprint(MSG_C.EVENT.."[ Found sold auction(s) ]")
                 local sold = {}
                 AS_tcopy(sold, AUC_EVENTS['SOLD'])
                 AUC_EVENTS['SOLD'] = {}
@@ -335,6 +338,7 @@ OPT_HIDDEN = {
                                 ['icon'] = saved_auctions.icon,
                                 ['price'] = value.price,
                                 ['buyer'] = value.buyer,
+                                ['link'] = value.link,
                                 ['time'] = GetTime() + 3600,
                                 ['timer'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                             }
@@ -508,7 +512,7 @@ OPT_HIDDEN = {
                 AS.elapsed = 0
 
                 if AS.status == STATE.QUERYING then
-                    canQuery, canQueryAll = CanSendAuctionQuery("list")
+                    local canQuery, canQueryAll = CanSendAuctionQuery("list")
                     if canQuery then
                         ASprint(MSG_C.EVENT.."[ Start querying ]")
                         AS_QueryAH()
@@ -519,7 +523,7 @@ OPT_HIDDEN = {
                     AS.status = STATE.EVALUATING
                 
                 elseif AS.status == STATE.EVALUATING then
-                    canQuery, canQueryAll = CanSendAuctionQuery("list")
+                    local canQuery, canQueryAll = CanSendAuctionQuery("list")
                     if canQuery then
                         ASprint(MSG_C.EVENT.."[ Start evaluating ]")
                         AS_Evaluate()
@@ -568,6 +572,10 @@ OPT_HIDDEN = {
             AS_template(serverName)
         end
 
+        if AO_AUCTIONS_SOLD == nil then -- Remember sold auctions between sessions
+            AO_AUCTIONS_SOLD = {}
+        end
+
         -- font size testing and adjuting height of prompt
         local _, height = GameFontNormal:GetFont()
         local new_height = (height * 10) + ((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE)*6)  -- LINES, 5 BUTTONS + 1 togrow on
@@ -579,6 +587,14 @@ OPT_HIDDEN = {
 
         -- Generate scroll bar items
         AS_ScrollbarUpdate()
+        -- Clean auction sold list
+        local key, value
+        for key = #AO_AUCTIONS_SOLD, 1, -1 do
+            value = AO_AUCTIONS_SOLD[key]
+            if value.time <= GetTime() then
+                table.remove(AO_AUCTIONS_SOLD, key)
+            end
+        end
     end
 
     function AS_Main(input)
@@ -653,6 +669,10 @@ OPT_HIDDEN = {
             elseif input == "cancelauction" then
                 ASsavedtable.cancelauction = not ASsavedtable.cancelauction
                 ASprint(MSG_C.INFO.."Cancel auction on right-click: "..MSG_C.BOOL..tostring(ASsavedtable.cancelauction), 1)
+                return
+            elseif input == "reloadsoldauction" then
+                AO_FIRSTRUN_AH = false
+                ASprint(MSG_C.INFO.."Re-open the auction house to load the latest sold auctions", 1)
                 return
             end
 

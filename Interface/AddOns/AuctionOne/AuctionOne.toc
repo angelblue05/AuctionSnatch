@@ -3,7 +3,7 @@
 ## Notes: "Get that auction!  Go! Go! Go!"
 ## Author:  Angelblue05
 ## Version: 1.4
-## SavedVariables: ASsavedtable, ASsavedposition, ASfirsttime, ASdebug
+## SavedVariables: ASsavedtable, ASsavedposition, ASfirsttime, ASdebug, AO_AUCTIONS_SOLD
 
 locale\localization.lua
 locale\english.lua
