@@ -45,26 +45,29 @@ AS_COPY = nil
 AS_SKIN = false
 AO_RENAME = nil
 AO_AUCTIONS = {}
-AO_AUCTIONS_SOLD = {--[[{
-                            ['name'] = "Obliterum",
-                            ['quantity'] = 5,
-                            ['icon'] = 1341656,
-                            ['price'] = 22500000,
-                            ['link'] = "|cffa335ee|Hitem:124125::::::::110:102::::::|h[Obliterum]|h|r",
-                            ['buyer'] = nil,
-                            ['time'] = GetTime() + 20,
-                            ['timer'] = C_Timer.After(20, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
-                        },
-                    {
-                            ['name'] = "Shal'dorei Silk",
-                            ['quantity'] = 200,
-                            ['icon'] = 1379172,
-                            ['price'] = 110000,
-                            ['link'] = "|cffffffff|Hitem:124437::::::::110:102::::::|h[Shal'dorei Silk]|h|r",
-                            ['buyer'] = "Morvevel",
-                            ['time'] = GetTime() + 25,
-                            ['timer'] = C_Timer.After(25, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
-                        }]]}
+AO_AUCTIONS_SOLD = {}
+--[[for x = 1, 7 do
+    table.insert(AO_AUCTIONS_SOLD, {
+            ['name'] = "Obliterum",
+            ['quantity'] = 5,
+            ['icon'] = 1341656,
+            ['price'] = 22500000,
+            ['link'] = "|cffa335ee|Hitem:124125::::::::110:102::::::|h[Obliterum]|h|r",
+            ['buyer'] = nil,
+            ['time'] = GetTime() + 20,
+            ['timer'] = C_Timer.After(20, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
+    })
+    table.insert(AO_AUCTIONS_SOLD, {
+            ['name'] = "Shal'dorei Silk",
+            ['quantity'] = 200,
+            ['icon'] = 1379172,
+            ['price'] = 110000,
+            ['link'] = "|cffffffff|Hitem:124437::::::::110:102::::::|h[Shal'dorei Silk]|h|r",
+            ['buyer'] = "Morvevel",
+            ['time'] = GetTime() + 20,
+            ['timer'] = C_Timer.After(20, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
+    })
+end]]
 
 
 STATE = {
