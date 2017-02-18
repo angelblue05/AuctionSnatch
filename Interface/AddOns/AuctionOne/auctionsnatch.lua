@@ -45,7 +45,24 @@ AS_COPY = nil
 AS_SKIN = false
 AO_RENAME = nil
 AO_AUCTIONS = {}
-AO_AUCTIONS_SOLD = {}
+AO_AUCTIONS_SOLD = {--[[{
+                            ['name'] = "Obliterum",
+                            ['quantity'] = 5,
+                            ['icon'] = 1341656,
+                            ['price'] = 22500000,
+                            ['link'] = "|cffa335ee|Hitem:124125::::::::110:102::::::|h[Obliterum]|h|r",
+                            ['buyer'] = nil,
+                            ['time'] = GetTime() + 1500
+                        },
+                    {
+                            ['name'] = "Shal'dorei Silk",
+                            ['quantity'] = 200,
+                            ['icon'] = 1379172,
+                            ['price'] = 110000,
+                            ['link'] = "|cffffffff|Hitem:124437::::::::110:102::::::|h[Shal'dorei Silk]|h|r",
+                            ['buyer'] = "Morvevel",
+                            ['time'] = GetTime() + 3600
+                        }]]}
 
 
 STATE = {
@@ -58,7 +75,7 @@ STATE = {
 
 AUC_EVENTS = {
     ['SOLD'] = {},
-    ['EXPIRED'] = {}
+    ['REMOVE'] = {}
 }
 
 MSG_C = {
@@ -221,33 +238,37 @@ OPT_HIDDEN = {
                         AO_AUCTIONS[auction[1]] = {}
                         AO_AUCTIONS[auction[1]]['icon'] = auction[2]
                     end
-                    table.insert(AO_AUCTIONS[auction[1]], {
-                        ['quantity'] = auction[3],
-                        ['price'] = auction[10]
-                    })
-                    if auction[16] == 1 or auction[3] == 0 then -- Auction is sold
 
+                    if auction[16] == 1 or auction[3] == 0 then -- Auction is sold
                         table.insert(AO_AUCTIONS_SOLD, {
                             ['name'] = auction[1],
                             ['quantity'] = auction[3],
                             ['icon'] = auction[2],
                             ['price'] = auction[10],
+                            ['link'] = GetAuctionItemLink("owner", x),
                             ['buyer'] = auction[12],
-                            ['time'] = C_Timer.After(GetAuctionItemTimeLeft("owner", x), function() table.remove(AO_AUCTIONS_SOLD, 1) end)
+                            ['time'] = GetTime() + GetAuctionItemTimeLeft("owner", x),
+                            ['timer'] = C_Timer.After(GetAuctionItemTimeLeft("owner", x), function() table.remove(AO_AUCTIONS_SOLD, 1) end)
+                        })
+                    else
+                        table.insert(AO_AUCTIONS[auction[1]], {
+                            ['quantity'] = auction[3],
+                            ['price'] = auction[10],
+                            ['link'] = GetAuctionItemLink("owner", x)
                         })
                     end
                 end
             end
 
-            if AUC_EVENTS['EXPIRED'] ~= {} then -- Expired Auctions
-                local expired = {}
-                AS_tcopy(expired, AUC_EVENTS['EXPIRED'])
-                AUC_EVENTS['EXPIRED'] = {}
+            if AUC_EVENTS['REMOVE'] ~= {} then -- REMOVE Auctions
+                local remove = {}
+                AS_tcopy(REMOVE, AUC_EVENTS['REMOVE'])
+                AUC_EVENTS['REMOVE'] = {}
 
                 local x, key, key2, value, value2
 
-                for x = 1, #expired do
-                    local item = expired[x]
+                for x = 1, #remove do
+                    local item = remove[x]
                     local current_auctions = AO_CurrentOwnedAuctions(item)
 
                     local saved_auctions = {} -- Copy original auctions to compare
@@ -258,8 +279,8 @@ OPT_HIDDEN = {
                     end
 
                     for key, value in pairs(saved_auctions) do
-                        for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item expired
-                            if type(value2) == "table" then
+                        for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item expired or was cancelled
+                            if type(value) == "table" and type(value2) == "table" then
                                 if value.quantity == value2.quantity and value.price == value2.price then
                                     -- Found match
                                     table.remove(AO_AUCTIONS[item], key2)
@@ -288,7 +309,7 @@ OPT_HIDDEN = {
                         for key, value in pairs(current_auctions) do
                             for y = #saved_auctions, 1, -1 do
                                 value2 = saved_auctions[y]
-                                if type(value2) == "table" then
+                                if type(value) == "table" and type(value2) == "table" then
                                     if value.price == value2.price and value.quantity == value2.quantity and value.sold == 0 then
                                         -- Found match, still exists
                                         table.remove(saved_auctions, y)
@@ -309,10 +330,11 @@ OPT_HIDDEN = {
                                 ['icon'] = saved_auctions.icon,
                                 ['price'] = value.price,
                                 ['buyer'] = value.buyer,
-                                ['time'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) end) -- 60min countdown
+                                ['time'] = GetTime() + 3600,
+                                ['timer'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) end) -- 60min countdown
                             }
                             for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
-                                if type(value2) == "table" then
+                                if type(value) == "table" and type(value2) == "table" then
                                     if value.price == value2.price and value.quantity == value2.quantity then
                                         -- Found match
                                         table.remove(AO_AUCTIONS[item], key2)
@@ -322,6 +344,10 @@ OPT_HIDDEN = {
                             end
                         end
                     end
+                end
+
+                if AS.mainframe.soldlistframe:IsVisible() then
+                    AO_OwnerScrollbarUpdate()
                 end
             end
 
@@ -913,50 +939,52 @@ OPT_HIDDEN = {
 
     function AO_OwnerScrollbarUpdate()
         -- This redraws all the buttons and make sure they're showing the right stuff
-        ASprint(AO_AUCTIONS_SOLD)
-        --[[local ASnumberofitems = table.maxn(AS.item)
-        local currentscrollbarvalue = FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
+        local ASnumberofitems = table.maxn(AO_AUCTIONS_SOLD)
+        local currentscrollbarvalue = FauxScrollFrame_GetOffset(AS.mainframe.soldlistframe.scrollFrame)
 
-        FauxScrollFrame_Update(AS.mainframe.listframe.scrollFrame, ASnumberofitems, ASrowsthatcanfit(), AS_BUTTON_HEIGHT)
+        FauxScrollFrame_Update(AS.mainframe.soldlistframe.scrollFrame, ASnumberofitems, ASrowsthatcanfit(), AS_BUTTON_HEIGHT)
 
         local x, idx, link, hexcolor, itemRarity
-
+        local total = 0
         for x = 1, ASrowsthatcanfit() do --apparently theres a bug here for some screen resolutions?
             -- Get the appropriate item, which will be x + value
             idx = x + currentscrollbarvalue
 
-            if AS.item[idx] and AS.item[idx].name then
+            if AO_AUCTIONS_SOLD[idx] and AO_AUCTIONS_SOLD[idx].name then
                 hexcolor = ""
 
                 if AS.item[idx].icon then -- Set the item icon and link
-                    AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture(AS.item[idx].icon)
-                    AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+                    AS.mainframe.soldlistframe.itembutton[x].icon:SetNormalTexture(AO_AUCTIONS_SOLD[idx].icon)
+                    AS.mainframe.soldlistframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+                    AS.mainframe.soldlistframe.itembutton[x].rightstring:SetText(GetCoinTextureString(AO_AUCTIONS_SOLD[idx].price, 10))
+                    total = total + AO_AUCTIONS_SOLD[idx].price
 
-                    link = AS.item[idx].link
-                    AS.mainframe.listframe.itembutton[x].link = link
-                    if not AS.item[idx].rarity then --updated for 3.1 to include colors
+                    link = AO_AUCTIONS_SOLD[idx].link
+                    AS.mainframe.soldlistframe.itembutton[x].link = link
+                    if not AO_AUCTIONS_SOLD[idx].rarity then --updated for 3.1 to include colors
                         _, _, itemRarity = GetItemInfo(link)
-                        AS.item[idx].rarity = itemRarity
+                        AO_AUCTIONS_SOLD[idx].rarity = itemRarity
                     end
 
-                    _,_,_,hexcolor = GetItemQualityColor(AS.item[idx].rarity)
+                    _,_,_,hexcolor = GetItemQualityColor(AO_AUCTIONS_SOLD[idx].rarity)
                     hexcolor = "|c"..hexcolor
                 else
                     -- clear icon, link
-                    AS.mainframe.listframe.itembutton[x].icon:SetNormalTexture("")
-                    AS.mainframe.listframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
-                    AS.mainframe.listframe.itembutton[x].link = nil
-                    AS.mainframe.listframe.itembutton[x].rarity = nil
+                    AS.mainframe.soldlistframe.itembutton[x].icon:SetNormalTexture("")
+                    AS.mainframe.soldlistframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+                    AS.mainframe.soldlistframe.itembutton[x].link = nil
+                    AS.mainframe.soldlistframe.itembutton[x].rarity = nil
                 end
 
-                AS.mainframe.listframe.itembutton[x].leftstring:SetText(hexcolor..tostring(AS.item[idx].name))
-                AS.mainframe.listframe.itembutton[x]:Show()
+                AS.mainframe.soldlistframe.itembutton[x].leftstring:SetText(hexcolor..tostring(AO_AUCTIONS_SOLD[idx].name))
+                AS.mainframe.soldlistframe.itembutton[x]:Show()
 
             else
                 --ASprint(MSG_C.DEBUG.."No item, hiding button: "..x)
-                AS.mainframe.listframe.itembutton[x]:Hide()
+                AS.mainframe.soldlistframe.itembutton[x]:Hide()
             end
-        end]]
+        end
+        AS.mainframe.headerframe.soldeditbox:SetText(GetCoinTextureString(total, 12))
     end
 
     function AS_CreateButtonHandlers()
@@ -1606,16 +1634,7 @@ OPT_HIDDEN = {
 
     function AO_UntrackCancelledAuction()
         local auction = {GetAuctionItemInfo("owner", GetSelectedAuctionItem('owner'))}
-        local key, value
-
-        for key, value in pairs(AO_AUCTIONS[auction[1]]) do
-            if type(value) == "table" then
-                if auction[3] == value.quantity and auction[9] == value.price then
-                    -- Found auction, remove
-                    table.remove(AO_AUCTIONS[auction[1]], key)
-                end
-            end
-        end
+        table.insert(AUC_EVENTS['REMOVE'], auction[1])
     end
 
     function AO_AuctionSold(self, event, arg1)
@@ -1629,7 +1648,7 @@ OPT_HIDDEN = {
         elseif string.match(arg1, string.gsub(ERR_AUCTION_EXPIRED_S, "(%%s)", ".+")) ~= nil then
             -- Find expired item name
             local item = string.match(arg1, string.gsub(ERR_AUCTION_EXPIRED_S, "(%%s)", "(.*)"))
-            table.insert(AUC_EVENTS['EXPIRED'], item)
+            table.insert(AUC_EVENTS['REMOVE'], item)
         end
     end
 
@@ -1648,7 +1667,8 @@ OPT_HIDDEN = {
                     ['quantity'] = auction[3],
                     ['price'] = auction[10],
                     ['sold'] = auction[16],
-                    ['buyer'] = auction[12]
+                    ['buyer'] = auction[12],
+                    ['link'] = GetAuctionItemLink("owner", x)
                 })
             end
         end

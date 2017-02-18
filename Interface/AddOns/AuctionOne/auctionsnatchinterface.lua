@@ -98,8 +98,11 @@
                     AS.mainframe.headerframe.startsearchbutton:SetPoint("TOPLEFT", AS.mainframe.headerframe, "TOPLEFT", 17, -45)
                 -------------- SCRIPT ----------------
                     AS.mainframe.headerframe.startsearchbutton:SetScript("OnClick", function(self)
-                        if AS.manualprompt then
+                        if AS.manualprompt:IsVisible() then
                             AS.manualprompt:Hide()
+                        end
+                        if AS.mainframe.soldlistframe:IsVisible() then
+                            AS.mainframe.soldlistframe:Hide()
                         end
                         if AuctionFrame and AuctionFrame:IsVisible() then
                             AuctionFrameTab1:Click()  -- Focus on search tab
@@ -164,6 +167,7 @@
                     AS.mainframe.headerframe.editbox:SetWidth(AS.mainframe.headerframe:GetWidth()-76)
                     AS.mainframe.headerframe.editbox:SetAutoFocus(false)
                     AS.mainframe.headerframe.editbox:SetText("|cff737373"..L[10015])
+                    AS.mainframe.headerframe.editbox:SetTextInsets(5,0,0,0)
                 -------------- SCRIPT ----------------
                     AS.mainframe.headerframe.editbox:SetScript("OnEscapePressed", function(self)
                         AS.mainframe.headerframe.editbox:ClearFocus()
@@ -206,6 +210,31 @@
                         AS.mainframe.headerframe.editbox:SetBackdropColor(0, 0, 0)
                         AS.mainframe.headerframe.editbox:SetBackdropBorderColor(1, 1, 1, 0.2)
                         AS.mainframe.headerframe.editbox:SetFontObject("GameFontNormal")
+                    end
+
+            ------ INPUT GOLD AUCTIONS SOLD BOX
+                -------------- STYLE ----------------
+                    AS.mainframe.headerframe.soldeditbox = CreateFrame("EditBox", nil, AS.mainframe.headerframe, "InputBoxTemplate")
+                    AS.mainframe.headerframe.soldeditbox:SetPoint("BOTTOMLEFT", AS.mainframe.headerframe, "BOTTOMLEFT", 27, 15)
+                    AS.mainframe.headerframe.soldeditbox:SetHeight(AS_BUTTON_HEIGHT-2)
+                    AS.mainframe.headerframe.soldeditbox:SetWidth(AS.mainframe.headerframe:GetWidth()-45)
+                    AS.mainframe.headerframe.soldeditbox:SetJustifyH("CENTER")
+                    AS.mainframe.headerframe.soldeditbox:Hide()
+                    AS.mainframe.headerframe.soldeditbox:Disable()
+                -------------- SCRIPT ----------------
+                    if AS_SKIN then
+                        AS.mainframe.headerframe.soldeditbox:SetHeight(AS_BUTTON_HEIGHT)
+                        F.ReskinInput(AS.mainframe.headerframe.soldeditbox) -- Aurora
+                    else
+                        AS_inputclean(AS.mainframe.headerframe.soldeditbox)
+                        AS.mainframe.headerframe.soldeditbox:SetBackdrop({  bgFile = AS_backdrop,
+                                                                            edgeFile = AS_backdrop,
+                                                                            edgeSize = 1,
+                                                                            insets = { left = 0, right = 0, top = 0, bottom = 0 }
+                        })
+                        AS.mainframe.headerframe.soldeditbox:SetBackdropColor(0, 0, 0)
+                        AS.mainframe.headerframe.soldeditbox:SetBackdropBorderColor(1, 1, 1, 0.2)
+                        AS.mainframe.headerframe.soldeditbox:SetFontObject("GameFontNormal")
                     end
 
             ------ ADD ITEM BUTTON
@@ -317,7 +346,11 @@
                     AS.mainframe.headerframe.soldbutton:SetPoint("RIGHT", AS.mainframe.headerframe.additembutton, "RIGHT")
                 -------------- SCRIPT ----------------
                     AS.mainframe.headerframe.soldbutton:SetScript("OnClick", function()
-                        AO_OwnerScrollbarUpdate()
+                        if AS.mainframe.soldlistframe:IsVisible() then -- Toggle off
+                            AS.mainframe.soldlistframe:Hide()
+                        else -- Toggle on
+                            AS.mainframe.soldlistframe:Show()
+                        end
                     end)
                     AS.mainframe.headerframe.soldbutton:SetScript("OnEnter", function(self)
                         ASshowtooltip(self, L[10070])
@@ -326,7 +359,6 @@
                     if AS_SKIN then
                         F.Reskin(AS.mainframe.headerframe.soldbutton) -- Aurora
                     end
-
 
         ------ LIST FRAME
             -------------- STYLE ----------------
@@ -359,6 +391,63 @@
 
                     AS.mainframe.listframe.itembutton[i] = AS_CreateListButton(i)
                     currentrow = AS.mainframe.listframe.itembutton[i]
+                    if i == 1 then
+                        currentrow:SetPoint("TOP")
+                    else
+                        currentrow:SetPoint("TOP", previousrow, "BOTTOM")
+                    end
+                    currentrow:Show()
+                    previousrow = currentrow
+                end
+
+        ------ SOLD AUCTION LIST FRAME
+            -------------- STYLE ----------------
+                AS.mainframe.soldlistframe = CreateFrame("Frame", "FauxScrollFrameTest", AS.mainframe)
+                AS.mainframe.soldlistframe:SetPoint("TOPLEFT", AS.mainframe.headerframe, "BOTTOMLEFT", 0, 6)
+                AS.mainframe.soldlistframe:SetPoint("BOTTOMRIGHT", AS.mainframe, "BOTTOMRIGHT", 0, 10)
+                AS.mainframe.soldlistframe:Hide()
+            -------------- SCRIPT ----------------
+                AS.mainframe.soldlistframe:SetScript("OnHide", function(self)
+                    AS.mainframe.headerframe.soldeditbox:Hide()
+                    AS.mainframe.headerframe.editbox:Show()
+                    AS.mainframe.headerframe.additembutton:Show()
+                    AS.mainframe.headerframe.soldbutton:UnlockHighlight()
+                    AS.mainframe.listframe:Show()
+                end)
+                AS.mainframe.soldlistframe:SetScript("OnShow", function(self)
+                    AS.mainframe.headerframe.editbox:Hide()
+                    AS.mainframe.headerframe.additembutton:Hide()
+                    AS.mainframe.headerframe.soldbutton:LockHighlight() 
+                    AS.mainframe.listframe:Hide()
+                    AO_OwnerScrollbarUpdate()
+                    AS.mainframe.headerframe.soldeditbox:Show()
+                end)
+
+            ------ SCROLL FRAME
+                -------------- STYLE ----------------
+                    AS.mainframe.soldlistframe.scrollFrame = CreateFrame("ScrollFrame", "AS_soldauction_scrollframe", AS.mainframe.soldlistframe, "FauxScrollFrameTemplate")
+                    -- note the anchors: the area of the scrollframe is the scrollable area
+                    -- (that intercepts mousewheel to scroll). it does not include the scrollbar,
+                    -- which is anchored off the right
+                    AS.mainframe.soldlistframe.scrollFrame:SetPoint("TOPLEFT", AS.mainframe.headerframe, "BOTTOMLEFT", 0, 6)
+                    AS.mainframe.soldlistframe.scrollFrame:SetPoint("BOTTOMRIGHT", AS.mainframe, "BOTTOMRIGHT", -40, 38)
+                -------------- SCRIPT ----------------
+                    AS.mainframe.soldlistframe.scrollFrame:SetScript("OnShow", AO_OwnerScrollbarUpdate)
+                    AS.mainframe.soldlistframe.scrollFrame:SetScript("OnVerticalScroll", function(self, offset)
+                        FauxScrollFrame_OnVerticalScroll(self, offset, 20, AO_OwnerScrollbarUpdate)
+                    end)
+                    if AS_SKIN then
+                        F.ReskinScroll(AS.mainframe.soldlistframe.scrollFrame.ScrollBar) -- Aurora
+                    end
+
+            ------ LIST OF BUTTONS
+                local currentrow, previousrow
+                AS.mainframe.soldlistframe['itembutton'] = {}
+
+                for i = 1, ASrowsthatcanfit() do
+
+                    AS.mainframe.soldlistframe.itembutton[i] = AO_CreateAuctionSoldButton(i)
+                    currentrow = AS.mainframe.soldlistframe.itembutton[i]
                     if i == 1 then
                         currentrow:SetPoint("TOP")
                     else
@@ -516,6 +605,95 @@
                 button_tmp.leftstring:SetWordWrap(false)
                 button_tmp.leftstring:SetPoint("LEFT", normal_tex,"LEFT", 10, 0)
                 button_tmp.leftstring:SetPoint("RIGHT", normal_tex,"RIGHT", -2, 0)
+
+        ------ BUTTON ICON
+            -------------- STYLE ----------------
+                button_tmp.icon = CreateFrame("Button", nil, button_tmp)
+                button_tmp.icon:SetWidth(AS_BUTTON_HEIGHT)
+                button_tmp.icon:SetHeight(AS_BUTTON_HEIGHT)
+                button_tmp.icon:SetPoint("TOPLEFT")
+                button_tmp.icon:SetNormalTexture("Interface/AddOns/AuctionOne/media/gloss")
+                button_tmp.icon:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
+                button_tmp.icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)
+            -------------- SCRIPT ----------------
+                button_tmp.icon:SetScript("OnEnter", function(self)
+                    if AOicontooltip and button_tmp.link then
+                        local link = button_tmp.link
+                        GameTooltip:SetOwner(self, "ANCHOR_NONE")
+                        GameTooltip:SetHyperlink(link)
+                        GameTooltip:ClearAllPoints()
+                        GameTooltip:SetPoint("TOPRIGHT", self, "TOPLEFT", -10, -20)
+                        GameTooltip:Show()
+                    end
+                end)
+                button_tmp.icon:SetScript("OnLeave", function(self)
+                    GameTooltip:Hide()
+                end)
+
+       return button_tmp
+    end
+
+    function AO_CreateAuctionSoldButton(i)
+
+        ------ LIST BUTTON
+            -------------- STYLE ----------------
+                local button_tmp = CreateFrame("Button", nil, AS.mainframe.soldlistframe)
+                button_tmp:SetHeight(AS_BUTTON_HEIGHT)
+                button_tmp:SetWidth(AS.mainframe:GetWidth() - 58)
+                button_tmp:SetPoint("TOP")
+                button_tmp.buttonnumber = i
+                button_tmp:SetMovable(true)
+                -- Create button texture
+                local normal_tex = button_tmp:CreateTexture()
+                normal_tex:SetHeight(AS_BUTTON_HEIGHT)
+                normal_tex:SetPoint("left",30,0)
+                normal_tex:SetPoint("right",-12,0)
+                normal_tex:SetTexture("Interface\\AuctionFrame\\UI-AuctionItemNameFrame")
+                normal_tex:SetTexCoord(.75,.75,0,0.5)
+                button_tmp:SetNormalTexture(normal_tex)
+                -- Create button highlight
+                local high_tex = button_tmp:CreateTexture()
+                high_tex:SetHeight(AS_BUTTON_HEIGHT-1)
+                high_tex:SetPoint("LEFT", normal_tex, 0, -1)
+                high_tex:SetPoint("RIGHT",normal_tex)
+                high_tex:SetTexture(AS_backdrop) -- Aurora
+                high_tex:SetVertexColor(0.945, 0.847, 0.152,0.3)
+                button_tmp:SetHighlightTexture(high_tex)
+            -------------- SCRIPT ----------------
+                button_tmp:SetScript("OnEnter", function(self)
+                    local scrollvalue = FauxScrollFrame_GetOffset(AS.mainframe.soldlistframe.scrollFrame)
+                    local idx = AO_AUCTIONS_SOLD[self.buttonnumber + scrollvalue]
+
+                    strmsg = "Auction information\n"
+                    strmsg = strmsg.."|cff888888---------------------|r"
+
+                    if idx.quantity and idx.quantity > 0 then
+                        strmsg = strmsg.."\nStack size:|r|cffffffff "..idx.quantity.."|r"
+                    end
+                    if idx.buyer then
+                        strmsg = strmsg.."\nBuyer:|r|cffffffff "..idx.buyer.."|r"
+                    end
+                    strmsg = strmsg.."\nTime left:|r|cffffffff "..SecondsToTime(idx['time'] - GetTime()).."|r"
+                    ASshowtooltip(self, strmsg)
+                end)
+                button_tmp:SetScript("OnLeave", AShidetooltip)
+
+        ------ BUTTON MONEY
+            -------------- STYLE ----------------
+                button_tmp.rightstring = button_tmp:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+                button_tmp.rightstring:SetJustifyH("RIGHT")
+                button_tmp.rightstring:SetJustifyV("CENTER")
+                button_tmp.rightstring:SetWordWrap(false)
+                button_tmp.rightstring:SetPoint("RIGHT", normal_tex,"RIGHT", -2, 0)
+
+        ------ BUTTON LABEL
+            -------------- STYLE ----------------
+                button_tmp.leftstring = button_tmp:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+                button_tmp.leftstring:SetJustifyH("LEFT")
+                button_tmp.leftstring:SetJustifyV("CENTER")
+                button_tmp.leftstring:SetWordWrap(false)
+                button_tmp.leftstring:SetPoint("LEFT", normal_tex,"LEFT", 10, 0)
+                button_tmp.leftstring:SetPoint("RIGHT", button_tmp.rightstring, "LEFT", -5, 0)
 
         ------ BUTTON ICON
             -------------- STYLE ----------------
