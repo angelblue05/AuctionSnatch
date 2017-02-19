@@ -647,8 +647,12 @@ OPT_HIDDEN = {
                 return
 
             elseif input == "sound outbid" then
+                ASsavedtable.AOoutbid = not ASsavedtable.AOoutbid
+                ASprint(MSG_C.INFO.."Outbid sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOoutbid), 1)
                 return
             elseif input == "sound sold" then
+                ASsavedtable.AOsold = not ASsavedtable.AOsold
+                ASprint(MSG_C.INFO.."Sold sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOsold), 1)
                 return
             elseif input == "debug" then
                 ASdebug = not ASdebug
