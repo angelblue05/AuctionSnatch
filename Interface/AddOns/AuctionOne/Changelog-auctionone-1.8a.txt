@@ -1,4 +1,10 @@
 ------------------------------------------------------------------------
+1.8a | angelblue05 | 2017-02-19
+
+- Add double-click Auction House search for sold auctions
+- Add sounds for outbid and sold. Can be disabled in options or via /ao sound [outbid|sold]
+
+------------------------------------------------------------------------
 1.7 | angelblue05 | 2017-02-19
 
 - Fix removing auctions
