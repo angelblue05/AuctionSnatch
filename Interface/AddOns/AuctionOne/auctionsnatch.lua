@@ -46,29 +46,6 @@ AS_SKIN = false
 AO_RENAME = nil
 AO_AUCTIONS = {}
 AO_AUCTIONS_SOLD = {}
---[[for x = 1, 1 do
-    table.insert(AO_AUCTIONS_SOLD, {
-            ['name'] = "Obliterum",
-            ['quantity'] = 5,
-            ['icon'] = 1341656,
-            ['price'] = 22500000,
-            ['link'] = "|cffa335ee|Hitem:124125::::::::110:102::::::|h[Obliterum]|h|r",
-            ['buyer'] = nil,
-            ['time'] = GetTime() + 60,
-            ['timer'] = C_Timer.After(60, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
-    })
-    table.insert(AO_AUCTIONS_SOLD, {
-            ['name'] = "Shal'dorei Silk",
-            ['quantity'] = 200,
-            ['icon'] = 1379172,
-            ['price'] = 110000,
-            ['link'] = "|cffffffff|Hitem:124437::::::::110:102::::::|h[Shal'dorei Silk]|h|r",
-            ['buyer'] = "Morvevel",
-            ['time'] = GetTime() + 65,
-            ['timer'] = C_Timer.After(65, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
-    })
-end]]
-
 
 STATE = {
     ['QUERYING'] = 1,
@@ -359,10 +336,9 @@ OPT_HIDDEN = {
                         end
                     end
                 end
-
-                if AS.mainframe.soldlistframe:IsVisible() then
-                    AO_OwnerScrollbarUpdate()
-                end
+            end
+            if AS.mainframe.soldlistframe:IsVisible() then
+                AO_OwnerScrollbarUpdate()
             end
 
         elseif event == "AUCTION_ITEM_LIST_UPDATE" then
@@ -603,6 +579,7 @@ OPT_HIDDEN = {
                 value['timer'] = C_Timer.After(value.time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
             end
         end
+        AO_OwnerScrollbarUpdate()
     end
 
     function AS_Main(input)
@@ -979,6 +956,9 @@ OPT_HIDDEN = {
 
         local x, idx, link, hexcolor, itemRarity
         local total = 0
+        for x = 1, ASnumberofitems do -- Calculate total
+            total = total + AO_AUCTIONS_SOLD[x].price
+        end
         for x = 1, ASrowsthatcanfit() do --apparently theres a bug here for some screen resolutions?
             -- Get the appropriate item, which will be x + value
             idx = x + currentscrollbarvalue
@@ -986,11 +966,10 @@ OPT_HIDDEN = {
             if AO_AUCTIONS_SOLD[idx] and AO_AUCTIONS_SOLD[idx].name then
                 hexcolor = ""
 
-                if AS.item[idx].icon then -- Set the item icon and link
+                if AO_AUCTIONS_SOLD[idx].icon then -- Set the item icon and link
                     AS.mainframe.soldlistframe.itembutton[x].icon:SetNormalTexture(AO_AUCTIONS_SOLD[idx].icon)
                     AS.mainframe.soldlistframe.itembutton[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
                     AS.mainframe.soldlistframe.itembutton[x].rightstring:SetText(GetCoinTextureString(AO_AUCTIONS_SOLD[idx].price, 10))
-                    total = total + AO_AUCTIONS_SOLD[idx].price
 
                     link = AO_AUCTIONS_SOLD[idx].link
                     AS.mainframe.soldlistframe.itembutton[x].link = link
@@ -1729,4 +1708,41 @@ OPT_HIDDEN = {
             end
         end
         return oldtable
+    end
+
+    function test_sold()
+        AO_AUCTIONS_SOLD = {}
+        for x = 1, 12 do
+            table.insert(AO_AUCTIONS_SOLD, {
+                    ['name'] = "Obliterum",
+                    ['quantity'] = 5,
+                    ['icon'] = 1341656,
+                    ['price'] = 22500000,
+                    ['link'] = "|cffa335ee|Hitem:124125::::::::110:102::::::|h[Obliterum]|h|r",
+                    ['buyer'] = nil,
+                    ['time'] = GetTime() + 360,
+                    ['timer'] = C_Timer.After(360, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
+            })
+            table.insert(AO_AUCTIONS_SOLD, {
+                    ['name'] = "Shal'dorei Silk",
+                    ['quantity'] = 200,
+                    ['icon'] = 1379172,
+                    ['price'] = 110000,
+                    ['link'] = "|cffffffff|Hitem:124437::::::::110:102::::::|h[Shal'dorei Silk]|h|r",
+                    ['buyer'] = "Morvevel",
+                    ['time'] = GetTime() + 365,
+                    ['timer'] = C_Timer.After(365, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
+            })
+            table.insert(AO_AUCTIONS_SOLD, {
+                    ['name'] = "Runescale Koi",
+                    ['quantity'] = 10,
+                    ['icon'] = 1387371,
+                    ['price'] = 120000,
+                    ['link'] = "|cffffffff|Hitem:124111::::::::110:102::::::|h[Runescale Koi]|h|r",
+                    ['buyer'] = "Morvevel",
+                    ['time'] = GetTime() + 465,
+                    ['timer'] = C_Timer.After(465, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
+            })
+        end
+        AO_OwnerScrollbarUpdate()
     end
