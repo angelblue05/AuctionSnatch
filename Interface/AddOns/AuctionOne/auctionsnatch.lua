@@ -82,7 +82,9 @@ OPT_LABEL = {
 }
 OPT_HIDDEN = {
     ['searchoncreate'] = "",
-    ['cancelauction'] = ""
+    ['cancelauction'] = "",
+    ['AOoutbid'] = "",
+    ['AOsold'] = ""
 }
 
 
@@ -644,6 +646,10 @@ OPT_HIDDEN = {
                 ASprint("Generating fake auctions")
                 return
 
+            elseif input == "sound outbid" then
+                return
+            elseif input == "sound sold" then
+                return
             elseif input == "debug" then
                 ASdebug = not ASdebug
                 ASprint(MSG_C.INFO.."Debug:|r "..MSG_C.BOOL..tostring(ASdebug), 1)
@@ -686,9 +692,17 @@ OPT_HIDDEN = {
                 ASsavedtable.rememberprice = true
                 ASsavedtable.ASautostart = false
                 ASsavedtable.ASautoopen = true
+                ASsavedtable.AOoutbid = true
+                ASsavedtable.AOsold = true
             end
             if ASsavedtable.searchoncreate == nil then -- Option that should be set by default
                 ASsavedtable.searchoncreate = true
+            end
+            if ASsavedtable.AOoutbid == nil then -- Option that should be set by default
+                ASsavedtable.AOoutbid = true
+            end
+            if ASsavedtable.AOsold == nil then -- Option that should be set by default
+                ASsavedtable.AOsold = true
             end
 
             ASsavedtable[ACTIVE_TABLE] = {}
@@ -752,6 +766,12 @@ OPT_HIDDEN = {
                 info.func =  ASdropDownMenuItem_OnClick
                 info.owner = self:GetParent()
                 UIDropDownMenu_AddButton(info, level)
+                --- Sounds options
+                info.text = L[10076]
+                info.hasArrow = true
+                info.checked = false
+                info.value = "AOsounds"
+                UIDropDownMenu_AddButton(info, level)
                 --- Auto open
                 info.text = OPT_LABEL["ASautoopen"]
                 info.value = "ASautoopen"
@@ -797,18 +817,16 @@ OPT_HIDDEN = {
             local key, value
 
             --- Rename current list
-            if not AOserver then
-                info.text = L[10016]
-                info.hasArrow = false
-                info.value = "AOrenamelist"
-                info.func =  ASdropDownMenuItem_OnClick
-                info.owner = self:GetParent()
-                UIDropDownMenu_AddButton(info, level)
-            end
+            info.text = L[10016]
+            info.hasArrow = false
+            info.value = "AOrenamelist"
+            info.func =  ASdropDownMenuItem_OnClick
+            info.owner = self:GetParent()
+            UIDropDownMenu_AddButton(info, level)
 
             if ASsavedtable then
                 for key, value in pairs(ASsavedtable[ACTIVE_TABLE]) do
-                    if OPT_LABEL[key] then -- options
+                    if OPT_LABEL[key] then -- sounds
         
                         if type(value) == "boolean" then
                             info.checked = value
@@ -823,6 +841,24 @@ OPT_HIDDEN = {
                     end
                 end
             end
+        elseif level == 2 and UIDROPDOWNMENU_MENU_VALUE == "AOsounds" then
+            local info = UIDropDownMenu_CreateInfo()
+            --- Outbid
+            info.text = L[10077]
+            info.value = "AOoutbid"
+            info.checked = ASsavedtable.AOoutbid
+            info.hasArrow = false
+            info.func =  ASdropDownMenuItem_OnClick
+            info.owner = self:GetParent()
+            UIDropDownMenu_AddButton(info, level)
+            --- Sold
+            info.text = L[10078]
+            info.value = "AOsold"
+            info.checked = ASsavedtable.AOsold
+            info.hasArrow = false
+            info.func =  ASdropDownMenuItem_OnClick
+            info.owner = self:GetParent()
+            UIDropDownMenu_AddButton(info, level)
         else
             local info = UIDropDownMenu_CreateInfo()
             
@@ -856,6 +892,14 @@ OPT_HIDDEN = {
             ASignorebid = not ASignorebid
             AS_SavedVariables()
             ASprint(MSG_C.INFO.."Ignore bids:|r "..MSG_C.BOOL..tostring(ASignorebid))
+            return
+        elseif self.value == "AOoutbid" then
+            ASsavedtable.AOoutbid = not ASsavedtable.AOoutbid
+            ASprint(MSG_C.INFO.."Outbid sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOoutbid))
+            return
+        elseif self.value == "AOsold" then
+            ASsavedtable.AOsold = not ASsavedtable.AOsold
+            ASprint(MSG_C.INFO.."Sold sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOsold))
             return
         elseif self.value == "ASignorenobuyout" then
             ASignorenobuyout = not ASignorenobuyout
@@ -1665,11 +1709,23 @@ OPT_HIDDEN = {
             -- Find sold item name
             local item = string.match(arg1, string.gsub(ERR_AUCTION_SOLD_S, "(%%s)", "(.*)"))
             table.insert(AUC_EVENTS['SOLD'], item)
+            -- Play sound
+            if ASsavedtable.AOsold then
+               ASprint(MSG_C.DEBUG.."Attempting to play sound file")
+               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Sold.mp3")
+            end
 
         elseif string.match(arg1, string.gsub(ERR_AUCTION_EXPIRED_S, "(%%s)", ".+")) ~= nil then
             -- Find expired item name
             local item = string.match(arg1, string.gsub(ERR_AUCTION_EXPIRED_S, "(%%s)", "(.*)"))
             table.insert(AUC_EVENTS['REMOVE'], item)
+        
+        elseif string.match(arg1, string.gsub(ERR_AUCTION_OUTBID_S, "(%%s)", ".+")) ~= nil then
+            -- Outbid
+            if ASsavedtable.AOoutbid then
+               ASprint(MSG_C.DEBUG.."Attempting to play sound file")
+               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Outbid.mp3")
+            end
         end
     end
 
