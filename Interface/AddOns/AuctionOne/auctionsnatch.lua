@@ -84,7 +84,8 @@ OPT_HIDDEN = {
     ['searchoncreate'] = "",
     ['cancelauction'] = "",
     ['AOoutbid'] = "",
-    ['AOsold'] = ""
+    ['AOsold'] = "",
+    ['AOexpired'] = ""
 }
 
 
@@ -650,10 +651,26 @@ OPT_HIDDEN = {
             elseif input == "sound outbid" then
                 ASsavedtable.AOoutbid = not ASsavedtable.AOoutbid
                 ASprint(MSG_C.INFO.."Outbid sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOoutbid), 1)
+                if ASsavedtable.AOoutbid then
+                   ASprint(MSG_C.DEBUG.."Attempting to play 'outbid' sound file")
+                   PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Outbid.mp3")
+                end
                 return
             elseif input == "sound sold" then
                 ASsavedtable.AOsold = not ASsavedtable.AOsold
                 ASprint(MSG_C.INFO.."Sold sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOsold), 1)
+                if ASsavedtable.AOsold then
+                   ASprint(MSG_C.DEBUG.."Attempting to play 'sold' sound file")
+                   PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Sold.mp3")
+                end
+                return
+            elseif input == "sound expired" then
+                ASsavedtable.AOexpired = not ASsavedtable.AOexpired
+                ASprint(MSG_C.INFO.."Expired sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOexpired), 1)
+                if ASsavedtable.AOexpired then
+                   ASprint(MSG_C.DEBUG.."Attempting to play 'expired' sound file")
+                   PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Expired.mp3")
+                end
                 return
             elseif input == "debug" then
                 ASdebug = not ASdebug
@@ -699,6 +716,7 @@ OPT_HIDDEN = {
                 ASsavedtable.ASautoopen = true
                 ASsavedtable.AOoutbid = true
                 ASsavedtable.AOsold = true
+                ASsavedtable.AOexpired = true
             end
             if ASsavedtable.searchoncreate == nil then -- Option that should be set by default
                 ASsavedtable.searchoncreate = true
@@ -708,6 +726,9 @@ OPT_HIDDEN = {
             end
             if ASsavedtable.AOsold == nil then -- Option that should be set by default
                 ASsavedtable.AOsold = true
+            end
+            if ASsavedtable.AOexpired == nil then -- Option that should be set by default
+                ASsavedtable.AOexpired = true
             end
 
             ASsavedtable[ACTIVE_TABLE] = {}
@@ -864,6 +885,14 @@ OPT_HIDDEN = {
             info.func =  ASdropDownMenuItem_OnClick
             info.owner = self:GetParent()
             UIDropDownMenu_AddButton(info, level)
+            --- Expired
+            info.text = L[10079]
+            info.value = "AOexpired"
+            info.checked = ASsavedtable.AOexpired
+            info.hasArrow = false
+            info.func =  ASdropDownMenuItem_OnClick
+            info.owner = self:GetParent()
+            UIDropDownMenu_AddButton(info, level)
         else
             local info = UIDropDownMenu_CreateInfo()
             
@@ -905,6 +934,10 @@ OPT_HIDDEN = {
         elseif self.value == "AOsold" then
             ASsavedtable.AOsold = not ASsavedtable.AOsold
             ASprint(MSG_C.INFO.."Sold sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOsold))
+            return
+        elseif self.value == "AOexpired" then
+            ASsavedtable.AOexpired = not ASsavedtable.AOexpired
+            ASprint(MSG_C.INFO.."Expired sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOexpired))
             return
         elseif self.value == "ASignorenobuyout" then
             ASignorenobuyout = not ASignorenobuyout
@@ -1716,7 +1749,6 @@ OPT_HIDDEN = {
             table.insert(AUC_EVENTS['SOLD'], item)
             -- Play sound
             if ASsavedtable.AOsold then
-               ASprint(MSG_C.DEBUG.."Attempting to play sound file")
                PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Sold.mp3")
             end
 
@@ -1724,11 +1756,14 @@ OPT_HIDDEN = {
             -- Find expired item name
             local item = string.match(arg1, string.gsub(ERR_AUCTION_EXPIRED_S, "(%%s)", "(.*)"))
             table.insert(AUC_EVENTS['REMOVE'], item)
+
+            if ASsavedtable.AOexpired then
+               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Expired.mp3")
+            end
         
         elseif string.match(arg1, string.gsub(ERR_AUCTION_OUTBID_S, "(%%s)", ".+")) ~= nil then
             -- Outbid
             if ASsavedtable.AOoutbid then
-               ASprint(MSG_C.DEBUG.."Attempting to play sound file")
                PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Outbid.mp3")
             end
         end

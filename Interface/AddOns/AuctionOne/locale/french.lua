@@ -79,3 +79,4 @@ L[10075] = "Ré-ouvrir la maison de vente aux enchères pour actualiser les dern
 L[10076] = "Sons"
 L[10077] = "Offre supérieure"
 L[10078] = "Vente"
+L[10079] = "Vente expirée"
