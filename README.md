@@ -60,5 +60,5 @@ Due to cross-server zones in major cities, sold auctions that are pending do not
 **debug**: Toggle debug  
 **cancelauction**: Toggle Cancel auction on right-click in the auctions tab  
 **searchoncreate**: Toggle Search the item in the Auction House after creating the auction in our list  
-**reloadsoldauction**: Force refresh the list of owned auctions. Requires re-opening the Auction House to take effect
+**reloadsoldauction**: Force refresh the list of owned auctions. Requires re-opening the Auction House to take effect  
 **sound [outbid|sold|expired]**: Toggle respective sounds
