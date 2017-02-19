@@ -1,9 +1,14 @@
 Auction One keeps a saved list of items you want to buy from the Auction House, and automatically scans the Auction House for every item on your list. It's very fast and will happen before you even have time to type anything in. If an auction is found, a prompt will appear to ask you what you want to do.  The selections in the Prompt are self-explanatory.
 
-Many mods keep track of items you want to remember or search for - but I found it tedious to keep selecting items in the list.  Shopping List automates that process.  I no longer worry about missing the rare Hyacinth Macaw in the auction house!
+Many mods keep track of items you want to remember or search for - but I found it tedious to keep selecting items in the list. Shopping List automates that process. I no longer worry about missing the rare Hyacinth Macaw in the auction house!
 
 Directions:
 A new tab will appear on the Auction House Frame. Clicking that will bring up the interface. Type in your search queries, hit enter, and then when your list is complete, click 'Start Search'.
+
+Sold auctions: very cool feature
+
+Due to cross-server zones in major cities, sold auctions that are pending do not always show up in the auctions tab. To work around this Blizzard limitation, I built an internal tracker that will keep a list of your sold auctions with their remaining time while your character is logged in. You can view your sold auctions that are pending by clicking the gold icon in the main Auction One window. The data persists between sessions. If you like this feature and find it useful, please consider donating to the project on the Curse website.
+Due to Blizzard server limitations, the Auction House needs to be opened once per session to start recording sells. Sold auctions can't be tracked when your character is logged out.
 
 Options:
 * [ Import list ] Select which list you want to view
@@ -33,3 +38,4 @@ Slash commands:
 /ao debug: Toggle debug
 /ao cancelauction: Cancel auction on right-click in the auctions tab
 /ao searchoncreate: Search the item in the Auction House after creating the auction in our list
+/ao reloadsoldauction: Force refresh the list of owned auctions. Requires re-opening the Auction House to take effect

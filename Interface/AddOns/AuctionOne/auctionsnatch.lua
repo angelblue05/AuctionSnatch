@@ -247,7 +247,10 @@ OPT_HIDDEN = {
                         AO_AUCTIONS[auction[1]]['icon'] = auction[2]
                     end
 
-                    if auction[16] == 1 or auction[3] == 0 then -- Auction is sold
+                    if auction[16] == 1 or auction[3] == 0 then -- Auction is sold (only when not affected by CRZ)
+                        if x == 1 then -- Verification if we should wipe sold auctions
+                            AO_AUCTIONS_SOLD = {}
+                        end
                         table.insert(AO_AUCTIONS_SOLD, {
                             ['name'] = auction[1],
                             ['quantity'] = auction[3],
@@ -1484,8 +1487,8 @@ OPT_HIDDEN = {
             -- No buyout, bids disabled or ignore no buyouts enabled
             return false
 
-        elseif auction_item[12] then -- If we are highest bidder
-            ASprint(MSG_C.INFO.."We are the highest bidder!")
+        elseif auction_item[12] == true then -- If we are highest bidder
+            -- ASprint(MSG_C.INFO.."We are the highest bidder!")
             return false
 
         elseif item.link and item.name ~= name then
