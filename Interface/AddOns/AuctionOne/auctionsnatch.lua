@@ -274,7 +274,7 @@ OPT_HIDDEN = {
             if #AUC_EVENTS['REMOVE'] > 0 then -- REMOVE Auctions
                 ASprint(MSG_C.EVENT.."[ Found removed auction(s) ]")
                 local remove = {}
-                AS_tcopy(REMOVE, AUC_EVENTS['REMOVE'])
+                AS_tcopy(remove, AUC_EVENTS['REMOVE'])
                 AUC_EVENTS['REMOVE'] = {}
 
                 local x, key, key2, value, value2
@@ -995,8 +995,12 @@ OPT_HIDDEN = {
                     link = AO_AUCTIONS_SOLD[idx].link
                     AS.mainframe.soldlistframe.itembutton[x].link = link
                     if not AO_AUCTIONS_SOLD[idx].rarity then --updated for 3.1 to include colors
-                        _, _, itemRarity = GetItemInfo(link)
-                        AO_AUCTIONS_SOLD[idx].rarity = itemRarity
+                        if link then
+                            _, _, itemRarity = GetItemInfo(link)
+                            AO_AUCTIONS_SOLD[idx].rarity = itemRarity
+                        else
+                            AO_AUCTIONS_SOLD[idx].rarity = 1
+                        end
                     end
 
                     _,_,_,hexcolor = GetItemQualityColor(AO_AUCTIONS_SOLD[idx].rarity)

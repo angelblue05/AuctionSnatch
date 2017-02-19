@@ -1,4 +1,9 @@
 ------------------------------------------------------------------------
+1.6 | angelblue05 | 2017-02-19
+
+- Fix removing auctions
+
+------------------------------------------------------------------------
 1.5 | angelblue05 | 2017-02-19
 
 - Add tracker for sold auctions that are pending with remaining time
