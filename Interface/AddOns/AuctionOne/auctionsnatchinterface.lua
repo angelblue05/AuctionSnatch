@@ -177,6 +177,9 @@
                         AS.mainframe.headerframe.additembutton:Click()
                     end)
                     AS.mainframe.headerframe.editbox:SetScript("OnEditFocusGained", function(self)
+                        if AO_RENAME then
+                            ASshowtooltip(AS.mainframe.headerframe.editbox, L[10037])
+                        end
                         if AS.mainframe.headerframe.editbox:GetText() == "|cff737373"..L[10015] then
                             AS.mainframe.headerframe.editbox:SetText("")
                         end
@@ -186,6 +189,7 @@
                             AS.mainframe.headerframe.editbox:SetText("|cff737373"..L[10015])
                         end
                         AO_RENAME = nil
+                        AShidetooltip()
                     end)
                     AS.mainframe.headerframe.editbox:SetScript("OnTextChanged", function(self, userInput)
                         if userInput then
@@ -664,16 +668,16 @@
                     local scrollvalue = FauxScrollFrame_GetOffset(AS.mainframe.soldlistframe.scrollFrame)
                     local idx = AO_AUCTIONS_SOLD[self.buttonnumber + scrollvalue]
 
-                    strmsg = "Auction information\n"
+                    strmsg = L[10071].."\n"
                     strmsg = strmsg.."|cff888888---------------------|r"
 
-                    if idx.quantity and idx.quantity > 0 then
-                        strmsg = strmsg.."\nStack size:|r|cffffffff "..idx.quantity.."|r"
+                    if idx.quantity and idx.quantity > 1 then
+                        strmsg = strmsg.."\n"..L[10072]..":|r|cffffffff "..idx.quantity.."|r"
                     end
                     if idx.buyer then
-                        strmsg = strmsg.."\nBuyer:|r|cffffffff "..idx.buyer.."|r"
+                        strmsg = strmsg.."\n"..L[10073]..":|r|cffffffff "..idx.buyer.."|r"
                     end
-                    strmsg = strmsg.."\nTime left:|r|cffffffff "..SecondsToTime(idx['time'] - GetTime()).."|r"
+                    strmsg = strmsg.."\n"..L[10074]..":|r|cffffffff "..SecondsToTime(idx['time'] - GetTime()).."|r"
                     ASshowtooltip(self, strmsg)
                 end)
                 button_tmp:SetScript("OnLeave", AShidetooltip)
@@ -1009,9 +1013,8 @@
 
     function AS_RenameItem(self) -- manual price menu option
         local listnum = ASbuttontolistnum(self)
-        AS.mainframe.headerframe.editbox:SetFocus()
-        ASshowtooltip(AS.mainframe.headerframe.editbox, L[10037])
         AO_RENAME = listnum
+        AS.mainframe.headerframe.editbox:SetFocus()
         AS.optionframe:Hide()
     end
 

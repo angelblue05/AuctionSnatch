@@ -181,33 +181,36 @@
     end
 
     -- formats money text by color for gold, silver, copper
-    function ASGSC(money, exact, dontUseColorCodes)
+    function ASGSC(money, exact, dontUseColorCodes, icon)
         -------------- THANK YOU BOTTOMSCANNER ----------------
-       --if not (exact) then exact = true end;
-       if (type(money) ~= "number") then return end
-       
-       local TEXT_NONE = "0"
-       
-       local GSC_GOLD="ffd100"
-       local GSC_SILVER="999999"
-       local GSC_COPPER="c8602c"
-       local GSC_VALUE = "ffffff"
-       local GSC_START="|cff%s%s|r|cff%s%s|r"
-       local GSC_PART=".|cff%s%s|r|cff%s%s|r"
-       local GSC_NONE="|cffa0a0a0"..TEXT_NONE.."|r"
-       
-       if (not money) then money = 0 end
-       if (not exact) and (money >= 10000) then money = math.floor(money / 100 + 0.5) * 100 end
-       local g, s, c = ASGetGSC(money)
-       
-       local gsc = ""
-       local fmt = GSC_START
-       if (g > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, g, GSC_GOLD, 'g') fmt = GSC_PART end
-       if (s > 0) or (c > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, s, GSC_SILVER, 's') fmt = GSC_PART end
-       if (c > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, c, GSC_COPPER, 'c') end
-       if (gsc == "") then gsc = GSC_NONE end
-       
-       return gsc
+        --if not (exact) then exact = true end;
+        if (type(money) ~= "number") then return end
+        if icon == false then
+            local TEXT_NONE = "0"
+               
+            local GSC_GOLD="ffd100"
+            local GSC_SILVER="999999"
+            local GSC_COPPER="c8602c"
+            local GSC_VALUE = "ffffff"
+            local GSC_START="|cff%s%s|r|cff%s%s|r"
+            local GSC_PART=".|cff%s%s|r|cff%s%s|r"
+            local GSC_NONE="|cffa0a0a0"..TEXT_NONE.."|r"
+           
+            if (not money) then money = 0 end
+            if (not exact) and (money >= 10000) then money = math.floor(money / 100 + 0.5) * 100 end
+            local g, s, c = ASGetGSC(money)
+           
+            local gsc = ""
+            local fmt = GSC_START
+            if (g > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, g, GSC_GOLD, 'g') fmt = GSC_PART end
+            if (s > 0) or (c > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, s, GSC_SILVER, 's') fmt = GSC_PART end
+            if (c > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, c, GSC_COPPER, 'c') end
+            if (gsc == "") then gsc = GSC_NONE end
+
+            return gsc
+        else
+            return "|cffffffff"..GetCoinTextureString(money, 10).."|r"--gsc
+        end
     end
 
 ------ GAME TOOLTIP

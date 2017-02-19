@@ -46,7 +46,7 @@ AS_SKIN = false
 AO_RENAME = nil
 AO_AUCTIONS = {}
 AO_AUCTIONS_SOLD = {}
---[[for x = 1, 7 do
+--[[for x = 1, 1 do
     table.insert(AO_AUCTIONS_SOLD, {
             ['name'] = "Obliterum",
             ['quantity'] = 5,
@@ -54,8 +54,8 @@ AO_AUCTIONS_SOLD = {}
             ['price'] = 22500000,
             ['link'] = "|cffa335ee|Hitem:124125::::::::110:102::::::|h[Obliterum]|h|r",
             ['buyer'] = nil,
-            ['time'] = GetTime() + 20,
-            ['timer'] = C_Timer.After(20, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
+            ['time'] = GetTime() + 60,
+            ['timer'] = C_Timer.After(60, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
     })
     table.insert(AO_AUCTIONS_SOLD, {
             ['name'] = "Shal'dorei Silk",
@@ -64,8 +64,8 @@ AO_AUCTIONS_SOLD = {}
             ['price'] = 110000,
             ['link'] = "|cffffffff|Hitem:124437::::::::110:102::::::|h[Shal'dorei Silk]|h|r",
             ['buyer'] = "Morvevel",
-            ['time'] = GetTime() + 20,
-            ['timer'] = C_Timer.After(20, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
+            ['time'] = GetTime() + 65,
+            ['timer'] = C_Timer.After(65, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
     })
 end]]
 
@@ -89,7 +89,8 @@ MSG_C = {
     ['EVENT'] = "|cffFFBF00",--"|cff35FCB5",
     ['DEBUG'] = "|cffE0FC35",
     ['DEFAULT'] = "|cff765EFF",
-    ['BOOL'] = "|cff2BED48"
+    ['BOOL'] = "|cff2BED48",
+    ['WARN'] = "|cffDBD3AF"
 }
 
 OPT_LABEL = {
@@ -235,6 +236,7 @@ OPT_HIDDEN = {
             -- Get current owner auctions
             if not AO_FIRSTRUN_AH then
                 AO_FIRSTRUN_AH = true
+                AO_AUCTIONS = {}
 
                 local _, totalAuctions = GetNumAuctionItems("owner")
                 local x
@@ -572,7 +574,7 @@ OPT_HIDDEN = {
             AS_template(serverName)
         end
 
-        if AO_AUCTIONS_SOLD == nil then -- Remember sold auctions between sessions
+        if not AO_AUCTIONS_SOLD then -- Remember sold auctions between sessions
             AO_AUCTIONS_SOLD = {}
         end
 
@@ -593,6 +595,9 @@ OPT_HIDDEN = {
             value = AO_AUCTIONS_SOLD[key]
             if value.time <= GetTime() then
                 table.remove(AO_AUCTIONS_SOLD, key)
+            else
+                -- readd time left
+                value['timer'] = C_Timer.After(value.time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
             end
         end
     end
@@ -672,7 +677,7 @@ OPT_HIDDEN = {
                 return
             elseif input == "reloadsoldauction" then
                 AO_FIRSTRUN_AH = false
-                ASprint(MSG_C.INFO.."Re-open the auction house to load the latest sold auctions", 1)
+                ASprint(MSG_C.WARN..L[10075], 1)
                 return
             end
 
@@ -1511,7 +1516,7 @@ OPT_HIDDEN = {
         -- Filter string
         local strcutoffprice = L[10019].."\n"
         if cutoffprice then
-            strcutoffprice = strcutoffprice..L[10020]..": "..ASGSC(cutoffprice)
+            strcutoffprice = strcutoffprice..L[10020]..": "..ASGSC(cutoffprice, nil, nil, false)
         end
         if item.ignoretable and item.ignoretable[name] and item.ignoretable[name].ilvl then
             if cutoffprice then
@@ -1552,10 +1557,10 @@ OPT_HIDDEN = {
             end
 
             if count > 1 then
-                AS.prompt.buyoutonly.buyout.single:SetText(ASGSC(peritembuyout).." "..AS_EACH)
-                AS.prompt.buyoutonly.buyout.total:SetText(ASGSC(buyoutPrice))
+                AS.prompt.buyoutonly.buyout.single:SetText(ASGSC(peritembuyout, nil, nil, false).." "..AS_EACH)
+                AS.prompt.buyoutonly.buyout.total:SetText(ASGSC(buyoutPrice, nil, nil, false))
             else
-                AS.prompt.buyoutonly.buyout.single:SetText(ASGSC(buyoutPrice))
+                AS.prompt.buyoutonly.buyout.single:SetText(ASGSC(buyoutPrice, nil, nil, false))
                 AS.prompt.buyoutonly.buyout.total:SetText("")
             end
         else -- Show bid and buyout
@@ -1575,15 +1580,15 @@ OPT_HIDDEN = {
 
             if count > 1 then
                 AS.prompt.bidbuyout.each:Show()
-                AS.prompt.bidbuyout.bid.single:SetText(ASGSC(peritembid))
-                AS.prompt.bidbuyout.bid.total:SetText(ASGSC(bid))
-                AS.prompt.bidbuyout.buyout.single:SetText(ASGSC(peritembuyout))
-                AS.prompt.bidbuyout.buyout.total:SetText(ASGSC(buyoutPrice))
+                AS.prompt.bidbuyout.bid.single:SetText(ASGSC(peritembid, nil, nil, false))
+                AS.prompt.bidbuyout.bid.total:SetText(ASGSC(bid, nil, nil, false))
+                AS.prompt.bidbuyout.buyout.single:SetText(ASGSC(peritembuyout, nil, nil, false))
+                AS.prompt.bidbuyout.buyout.total:SetText(ASGSC(buyoutPrice, nil, nil, false))
             else
                 AS.prompt.bidbuyout.each:Hide()
-                AS.prompt.bidbuyout.bid.single:SetText(ASGSC(bid))
+                AS.prompt.bidbuyout.bid.single:SetText(ASGSC(bid, nil, nil, false))
                 AS.prompt.bidbuyout.bid.total:SetText("")
-                AS.prompt.bidbuyout.buyout.single:SetText(ASGSC(buyoutPrice))
+                AS.prompt.bidbuyout.buyout.single:SetText(ASGSC(buyoutPrice, nil, nil, false))
                 AS.prompt.bidbuyout.buyout.total:SetText("")
             end
         end
