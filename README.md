@@ -25,7 +25,7 @@ A new tab will appear on the Auction House Frame. Clicking that will bring up th
 
 ### Sold auctions: very cool feature
 Due to cross-server zones in major cities, sold auctions that are pending do not always show up in the auctions tab. To work around this Blizzard limitation, I built an internal tracker that will keep a list of your sold auctions with their remaining time while your character is logged in. You can view your sold auctions that are pending by clicking the gold icon in the main Auction One window. The data persists between sessions. *If you like this feature and find it useful, please consider donating to the project: [Curse donation (paypal)](https://www.paypal.com/cgi-bin/webscr?return=%2f%2fwww.curse.com%2fproject%2f259146&cn=Add+special+instructions+to+the+addon+author()&business=dthompson011%40hotmail.com&bn=PP-DonationsBF:btn_donateCC_LG.gif:NonHosted&cancel_return=%2f%2fwww.curse.com%2fproject%2f259146&lc=US&item_name=Auction+One+(from+curseforge.com)&cmd=_donations&rm=1&no_shipping=1&currency_code=USD)*  
-**Some limitations:** The Auction House needs to be opened once per session to trigger this feature. | Sold auctions can't be tracked when your character is logged out.
+**Due to Blizzard server limitations**, the Auction House needs to be opened once per session to start recording sells. Sold auctions can't be tracked when your character is logged out.
 
 ### Options:
 * **[ Import list ]** Select which list you want to view
