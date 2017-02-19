@@ -639,6 +639,11 @@ OPT_HIDDEN = {
                     end
                 end
 
+            elseif input == "soldtest" then
+                test_sold()
+                ASprint("Generating fake auctions")
+                return
+
             elseif input == "debug" then
                 ASdebug = not ASdebug
                 ASprint(MSG_C.INFO.."Debug:|r "..MSG_C.BOOL..tostring(ASdebug), 1)
@@ -1730,8 +1735,8 @@ OPT_HIDDEN = {
                     ['price'] = 110000,
                     ['link'] = "|cffffffff|Hitem:124437::::::::110:102::::::|h[Shal'dorei Silk]|h|r",
                     ['buyer'] = "Morvevel",
-                    ['time'] = GetTime() + 365,
-                    ['timer'] = C_Timer.After(365, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
+                    ['time'] = GetTime() + 360,
+                    ['timer'] = C_Timer.After(360, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
             })
             table.insert(AO_AUCTIONS_SOLD, {
                     ['name'] = "Runescale Koi",
@@ -1740,8 +1745,8 @@ OPT_HIDDEN = {
                     ['price'] = 120000,
                     ['link'] = "|cffffffff|Hitem:124111::::::::110:102::::::|h[Runescale Koi]|h|r",
                     ['buyer'] = "Morvevel",
-                    ['time'] = GetTime() + 465,
-                    ['timer'] = C_Timer.After(465, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
+                    ['time'] = GetTime() + 360,
+                    ['timer'] = C_Timer.After(360, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
             })
         end
         AO_OwnerScrollbarUpdate()

@@ -681,6 +681,12 @@
                     ASshowtooltip(self, strmsg)
                 end)
                 button_tmp:SetScript("OnLeave", AShidetooltip)
+                button_tmp:SetScript("OnDoubleClick", function(self)
+                    BrowseResetButton:Click()
+                    AuctionFrameBrowse.page = 0
+                    BrowseName:SetText(ASsanitize(self.leftstring:GetText()))
+                    AuctionFrameBrowse_Search()
+                end)
 
         ------ BUTTON MONEY
             -------------- STYLE ----------------
