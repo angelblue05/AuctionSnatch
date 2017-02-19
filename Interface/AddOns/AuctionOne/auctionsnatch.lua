@@ -437,7 +437,8 @@ OPT_HIDDEN = {
                             end
                             table.insert(AO_AUCTIONS[auction[1]], {
                                 ['quantity'] = auction[3],
-                                ['price'] = buyoutPrice
+                                ['price'] = buyoutPrice,
+                                ['link'] = AuctionsItemButton.link
                             })
                         end
                     end)
