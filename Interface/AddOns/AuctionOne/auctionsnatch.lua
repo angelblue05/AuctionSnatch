@@ -294,12 +294,19 @@ OPT_HIDDEN = {
                 for x = 1, #sold do
                     local item = sold[x]
                     local current_auctions = AO_CurrentOwnedAuctions(item)
-
                     local saved_auctions = {}
                     AS_tcopy(saved_auctions, AO_AUCTIONS[item])
 
-                    if current_auctions then
-                        for key, value in pairs(current_auctions) do
+                    if current_auctions and (current_auctions[1].quantity == 0 or current_auctions[1].sold == 1) then
+                        -- Auctions are visible in the auction house
+                        local last_auctions
+
+                        for key = #current_auctions, 1, -1 do
+                            value = current_auctions[key]
+                            if not last_auctions and (value.sold == 1 or value.quantity == 0) then
+                                -- Auction sold
+                                last_auctions = value
+                            end
                             for y = #saved_auctions, 1, -1 do
                                 value2 = saved_auctions[y]
                                 if type(value) == "table" and type(value2) == "table" then
@@ -309,30 +316,73 @@ OPT_HIDDEN = {
                                         break
                                     end
                                 end
-                                value2['buyer'] = value.buyer
                             end
                         end
-                    end
+                        if saved_auctions[1] then
+                            saved_auctions[1].buyer = last_auctions.buyer
+                            --saved_auctions[1].time = last_auctions.time
+                        end
 
-                    for key, value in pairs(saved_auctions) do
-                        if type(value) == "table" then
+                        for key, value in pairs(saved_auctions) do
+                            if type(value) == "table" then
+                                AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
+                                    ['name'] = item,
+                                    ['quantity'] = value.quantity,
+                                    ['icon'] = saved_auctions.icon,
+                                    ['price'] = value.price,
+                                    ['buyer'] = value.buyer,
+                                    ['link'] = value.link,
+                                    ['time'] = GetTime() + 3600,
+                                    ['timer'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
+                                }
+                                for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
+                                    if type(value) == "table" and type(value2) == "table" then
+                                        if value.price == value2.price and value.quantity == value2.quantity then
+                                            -- Found match
+                                            table.remove(AO_AUCTIONS[item], key2)
+                                            break
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    else
+                        if current_auctions then
+                            for key, value in pairs(current_auctions) do
+                                for y = #saved_auctions, 1, -1 do
+                                    value2 = saved_auctions[y]
+                                    if type(value) == "table" and type(value2) == "table" then
+                                        ASprint(value.price.." "..value2.price.." "..value.quantity.." "..value2.quantity.." "..value.sold)
+                                        if value.price == value2.price and value.quantity == value2.quantity and value.sold == 0 then
+                                            -- Found match, still exists
+                                            table.remove(saved_auctions, y)
+                                            break
+                                        end
+                                    end
+                                end
+                            end
+                        end
 
-                            AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
-                                ['name'] = item,
-                                ['quantity'] = value.quantity,
-                                ['icon'] = saved_auctions.icon,
-                                ['price'] = value.price,
-                                ['buyer'] = value.buyer,
-                                ['link'] = value.link,
-                                ['time'] = GetTime() + 3600,
-                                ['timer'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
-                            }
-                            for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
-                                if type(value) == "table" and type(value2) == "table" then
-                                    if value.price == value2.price and value.quantity == value2.quantity then
-                                        -- Found match
-                                        table.remove(AO_AUCTIONS[item], key2)
-                                        break
+                        for key, value in pairs(saved_auctions) do
+                            if type(value) == "table" then
+
+                                AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
+                                    ['name'] = item,
+                                    ['quantity'] = value.quantity,
+                                    ['icon'] = saved_auctions.icon,
+                                    ['price'] = value.price,
+                                    ['buyer'] = value.buyer,
+                                    ['link'] = value.link,
+                                    ['time'] = GetTime() + 3600,
+                                    ['timer'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
+                                }
+                                for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
+                                    if type(value) == "table" and type(value2) == "table" then
+                                        if value.price == value2.price and value.quantity == value2.quantity then
+                                            -- Found match
+                                            table.remove(AO_AUCTIONS[item], key2)
+                                            break
+                                        end
                                     end
                                 end
                             end
@@ -405,7 +455,25 @@ OPT_HIDDEN = {
                         local stackSize = AuctionsStackSizeEntry:GetNumber()
                         local stackNum = AuctionsNumStacksEntry:GetNumber()
 
-                        if ASsavedtable.rememberprice and listnumber then                     
+                        -- Add auctions to our saved list of auctions
+                        for x = 1, stackNum do
+                            local auction = {GetAuctionSellItemInfo()}
+                            if not AO_AUCTIONS[auction[1]] then
+                                AO_AUCTIONS[auction[1]] = {}
+                                AO_AUCTIONS[auction[1]]['icon'] = auction[2]
+                            end
+                            local auction_info = {
+                                ['quantity'] = stackSize,
+                                ['price'] = buyoutPrice,
+                                ['link'] = AuctionsItemButton.link
+                            }
+                            if stackSize > 1 and AuctionFrameAuctions.priceType == 1 then
+                                auction_info['price'] = buyoutPrice * stackSize
+                            end
+                            table.insert(AO_AUCTIONS[auction[1]], auction_info)
+                        end
+
+                        if ASsavedtable.rememberprice and listnumber then
                             ASprint(MSG_C.INFO.."StartPrice:|r "..startPrice)
                             ASprint(MSG_C.INFO.."BuyoutPrice:|r "..buyoutPrice)
                             
@@ -427,20 +495,6 @@ OPT_HIDDEN = {
                             if save then
                                 AS_SavedVariables()
                             end
-                        end
-
-                        -- Add auctions to our saved list of auctions
-                        for x = 1, stackNum do
-                            local auction = {GetAuctionSellItemInfo()}
-                            if not AO_AUCTIONS[auction[1]] then
-                                AO_AUCTIONS[auction[1]] = {}
-                                AO_AUCTIONS[auction[1]]['icon'] = auction[2]
-                            end
-                            table.insert(AO_AUCTIONS[auction[1]], {
-                                ['quantity'] = stackSize,
-                                ['price'] = buyoutPrice,
-                                ['link'] = AuctionsItemButton.link
-                            })
                         end
                     end)
                     AuctionsCreateAuctionButton:SetScript("PostClick", function(self, button)
@@ -1087,7 +1141,7 @@ OPT_HIDDEN = {
                 AS.mainframe.soldlistframe.itembutton[x]:Hide()
             end
         end
-        AS.mainframe.headerframe.soldeditbox:SetText(GetCoinTextureString(total, 12))
+        AS.mainframe.headerframe.soldeditbox:SetText("|cff737373("..ASnumberofitems..")|r "..GetCoinTextureString(total, 12))
     end
 
     function AS_CreateButtonHandlers()
@@ -1772,10 +1826,10 @@ OPT_HIDDEN = {
     function AO_CurrentOwnedAuctions(name)
         local x, current
         local _, totalAuctions = GetNumAuctionItems("owner")
-        
+
         for x = 1, totalAuctions do
             local auction = {GetAuctionItemInfo("owner", x)}
-            
+
             if name == auction[1] then
                 if not current then
                     current = {}
@@ -1812,8 +1866,8 @@ OPT_HIDDEN = {
     end
 
     function test_sold()
-        AO_AUCTIONS_SOLD = {}
-        for x = 1, 12 do
+        --AO_AUCTIONS_SOLD = {}
+        for x = 1, 1 do
             table.insert(AO_AUCTIONS_SOLD, {
                     ['name'] = "Obliterum",
                     ['quantity'] = 5,
