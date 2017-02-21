@@ -336,7 +336,7 @@ OPT_HIDDEN = {
                                     ['time'] = GetTime() + 3600,
                                     ['timer'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                                 }
-                                ASprint("Sold:|T"..saved_auctions.icon..":0|t"..value.link.."x "..value.quantity.."  "..ASGSC(value.price), 1)
+                                ASprint("Sold:|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
                                 for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
                                     if type(value) == "table" and type(value2) == "table" then
                                         if value.price == value2.price and value.quantity == value2.quantity then
@@ -377,7 +377,7 @@ OPT_HIDDEN = {
                                     ['time'] = GetTime() + 3600,
                                     ['timer'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                                 }
-                                ASprint("Sold:|T"..saved_auctions.icon..":0|t"..value.link.."x "..value.quantity.."  "..ASGSC(value.price), 1)
+                                ASprint("Sold:|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
                                 for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
                                     if type(value) == "table" and type(value2) == "table" then
                                         if value.price == value2.price and value.quantity == value2.quantity then
