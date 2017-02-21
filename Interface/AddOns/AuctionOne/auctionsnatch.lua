@@ -1153,7 +1153,7 @@ OPT_HIDDEN = {
         AS[L[10041]] = function()  -- Buyout prompt item
                 local _, buyout = AS_GetCost()
                 selected_auction = GetSelectedAuctionItem("list") -- The only way it works correctly...
-                ASprint(MSG_C.DEBUG.."Buying price: "..ASGSC(buyout), 1)
+                ASprint(MSG_C.DEBUG.."Buying price: "..ASGSC(buyout))
                 
                 PlaceAuctionBid("list", selected_auction, buyout) -- The actual buying call
                 -- The next item will be the same location as what was just bought
@@ -1165,7 +1165,7 @@ OPT_HIDDEN = {
         AS[L[10042]] = function() -- Bid prompt item
                 local bid = AS_GetCost()
                 selected_auction = GetSelectedAuctionItem("list") -- The only way it works correctly...
-                ASprint(MSG_C.DEBUG.."Bidding price: "..ASGSC(bid), 1)
+                ASprint(MSG_C.DEBUG.."Bidding price: "..ASGSC(bid))
 
                 PlaceAuctionBid("list", selected_auction, bid)  --the actual bidding call.
                 AS.prompt:Hide()
@@ -1521,7 +1521,7 @@ OPT_HIDDEN = {
                 
                 if ASnodoorbell then
                    ASprint(MSG_C.DEBUG.."Attempting to play sound file")
-                   PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\DoorBell.mp3")
+                   PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\DoorBell.mp3", "Master")
                 end
 
                 AuctionFrameBrowse_Update()
@@ -1686,7 +1686,7 @@ OPT_HIDDEN = {
             end
 
             if count > 1 then
-                AS.prompt.buyoutonly.buyout.single:SetText(ASGSC(peritembuyout, nil, nil, false).." "..AS_EACH)
+                AS.prompt.buyoutonly.buyout.single:SetText(ASGSC(peritembuyout, nil, nil, false).." "..L[10053])
                 AS.prompt.buyoutonly.buyout.total:SetText(ASGSC(buyoutPrice, nil, nil, false))
             else
                 AS.prompt.buyoutonly.buyout.single:SetText(ASGSC(buyoutPrice, nil, nil, false))
@@ -1806,7 +1806,7 @@ OPT_HIDDEN = {
             table.insert(AUC_EVENTS['SOLD'], item)
             -- Play sound
             if ASsavedtable.AOsold then
-               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Sold.mp3")
+               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Sold.mp3", "Master")
             end
 
         elseif string.match(arg1, string.gsub(ERR_AUCTION_EXPIRED_S, "(%%s)", ".+")) ~= nil then
@@ -1815,13 +1815,13 @@ OPT_HIDDEN = {
             table.insert(AUC_EVENTS['REMOVE'], item)
 
             if ASsavedtable.AOexpired then
-               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Expired.mp3")
+               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Expired.mp3", "Master")
             end
         
         elseif string.match(arg1, string.gsub(ERR_AUCTION_OUTBID_S, "(%%s)", ".+")) ~= nil then
             -- Outbid
             if ASsavedtable.AOoutbid then
-               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Outbid.mp3")
+               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Outbid.mp3", "Master")
             end
         end
     end
