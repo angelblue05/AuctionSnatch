@@ -1772,16 +1772,18 @@ OPT_HIDDEN = {
             if not owner_button then
                 break
             end
-            owner_button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-            owner_button:SetScript("PostClick", function(self, button)
-                AS_CancelAuction(self, button)
-            end)
+            if ASsavedtable.cancelauction then
+                owner_button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+                owner_button:SetScript("PostClick", function(self, button)
+                    AS_CancelAuction(self, button)
+                end)
+            end
         end
     end
 
     function AS_CancelAuction(self, button)
 
-        if ASsavedtable.cancelauction and button == "RightButton" then
+        if button == "RightButton" then
             SetSelectedAuctionItem("owner", self:GetID() + GetEffectiveAuctionsScrollFrameOffset())
             if CanCancelAuction(GetSelectedAuctionItem("owner")) then
                 AO_UntrackCancelledAuction()
