@@ -1772,17 +1772,18 @@ OPT_HIDDEN = {
             if not owner_button then
                 break
             end
-            owner_button:SetScript("PreClick", AS_CancelAuction)
+            owner_button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+            owner_button:SetScript("PostClick", function(self, button)
+                AS_CancelAuction(self, button)
+            end)
         end
     end
 
     function AS_CancelAuction(self, button)
 
         if ASsavedtable.cancelauction and button == "RightButton" then
-            local index = self:GetID() + GetEffectiveAuctionsScrollFrameOffset()
-            SetEffectiveSelectedOwnerAuctionItemIndex(index) -- updates any WoWToken offset
+            SetSelectedAuctionItem("owner", self:GetID() + GetEffectiveAuctionsScrollFrameOffset())
             if CanCancelAuction(GetSelectedAuctionItem("owner")) then
-
                 AO_UntrackCancelledAuction()
                 CancelAuction(GetSelectedAuctionItem("owner"))
             end

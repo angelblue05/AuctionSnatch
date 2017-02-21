@@ -774,9 +774,7 @@
             ASauctiontab:SetPoint("TOPLEFT", getglobal("AuctionFrameTab"..(index - 1)), "TOPRIGHT", -8, 0)
 
             -- Set Event for Owner Auction tab
-            --old_auctiontab = AuctionFrameTab3:GetScript("OnClick")
             AuctionFrameTab3:SetScript("PreClick", function(self, button, down)
-                --old_auctiontab(self, button, down)
                 AS_RegisterCancelAction()
             end)
         end
