@@ -1774,9 +1774,7 @@ OPT_HIDDEN = {
             end
             if ASsavedtable.cancelauction then
                 owner_button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-                owner_button:SetScript("PostClick", function(self, button)
-                    AS_CancelAuction(self, button)
-                end)
+                owner_button:SetScript("PostClick", AS_CancelAuction)
             end
         end
     end
