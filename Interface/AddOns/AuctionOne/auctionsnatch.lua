@@ -320,11 +320,12 @@ OPT_HIDDEN = {
                         end
                         if saved_auctions[1] then
                             saved_auctions[1].buyer = last_auctions.buyer
-                            --saved_auctions[1].time = last_auctions.time
+                            --saved_auctions[1].link = last_auctions.link
                         end
 
                         for key, value in pairs(saved_auctions) do
                             if type(value) == "table" then
+
                                 AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
                                     ['name'] = item,
                                     ['quantity'] = value.quantity,
@@ -352,7 +353,6 @@ OPT_HIDDEN = {
                                 for y = #saved_auctions, 1, -1 do
                                     value2 = saved_auctions[y]
                                     if type(value) == "table" and type(value2) == "table" then
-                                        ASprint(value.price.." "..value2.price.." "..value.quantity.." "..value2.quantity.." "..value.sold)
                                         if value.price == value2.price and value.quantity == value2.quantity and value.sold == 0 then
                                             -- Found match, still exists
                                             table.remove(saved_auctions, y)
@@ -465,7 +465,7 @@ OPT_HIDDEN = {
                             local auction_info = {
                                 ['quantity'] = stackSize,
                                 ['price'] = buyoutPrice,
-                                ['link'] = AuctionsItemButton.link
+                                ['link'] = AS.item[listnumber].link
                             }
                             if stackSize > 1 and AuctionFrameAuctions.priceType == 1 then
                                 auction_info['price'] = buyoutPrice * stackSize
