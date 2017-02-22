@@ -40,11 +40,11 @@ Due to cross-server zones in major cities, sold auctions that are pending do not
 * **[ Remember price ]** When using the sell option, remember the unit price from previous auction
 * **[ Alerts ]** Sounds and Chat alerts
  * **[ Chat ]** Chat alerts for specific auction events
-   * **[ Sold ]** When opening the Auction House, print a list of your newly sold auctions.
+     * **[ Sold ]** When opening the Auction House, print a list of your newly sold auctions.
  * **[ Sounds ]** Sounds for specific auction events
-   * **[ Outbid ]** You have been outbid on %s.
-   * **[ Sold ]** Your auction of %s sold.
-   * **[ Expired ]** Your auction of %s has expired.
+     * **[ Outbid ]** You have been outbid on %s.
+     * **[ Sold ]** Your auction of %s sold.
+     * **[ Expired ]** Your auction of %s has expired.
 * **[ Auto-open ]** Open Auction One automatically when opening the Auction House
 * **[ Auto-start ]** Once the Auction One window is open, start searching automatically the default list
 
