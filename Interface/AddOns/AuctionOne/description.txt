@@ -46,4 +46,5 @@ Slash commands:
 /ao cancelauction: Cancel auction on right-click in the auctions tab
 /ao searchoncreate: Search the item in the Auction House after creating the auction in our list
 /ao reloadsoldauction: Force refresh the list of owned auctions. Requires re-opening the Auction House to take effect
-/ao sound [outbid|sold|expired] Toggle respective sounds
+/ao sound [outbid|sold|expired]: Toggle respective sounds
+/ao chat sold: Toggle chat alert for sold auctions
