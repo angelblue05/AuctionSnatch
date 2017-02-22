@@ -1,4 +1,11 @@
 ------------------------------------------------------------------------
+1.10 | angelblue05 | 2017-02-22
+
+- Fix sold auctions timer
+- Make chat alert for sold items optional (Options > alerts > chat)
+- Add slash command to toggle chat alert for sold items (/ao chat sold)
+
+------------------------------------------------------------------------
 1.9 | angelblue05 | 2017-02-21
 
 - Fix right-click to cancel auction
