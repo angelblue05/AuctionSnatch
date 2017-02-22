@@ -1312,6 +1312,7 @@ OPT_HIDDEN = {
                     AScurrentahresult = AScurrentahresult - 1  --redo this item :)
                     AS.status = STATE.EVALUATING
                     AS_ScrollbarUpdate()
+                    AS_SavedVariables()
                 end
         end
 
