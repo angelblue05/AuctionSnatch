@@ -85,7 +85,8 @@ OPT_HIDDEN = {
     ['cancelauction'] = "",
     ['AOoutbid'] = "",
     ['AOsold'] = "",
-    ['AOexpired'] = ""
+    ['AOexpired'] = "",
+    ['AOchatsold'] = ""
 }
 
 
@@ -337,7 +338,9 @@ OPT_HIDDEN = {
                                     ['time'] = time,
                                     ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                                 }
-                                ASprint("Sold:|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
+                                if ASsavedtable.AOchatsold then
+                                    ASprint(L[10078]..":|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
+                                end
                                 for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
                                     if type(value) == "table" and type(value2) == "table" then
                                         if value.price == value2.price and value.quantity == value2.quantity then
@@ -378,7 +381,9 @@ OPT_HIDDEN = {
                                     ['time'] = time,
                                     ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                                 }
-                                ASprint("Sold:|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
+                                if ASsavedtable.AOchatsold then
+                                    ASprint(L[10078]..":|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
+                                end
                                 for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
                                     if type(value) == "table" and type(value2) == "table" then
                                         if value.price == value2.price and value.quantity == value2.quantity then
@@ -717,8 +722,9 @@ OPT_HIDDEN = {
                 ASsavedtable.AOsold = not ASsavedtable.AOsold
                 ASprint(MSG_C.INFO.."Sold sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOsold), 1)
                 if ASsavedtable.AOsold then
-                   ASprint(MSG_C.DEBUG.."Attempting to play 'sold' sound file")
-                   PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Sold.mp3")
+                    --PlaySound("LOOTWINDOWCOINSOUND")
+                    ASprint(MSG_C.DEBUG.."Attempting to play 'sold' sound file")
+                    PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Sold.mp3")
                 end
                 return
             elseif input == "sound expired" then
@@ -774,6 +780,7 @@ OPT_HIDDEN = {
                 ASsavedtable.AOoutbid = true
                 ASsavedtable.AOsold = true
                 ASsavedtable.AOexpired = true
+                ASsavedtable.AOchatsold = true
             end
             if ASsavedtable.searchoncreate == nil then -- Option that should be set by default
                 ASsavedtable.searchoncreate = true
@@ -786,6 +793,9 @@ OPT_HIDDEN = {
             end
             if ASsavedtable.AOexpired == nil then -- Option that should be set by default
                 ASsavedtable.AOexpired = true
+            end
+            if ASsavedtable.AOchatsold == nil then -- Option that should be set by default
+                ASsavedtable.AOchatsold = true
             end
 
             ASsavedtable[ACTIVE_TABLE] = {}
@@ -849,11 +859,11 @@ OPT_HIDDEN = {
                 info.func =  ASdropDownMenuItem_OnClick
                 info.owner = self:GetParent()
                 UIDropDownMenu_AddButton(info, level)
-                --- Sounds options
-                info.text = L[10076]
+                --- Alerts
+                info.text = L[10080]
                 info.hasArrow = true
                 info.checked = false
-                info.value = "AOsounds"
+                info.value = "AOalerts"
                 UIDropDownMenu_AddButton(info, level)
                 --- Auto open
                 info.text = OPT_LABEL["ASautoopen"]
@@ -924,7 +934,34 @@ OPT_HIDDEN = {
                     end
                 end
             end
-        elseif level == 2 and UIDROPDOWNMENU_MENU_VALUE == "AOsounds" then
+
+        elseif level == 2 and UIDROPDOWNMENU_MENU_VALUE == "AOalerts" then
+            local info = UIDropDownMenu_CreateInfo()
+            --- Chat options
+            info.text = L[10081]
+            info.hasArrow = true
+            info.checked = false
+            info.value = "AOchat"
+            UIDropDownMenu_AddButton(info, level)
+            --- Sounds options
+            info.text = L[10076]
+            info.hasArrow = true
+            info.checked = false
+            info.value = "AOsounds"
+            UIDropDownMenu_AddButton(info, level)
+
+        elseif level == 3 and UIDROPDOWNMENU_MENU_VALUE == "AOchat" then
+            local info = UIDropDownMenu_CreateInfo()
+            -- Sold
+            info.text = L[10078]
+            info.value = "AOchatsold"
+            info.checked = ASsavedtable.AOchatsold
+            info.hasArrow = false
+            info.func =  ASdropDownMenuItem_OnClick
+            info.owner = self:GetParent()
+            UIDropDownMenu_AddButton(info, level)
+
+        elseif level == 3 and UIDROPDOWNMENU_MENU_VALUE == "AOsounds" then
             local info = UIDropDownMenu_CreateInfo()
             --- Outbid
             info.text = L[10077]
@@ -987,6 +1024,10 @@ OPT_HIDDEN = {
         elseif self.value == "AOoutbid" then
             ASsavedtable.AOoutbid = not ASsavedtable.AOoutbid
             ASprint(MSG_C.INFO.."Outbid sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOoutbid))
+            return
+        elseif self.value == "AOchatsold" then
+            ASsavedtable.AOchatsold = not ASsavedtable.AOchatsold
+            ASprint(MSG_C.INFO.."Chat sold alert:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOchatsold))
             return
         elseif self.value == "AOsold" then
             ASsavedtable.AOsold = not ASsavedtable.AOsold
