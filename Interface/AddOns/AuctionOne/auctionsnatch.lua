@@ -292,7 +292,8 @@ OPT_HIDDEN = {
                 local x, y, key, key2, value, value2
 
                 for x = 1, #sold do
-                    local item = sold[x]
+                    local item = sold[x]['name']
+                    local time = sold[x]['time']
                     local current_auctions = AO_CurrentOwnedAuctions(item)
                     local saved_auctions = {}
                     AS_tcopy(saved_auctions, AO_AUCTIONS[item])
@@ -333,8 +334,8 @@ OPT_HIDDEN = {
                                     ['price'] = value.price,
                                     ['buyer'] = value.buyer,
                                     ['link'] = value.link,
-                                    ['time'] = GetTime() + 3600,
-                                    ['timer'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
+                                    ['time'] = time,
+                                    ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                                 }
                                 ASprint("Sold:|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
                                 for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
@@ -374,8 +375,8 @@ OPT_HIDDEN = {
                                     ['price'] = value.price,
                                     ['buyer'] = value.buyer,
                                     ['link'] = value.link,
-                                    ['time'] = GetTime() + 3600,
-                                    ['timer'] = C_Timer.After(3600, function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
+                                    ['time'] = time,
+                                    ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                                 }
                                 ASprint("Sold:|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
                                 for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
@@ -1803,7 +1804,10 @@ OPT_HIDDEN = {
         if string.match(arg1, string.gsub(ERR_AUCTION_SOLD_S, "(%%s)", ".+")) ~= nil then
             -- Find sold item name
             local item = string.match(arg1, string.gsub(ERR_AUCTION_SOLD_S, "(%%s)", "(.*)"))
-            table.insert(AUC_EVENTS['SOLD'], item)
+            AUC_EVENTS['SOLD'][#AUC_EVENTS['SOLD'] + 1] = {
+                ['name'] = item,
+                ['time'] = GetTime() + 3600
+            }
             -- Play sound
             if ASsavedtable.AOsold then
                PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Sold.mp3", "Master")
