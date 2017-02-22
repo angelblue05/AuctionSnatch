@@ -735,6 +735,10 @@ OPT_HIDDEN = {
                    PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Expired.mp3")
                 end
                 return
+            elseif input == "chat sold" then
+                ASsavedtable.AOchatsold = not ASsavedtable.AOchatsold
+                ASprint(MSG_C.INFO.."Chat alert for sold:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOchatsold), 1)
+                return
             elseif input == "debug" then
                 ASdebug = not ASdebug
                 ASprint(MSG_C.INFO.."Debug:|r "..MSG_C.BOOL..tostring(ASdebug), 1)
