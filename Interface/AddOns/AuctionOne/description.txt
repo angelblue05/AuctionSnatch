@@ -21,6 +21,7 @@ Options:
 * [ Create list ] Create a new list
 * [ Value in copper ] Changes the value, at the time of input, between copper or gold-only
 * [ Remember price ] When using the sell option, remember the unit price from previous auction
+* [ Cancel auction ] Cancel auction on right-click in the auctions tab. Reload ui required when disabling this option
 * [ Alerts ] Sounds and Chat alerts
 	* [ Chat ] Chat alerts for specific auction events
 	  * [ Sold ] When opening the Auction House, print a list of your newly sold auctions.

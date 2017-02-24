@@ -1,4 +1,13 @@
 ------------------------------------------------------------------------
+1.11 | angelblue05 | 2017-02-24
+
+- Fix updating item not saving
+- Fix copper value not filling up when setting up sale
+- Fix error introduced when setting up sale
+- Show stack of 1
+- Re-add cancel auction to options. If disabling this option, you will need to reload your ui to take effect
+
+------------------------------------------------------------------------
 1.10 | angelblue05 | 2017-02-22
 
 - Fix sold auctions timer
