@@ -805,7 +805,7 @@
 
         ------ OPTION FRAME
             -------------- STYLE ----------------
-                AS.optionframe = CreateFrame("Frame", "ASoptionframe", UIParent)
+                AS.optionframe = CreateFrame("Frame", "ASoptionframe", AS.mainframe)
                 AS.optionframe:SetHeight((AS_BUTTON_HEIGHT * 8) + (AS_FRAMEWHITESPACE * 2))  --8 buttons
                 AS.optionframe:SetWidth(200)
                 AS.optionframe:SetBackdrop({    bgFile = AS_backdrop, -- Aurora

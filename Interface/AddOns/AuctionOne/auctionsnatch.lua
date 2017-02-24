@@ -78,11 +78,11 @@ OPT_LABEL = {
     ['rememberprice'] = L[10006],
     ['ASautostart'] = L[10007],
     ['ASautoopen'] = L[10008],
-    ['AOicontooltip'] = L[10009]
+    ['AOicontooltip'] = L[10009],
+    ['cancelauction'] = L[10005]
 }
 OPT_HIDDEN = {
     ['searchoncreate'] = "",
-    ['cancelauction'] = "",
     ['AOoutbid'] = "",
     ['AOsold'] = "",
     ['AOexpired'] = "",
@@ -466,19 +466,23 @@ OPT_HIDDEN = {
                         -- Add auctions to our saved list of auctions
                         for x = 1, stackNum do
                             local auction = {GetAuctionSellItemInfo()}
-                            if not AO_AUCTIONS[auction[1]] then
-                                AO_AUCTIONS[auction[1]] = {}
-                                AO_AUCTIONS[auction[1]]['icon'] = auction[2]
+                            local name = auction[1]
+                            local _, link = GetItemInfo(name)
+
+                            if not AO_AUCTIONS[name] then
+                                AO_AUCTIONS[name] = {}
+                                AO_AUCTIONS[name]['icon'] = auction[2]
                             end
                             local auction_info = {
                                 ['quantity'] = stackSize,
                                 ['price'] = buyoutPrice,
-                                ['link'] = AS.item[listnumber].link
+                                ['link'] = link
                             }
+
                             if stackSize > 1 and AuctionFrameAuctions.priceType == 1 then
                                 auction_info['price'] = buyoutPrice * stackSize
                             end
-                            table.insert(AO_AUCTIONS[auction[1]], auction_info)
+                            table.insert(AO_AUCTIONS[name], auction_info)
                         end
 
                         if ASsavedtable.rememberprice and listnumber then
@@ -863,6 +867,14 @@ OPT_HIDDEN = {
                 info.func =  ASdropDownMenuItem_OnClick
                 info.owner = self:GetParent()
                 UIDropDownMenu_AddButton(info, level)
+                --- Cancel auction
+                info.text = OPT_LABEL["cancelauction"]
+                info.value = "cancelauction"
+                info.checked = ASsavedtable.cancelauction
+                info.hasArrow = false
+                info.func =  ASdropDownMenuItem_OnClick
+                info.owner = self:GetParent()
+                UIDropDownMenu_AddButton(info, level)
                 --- Alerts
                 info.text = L[10080]
                 info.hasArrow = true
@@ -1011,6 +1023,13 @@ OPT_HIDDEN = {
         elseif self.value == "rememberprice" then
             ASsavedtable.rememberprice = not ASsavedtable.rememberprice
             ASprint(MSG_C.INFO.."Remember Price:|r "..MSG_C.BOOL..tostring(ASsavedtable.rememberprice))
+            return
+        elseif self.value == "cancelauction" then
+            ASsavedtable.cancelauction = not ASsavedtable.cancelauction
+            ASprint(MSG_C.INFO.."Cancel auction on right-click:|r "..MSG_C.BOOL..tostring(ASsavedtable.cancelauction))
+            if not ASsavedtable.cancelauction then
+                ASprint(MSG_C.WARN.."To turn off cancel auction, you will need to reloading your UI", 1)
+            end
             return
         elseif self.value == "AOrenamelist" then
             StaticPopup_Show("AO_RenameList")
