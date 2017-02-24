@@ -992,10 +992,10 @@
         if found then
             if ASsavedtable.rememberprice then
                 if AS.item[listnum].sellbid then -- Set to unit price, since we do not set stack size
-                    MoneyInputFrame_SetCopper(StartPrice, AS.item[listnum].sellbid)
+                    MoneyInputFrame_SetCopper(StartPrice, math.floor(AS.item[listnum].sellbid))
                 end
                 if AS.item[listnum].sellbuyout then
-                    MoneyInputFrame_SetCopper(BuyoutPrice, AS.item[listnum].sellbuyout)
+                    MoneyInputFrame_SetCopper(BuyoutPrice, math.floor(AS.item[listnum].sellbuyout))
                 end
             end
         else
