@@ -671,7 +671,7 @@
                     strmsg = L[10071].."\n"
                     strmsg = strmsg.."|cff888888---------------------|r"
 
-                    if idx.quantity and idx.quantity > 1 then
+                    if idx.quantity and idx.quantity > 0 then
                         strmsg = strmsg.."\n"..L[10072]..":|r|cffffffff "..idx.quantity.."|r"
                     end
                     if idx.buyer then
