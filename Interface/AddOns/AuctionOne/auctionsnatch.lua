@@ -336,7 +336,7 @@ OPT_HIDDEN = {
                                     ['buyer'] = value.buyer,
                                     ['link'] = value.link,
                                     ['time'] = time,
-                                    ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
+                                    ['timer'] = C_Timer.After(math.max(time - GetTime(), 1), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                                 }
                                 if ASsavedtable.AOchatsold then
                                     ASprint(L[10078]..":|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
@@ -379,7 +379,7 @@ OPT_HIDDEN = {
                                     ['buyer'] = value.buyer,
                                     ['link'] = value.link,
                                     ['time'] = time,
-                                    ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
+                                    ['timer'] = C_Timer.After(math.max(time - GetTime(), 1), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                                 }
                                 if ASsavedtable.AOchatsold then
                                     ASprint(L[10078]..":|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
