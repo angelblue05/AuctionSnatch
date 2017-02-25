@@ -2,7 +2,7 @@
 ## Title: Auction One
 ## Notes: "Get that auction!  Go! Go! Go!"
 ## Author:  Angelblue05
-## Version: 1.11
+## Version: 1.12
 ## SavedVariables: ASsavedtable, ASsavedposition, ASfirsttime, ASdebug, AO_AUCTIONS_SOLD
 
 locale\localization.lua

@@ -1,4 +1,10 @@
 ------------------------------------------------------------------------
+1.12 | angelblue05 | 2017-02-25
+
+- Fix negative timer error (resulted in weird sold auction results)
+- Fix setting up sale not finding items in bags
+
+------------------------------------------------------------------------
 1.11 | angelblue05 | 2017-02-24
 
 - Fix updating item not saving
