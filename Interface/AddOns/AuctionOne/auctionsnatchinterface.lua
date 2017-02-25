@@ -973,18 +973,21 @@
             CancelSell()
         end
 
-        for bag = 0, 4, 1 do -- Find item in bags and create auction
-            for slot = 1, GetContainerNumSlots(bag), 1 do
-                local name = GetContainerItemLink(bag, slot)
+        for bag = 0, 4 do -- Find item in bags and create auction
+            for slot = 1, GetContainerNumSlots(bag) do
+                local link = GetContainerItemLink(bag, slot)
+                if link then
+                    local name = GetItemInfo(link)
 
-                if name and (name == AS.item[listnum].name or name == AS.item[listnum].link) then -- string.find ignores dashes
-                    found = true
-                    ASprint(MSG_C.INFO.."Setting up sale:|r "..AS.item[listnum].name, 1)
-                    AuctionFrameTab3:Click()
-                    PickupContainerItem(bag, slot)
-                    ClickAuctionSellItemButton()
-                    ClearCursor()
-                    break
+                    if name and (name == AS.item[listnum].name or (string.find(AS.item[listnum].link, name) and not string.find(AS.item[listnum].link, name.."%s"))) then -- string.find ignores dashes
+                        found = true
+                        ASprint(MSG_C.INFO.."Setting up sale:|r "..AS.item[listnum].name, 1)
+                        AuctionFrameTab3:Click()
+                        PickupContainerItem(bag, slot)
+                        ClickAuctionSellItemButton()
+                        ClearCursor()
+                        break
+                    end
                 end
             end
         end
