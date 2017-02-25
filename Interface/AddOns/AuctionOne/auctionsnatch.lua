@@ -297,6 +297,7 @@ OPT_HIDDEN = {
                     local time = sold[x]['time']
                     local current_auctions = AO_CurrentOwnedAuctions(item)
                     local saved_auctions = {}
+
                     AS_tcopy(saved_auctions, AO_AUCTIONS[item])
 
                     if current_auctions and (current_auctions[1].quantity == 0 or current_auctions[1].sold == 1) then
@@ -328,16 +329,18 @@ OPT_HIDDEN = {
                         for key, value in pairs(saved_auctions) do
                             if type(value) == "table" then
 
-                                AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
-                                    ['name'] = item,
-                                    ['quantity'] = value.quantity,
-                                    ['icon'] = saved_auctions.icon,
-                                    ['price'] = value.price,
-                                    ['buyer'] = value.buyer,
-                                    ['link'] = value.link,
-                                    ['time'] = time,
-                                    ['timer'] = C_Timer.After(math.max(time - GetTime(), 1), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
-                                }
+                                if time - GetTime() > 1 then
+                                    AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
+                                        ['name'] = item,
+                                        ['quantity'] = value.quantity,
+                                        ['icon'] = saved_auctions.icon,
+                                        ['price'] = value.price,
+                                        ['buyer'] = value.buyer,
+                                        ['link'] = value.link,
+                                        ['time'] = time,
+                                        ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
+                                    }
+                                end
                                 if ASsavedtable.AOchatsold then
                                     ASprint(L[10078]..":|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
                                 end
@@ -371,16 +374,18 @@ OPT_HIDDEN = {
                         for key, value in pairs(saved_auctions) do
                             if type(value) == "table" then
 
-                                AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
-                                    ['name'] = item,
-                                    ['quantity'] = value.quantity,
-                                    ['icon'] = saved_auctions.icon,
-                                    ['price'] = value.price,
-                                    ['buyer'] = value.buyer,
-                                    ['link'] = value.link,
-                                    ['time'] = time,
-                                    ['timer'] = C_Timer.After(math.max(time - GetTime(), 1), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
-                                }
+                                if time - GetTime() > 1 then
+                                    AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
+                                        ['name'] = item,
+                                        ['quantity'] = value.quantity,
+                                        ['icon'] = saved_auctions.icon,
+                                        ['price'] = value.price,
+                                        ['buyer'] = value.buyer,
+                                        ['link'] = value.link,
+                                        ['time'] = time,
+                                        ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
+                                    }
+                                end
                                 if ASsavedtable.AOchatsold then
                                     ASprint(L[10078]..":|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
                                 end
