@@ -168,19 +168,19 @@ OPT_HIDDEN = {
         DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT..L[10000])
 
         ------ SLASH COMMANDS
-            SLASH_AS1 = "/AO"
-            SLASH_AS2 = "/ao"
-            SLASH_AS3 = "/Ao"
-            SLASH_AS4 = "/aO"
-            SLASH_AS5 = "/Auctionone"
-            SLASH_AS6 = "/AuctionOne"
-            SLASH_AS7 = "/AUCTIONONE"
-            SLASH_AS8 = "/auctionone"
+            SLASH_AS1 = "/AS"
+            SLASH_AS2 = "/as"
+            SLASH_AS3 = "/As"
+            SLASH_AS4 = "/aS"
+            SLASH_AS5 = "/Auctionsnatch"
+            SLASH_AS6 = "/AuctionSnatch"
+            SLASH_AS7 = "/AUCTIONSNATCH"
+            SLASH_AS8 = "/auctionsnatch"
 
             SlashCmdList["AS"] = AS_Main
 
         if IsAddOnLoaded("Aurora") then -- Verify if Aurora is installed/enabled
-            DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT.."AuctionOne|r: Aurora detected")
+            DEFAULT_CHAT_FRAME:AddMessage(MSG_C.DEFAULT.."AuctionSnatch|r: Aurora detected")
             F, C = unpack(Aurora) -- Aurora
             r, g, b = C.r, C.g, C.b -- Aurora
             AS_backdrop = C.media.backdrop
@@ -724,7 +724,7 @@ OPT_HIDDEN = {
                 ASprint(MSG_C.INFO.."Outbid sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOoutbid), 1)
                 if ASsavedtable.AOoutbid then
                    ASprint(MSG_C.DEBUG.."Attempting to play 'outbid' sound file")
-                   PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Outbid.mp3")
+                   PlaySoundFile("Interface\\Addons\\AuctionSnatch\\Sounds\\Outbid.mp3")
                 end
                 return
             elseif input == "sound sold" then
@@ -733,7 +733,7 @@ OPT_HIDDEN = {
                 if ASsavedtable.AOsold then
                     --PlaySound("LOOTWINDOWCOINSOUND")
                     ASprint(MSG_C.DEBUG.."Attempting to play 'sold' sound file")
-                    PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Sold.mp3")
+                    PlaySoundFile("Interface\\Addons\\AuctionSnatch\\Sounds\\Sold.mp3")
                 end
                 return
             elseif input == "sound expired" then
@@ -741,7 +741,7 @@ OPT_HIDDEN = {
                 ASprint(MSG_C.INFO.."Expired sound:|r "..MSG_C.BOOL..tostring(ASsavedtable.AOexpired), 1)
                 if ASsavedtable.AOexpired then
                    ASprint(MSG_C.DEBUG.."Attempting to play 'expired' sound file")
-                   PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Expired.mp3")
+                   PlaySoundFile("Interface\\Addons\\AuctionSnatch\\Sounds\\Expired.mp3")
                 end
                 return
             elseif input == "chat sold" then
@@ -1592,7 +1592,7 @@ OPT_HIDDEN = {
                 
                 if ASnodoorbell then
                    ASprint(MSG_C.DEBUG.."Attempting to play sound file")
-                   PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\DoorBell.mp3", "Master")
+                   PlaySoundFile("Interface\\Addons\\AuctionSnatch\\Sounds\\DoorBell.mp3", "Master")
                 end
 
                 AuctionFrameBrowse_Update()
@@ -1876,7 +1876,7 @@ OPT_HIDDEN = {
             }
             -- Play sound
             if ASsavedtable.AOsold then
-               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Sold.mp3", "Master")
+               PlaySoundFile("Interface\\Addons\\AuctionSnatch\\Sounds\\Sold.mp3", "Master")
             end
 
         elseif string.match(arg1, string.gsub(ERR_AUCTION_EXPIRED_S, "(%%s)", ".+")) ~= nil then
@@ -1885,13 +1885,13 @@ OPT_HIDDEN = {
             table.insert(AUC_EVENTS['REMOVE'], item)
 
             if ASsavedtable.AOexpired then
-               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Expired.mp3", "Master")
+               PlaySoundFile("Interface\\Addons\\AuctionSnatch\\Sounds\\Expired.mp3", "Master")
             end
         
         elseif string.match(arg1, string.gsub(ERR_AUCTION_OUTBID_S, "(%%s)", ".+")) ~= nil then
             -- Outbid
             if ASsavedtable.AOoutbid then
-               PlaySoundFile("Interface\\Addons\\AuctionOne\\Sounds\\Outbid.mp3", "Master")
+               PlaySoundFile("Interface\\Addons\\AuctionSnatch\\Sounds\\Outbid.mp3", "Master")
             end
         end
     end

@@ -616,7 +616,7 @@
                 button_tmp.icon:SetWidth(AS_BUTTON_HEIGHT)
                 button_tmp.icon:SetHeight(AS_BUTTON_HEIGHT)
                 button_tmp.icon:SetPoint("TOPLEFT")
-                button_tmp.icon:SetNormalTexture("Interface/AddOns/AuctionOne/media/gloss")
+                button_tmp.icon:SetNormalTexture("Interface/AddOns/AuctionSnatch/media/gloss")
                 button_tmp.icon:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
                 button_tmp.icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)
             -------------- SCRIPT ----------------
@@ -711,7 +711,7 @@
                 button_tmp.icon:SetWidth(AS_BUTTON_HEIGHT)
                 button_tmp.icon:SetHeight(AS_BUTTON_HEIGHT)
                 button_tmp.icon:SetPoint("TOPLEFT")
-                button_tmp.icon:SetNormalTexture("Interface/AddOns/AuctionOne/media/gloss")
+                button_tmp.icon:SetNormalTexture("Interface/AddOns/AuctionSnatch/media/gloss")
                 button_tmp.icon:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
                 button_tmp.icon:GetNormalTexture():SetTexCoord(0.1,0.9,0.1,0.9)
             -------------- SCRIPT ----------------
@@ -1134,7 +1134,7 @@
             ------ ICON
                 -------------- STYLE ----------------
                     AS.manualprompt.icon = CreateFrame("Button", nil, AS.manualprompt)
-                    AS.manualprompt.icon:SetNormalTexture("Interface/AddOns/AuctionOne/media/gloss")
+                    AS.manualprompt.icon:SetNormalTexture("Interface/AddOns/AuctionSnatch/media/gloss")
                     AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
                     AS.manualprompt.icon:SetPoint("TOPLEFT", AS.manualprompt, "TOPLEFT", 18, -15)
                     AS.manualprompt.icon:SetHeight(37)
@@ -1524,7 +1524,7 @@
         ------ ICON
             -------------- STYLE ----------------
                 AS.prompt.icon = CreateFrame("Button", nil, AS.prompt)
-                AS.prompt.icon:SetNormalTexture("Interface/AddOns/AuctionOne/media/gloss")
+                AS.prompt.icon:SetNormalTexture("Interface/AddOns/AuctionSnatch/media/gloss")
                 AS.prompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
                 AS.prompt.icon:SetPoint("TOPLEFT", AS.prompt, "TOPLEFT", 18, -15)
                 AS.prompt.icon:SetHeight(37)
