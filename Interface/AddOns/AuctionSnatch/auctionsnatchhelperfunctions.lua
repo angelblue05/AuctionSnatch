@@ -137,7 +137,7 @@
         if ASdebug or (level == 1) then
 
             if ASprintstack == -1 then
-                messagestring = MSG_C.DEFAULT.."AuctionOne|r: "
+                messagestring = MSG_C.DEFAULT.."AuctionSnatch|r: "
             end
 
             if not message then

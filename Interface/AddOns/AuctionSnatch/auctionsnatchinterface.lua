@@ -737,7 +737,7 @@
         if AuctionFrame then
             -------------- STYLE ----------------
                 ASauctiontab = CreateFrame("Button", "ASauctiontab", AuctionFrame, "AuctionTabTemplate")
-                ASauctiontab:SetText("AO")
+                ASauctiontab:SetText("AS")
                 PanelTemplates_TabResize(ASauctiontab, 50, 70, 70);
                 PanelTemplates_DeselectTab(ASauctiontab)
             -------------- SCRIPT ----------------

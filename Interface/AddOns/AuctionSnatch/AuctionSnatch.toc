@@ -1,8 +1,8 @@
 ## Interface: 70100
-## Title: Auction One
+## Title: Auction Snatch
 ## Notes: "Get that auction!  Go! Go! Go!"
-## Author:  Angelblue05
-## Version: 1.12
+## Author:  Angelblue05, Dax006
+## Version: 1.13
 ## SavedVariables: ASsavedtable, ASsavedposition, ASfirsttime, ASdebug, AO_AUCTIONS_SOLD
 
 locale\localization.lua

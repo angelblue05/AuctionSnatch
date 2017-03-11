@@ -1,6 +1,6 @@
 -- Primary localization (default)
 
-L[10000] = "AuctionOne loaded.\nType /ao or /auctionone"
+L[10000] = "AuctionSnatch loaded.\nType /as or /auctionsnatch"
 L[10001] = "Doorbell sound"
 L[10002] = "Ignore bids"
 L[10003] = "Ignore no buyout"

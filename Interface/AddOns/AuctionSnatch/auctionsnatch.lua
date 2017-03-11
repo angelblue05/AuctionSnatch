@@ -207,7 +207,6 @@ OPT_HIDDEN = {
 
         if event == "VARIABLES_LOADED" then
             ASprint(MSG_C.EVENT.."Variables loaded. Initializing.")
-            ASprint(MSG_C.INFO.."Running version: "..GetAddOnMetadata("AuctionOne", "Version"), 1)
             
             AS_Initialize()
 
