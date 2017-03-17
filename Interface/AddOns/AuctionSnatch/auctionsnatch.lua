@@ -355,7 +355,7 @@ OPT_HIDDEN = {
                                 end
                             end
                         end
-                    else
+                    else -- Auctions are not visible, due to CRZ
                         if current_auctions then
                             for key, value in pairs(current_auctions) do
                                 for y = #saved_auctions, 1, -1 do
@@ -835,7 +835,6 @@ OPT_HIDDEN = {
 
         if level == 1 then
             local info = UIDropDownMenu_CreateInfo()
-            local key, value
 
             --- Profile/Server list
             info.text = L[10063]
@@ -905,7 +904,6 @@ OPT_HIDDEN = {
             end
         elseif level == 2 and UIDROPDOWNMENU_MENU_VALUE == "Import" then
             local info = UIDropDownMenu_CreateInfo()
-            local key, value
 
             if ASsavedtable then
                 for key, value in pairs(ASsavedtable) do
@@ -928,8 +926,6 @@ OPT_HIDDEN = {
             end
         elseif level == 2 and UIDROPDOWNMENU_MENU_VALUE == "ASlistoptions" then
             local info = UIDropDownMenu_CreateInfo()
-            local key, value
-
             --- Rename current list
             info.text = L[10016]
             info.hasArrow = false
@@ -1120,7 +1116,7 @@ OPT_HIDDEN = {
 
         FauxScrollFrame_Update(AS.mainframe.listframe.scrollFrame, ASnumberofitems, ASrowsthatcanfit(), AS_BUTTON_HEIGHT)
 
-        local x, idx, link, hexcolor, itemRarity
+        local idx, link, hexcolor, itemRarity
 
         for x = 1, ASrowsthatcanfit() do
             -- Get the appropriate item, which will be x + value
@@ -1167,7 +1163,7 @@ OPT_HIDDEN = {
 
         FauxScrollFrame_Update(AS.mainframe.soldlistframe.scrollFrame, ASnumberofitems, ASrowsthatcanfit(), AS_BUTTON_HEIGHT)
 
-        local x, idx, link, hexcolor, itemRarity
+        local idx, link, hexcolor, itemRarity
         local total = 0
         for x = 1, ASnumberofitems do -- Calculate total
             total = total + AO_AUCTIONS_SOLD[x].price
@@ -1897,16 +1893,14 @@ OPT_HIDDEN = {
     end
 
     function AO_CurrentOwnedAuctions(name)
-        local x, current
+        -- If name is nil, return the entire owned auction list
+        local current = {}
         local _, totalAuctions = GetNumAuctionItems("owner")
 
         for x = 1, totalAuctions do
             local auction = {GetAuctionItemInfo("owner", x)}
 
-            if name == auction[1] then
-                if not current then
-                    current = {}
-                end
+            if name == auction[1] or not name then
                 table.insert(current, {
                     ['quantity'] = auction[3],
                     ['price'] = auction[10],
