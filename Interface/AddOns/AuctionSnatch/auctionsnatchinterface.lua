@@ -979,7 +979,7 @@
                 if link then
                     local name = GetItemInfo(link)
 
-                    if name and (name == AS.item[listnum].name or (string.find(AS.item[listnum].link, name) and not string.find(AS.item[listnum].link, name.."%s"))) then -- string.find ignores dashes
+                    if name and (name == AS.item[listnum].name or (AS.item[listnum].link and string.find(AS.item[listnum].link, name) and not string.find(AS.item[listnum].link, name.."%s"))) then -- string.find ignores dashes
                         found = true
                         ASprint(MSG_C.INFO.."Setting up sale:|r "..AS.item[listnum].name, 1)
                         AuctionFrameTab3:Click()
