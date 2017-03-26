@@ -1,4 +1,9 @@
 ------------------------------------------------------------------------
+1.14 | angelblue05 | 2017-03-26
+
+- Fix sell for items without links (by name)
+
+------------------------------------------------------------------------
 1.13 | angelblue05 | 2017-03-17
 
 - Fix bid not being detected correctly when snatching
