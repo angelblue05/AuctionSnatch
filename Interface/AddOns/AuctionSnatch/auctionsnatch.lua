@@ -300,7 +300,7 @@ OPT_HIDDEN = {
 
                     AS_tcopy(saved_auctions, AO_AUCTIONS[item])
 
-                    if current_auctions and (current_auctions[1].quantity == 0 or current_auctions[1].sold == 1) then
+                    if current_auctions and current_auctions[1] ~= nil and (current_auctions[1].quantity == 0 or current_auctions[1].sold == 1) then
                         -- Auctions are visible in the auction house
                         local last_auctions
 
