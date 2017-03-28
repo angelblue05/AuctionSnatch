@@ -1,4 +1,10 @@
 ------------------------------------------------------------------------
+1.15 | angelblue05 | 2017-03-28
+
+- Update TOC for 7.2
+- Fix error with pending auctions
+
+------------------------------------------------------------------------
 1.14 | angelblue05 | 2017-03-26
 
 - Fix sell for items without links (by name)
