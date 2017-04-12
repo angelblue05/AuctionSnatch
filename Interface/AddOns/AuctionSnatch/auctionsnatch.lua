@@ -1520,7 +1520,7 @@ OPT_HIDDEN = {
         local item = AS.item[AScurrentauctionsnatchitem]
         if AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then  --some mods change the default AH frame name
             -- Only proceed if item is not set to ignore. Right click item to bypass the ignore filter.
-            if AS.status_override or not item.ignoretable or (item.ignoretable and item.ignoretable[item.name].cutoffprice and item.ignoretable[item.name].cutoffprice > 0) then
+            if AS.status_override or not item.ignoretable or not (item.ignoretable[item.name] and item.ignoretable[item.name].cutoffprice and item.ignoretable[item.name].cutoffprice == 0) then
                 ASprint(MSG_C.INFO.."Called query: ("..AScurrentauctionsnatchitem..")|r "..item.name, 1)
 
                 if Auctioneer then
