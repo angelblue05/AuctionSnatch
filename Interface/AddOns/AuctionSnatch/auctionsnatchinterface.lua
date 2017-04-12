@@ -351,8 +351,14 @@
                 -------------- SCRIPT ----------------
                     AS.mainframe.headerframe.soldbutton:SetScript("OnClick", function()
                         if AS.mainframe.soldlistframe:IsVisible() then -- Toggle off
+                            if AS_SKIN then
+                                AS_ClearButton(AS.mainframe.headerframe.soldbutton)
+                            end
                             AS.mainframe.soldlistframe:Hide()
                         else -- Toggle on
+                            if AS_SKIN then
+                                AS_ColorButton(AS.mainframe.headerframe.soldbutton)
+                            end
                             AS.mainframe.soldlistframe:Show()
                         end
                     end)
@@ -361,7 +367,7 @@
                     end)
                     AS.mainframe.headerframe.soldbutton:SetScript("OnLeave", AShidetooltip)
                     if AS_SKIN then
-                        F.Reskin(AS.mainframe.headerframe.soldbutton) -- Aurora
+                        F.Reskin(AS.mainframe.headerframe.soldbutton, true) -- Aurora
                     end
 
         ------ LIST FRAME
@@ -1831,4 +1837,22 @@
         ASsavedtable[ACTIVE_TABLE] = nil
         AS_LoadTable(listname)
         AS_SavedVariables()
+    end
+
+--[[//////////////////////////////////////////////////
+
+    SHORTCUT FUNCTIONS
+
+    AS_ColorButton, AS_ClearButton
+
+----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
+
+    function AS_ColorButton(button)
+        button:SetBackdropColor(r, g, b, .3)
+        button:SetBackdropBorderColor(r, g, b)
+    end
+
+    function AS_ClearButton(button)
+        button:SetBackdropColor(0, 0, 0, 0)
+        button:SetBackdropBorderColor(0, 0, 0)
     end
