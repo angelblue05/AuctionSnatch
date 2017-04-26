@@ -604,6 +604,9 @@
                     BrowseResetButton:Click()
                     AuctionFrameBrowse.page = 0
                     BrowseName:SetText(ASsanitize(self.leftstring:GetText()))
+                    if AuctionFrame.selectedTab == 3 or AuctionFrame.selectedTab == 2 then
+                        AuctionFrameTab1:Click()
+                    end
                     AuctionFrameBrowse_Search()
                 end)
 
