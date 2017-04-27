@@ -79,7 +79,8 @@ OPT_LABEL = {
     ['ASautostart'] = L[10007],
     ['ASautoopen'] = L[10008],
     ['AOicontooltip'] = L[10009],
-    ['cancelauction'] = L[10005]
+    ['cancelauction'] = L[10005],
+    ['searchauction'] = L[10082]
 }
 OPT_HIDDEN = {
     ['searchoncreate'] = "",
@@ -214,6 +215,7 @@ OPT_HIDDEN = {
         elseif event == "AUCTION_OWNED_LIST_UPDATE" then
             --ASprint(MSG_C.EVENT..event)
             AS_RegisterCancelAction()
+            AS_RegisterSearchAction()
             -- Get current owner auctions
             if not AO_FIRSTRUN_AH then
                 AO_FIRSTRUN_AH = true
@@ -338,7 +340,7 @@ OPT_HIDDEN = {
                                         ['buyer'] = value.buyer,
                                         ['link'] = value.link,
                                         ['time'] = time,
-                                        ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
+                                        ['timer'] = C_Timer.After(time - GetTime(), function() if AO_AUCTIONS_SOLD ~= nil then table.remove(AO_AUCTIONS_SOLD, 1) end ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                                     }
                                 end
                                 if ASsavedtable.AOchatsold then
@@ -651,7 +653,7 @@ OPT_HIDDEN = {
                 table.remove(AO_AUCTIONS_SOLD, key)
             else
                 -- readd time left
-                value['timer'] = C_Timer.After(value.time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
+                value['timer'] = C_Timer.After(value.time - GetTime(), function() if AO_AUCTIONS_SOLD ~= nil then table.remove(AO_AUCTIONS_SOLD, 1) end ; AO_OwnerScrollbarUpdate() end)
             end
         end
         AO_OwnerScrollbarUpdate()
@@ -764,6 +766,10 @@ OPT_HIDDEN = {
                 ASsavedtable.cancelauction = not ASsavedtable.cancelauction
                 ASprint(MSG_C.INFO.."Cancel auction on right-click: "..MSG_C.BOOL..tostring(ASsavedtable.cancelauction), 1)
                 return
+            elseif input == "searchauction" then
+                ASsavedtable.searchauction = not ASsavedtable.searchauction
+                ASprint(MSG_C.INFO.."Search owned auction on double-click: "..MSG_C.BOOL..tostring(ASsavedtable.searchauction), 1)
+                return
             elseif input == "reloadsoldauction" then
                 AO_FIRSTRUN_AH = false
                 ASprint(MSG_C.WARN..L[10075], 1)
@@ -787,6 +793,7 @@ OPT_HIDDEN = {
                 ASsavedtable.searchoncreate = true
                 ASsavedtable.copperoverride = true
                 ASsavedtable.cancelauction = true
+                ASsavedtable.searchauction = true
                 ASsavedtable.rememberprice = true
                 ASsavedtable.ASautostart = false
                 ASsavedtable.ASautoopen = true
@@ -875,6 +882,14 @@ OPT_HIDDEN = {
                 info.text = OPT_LABEL["cancelauction"]
                 info.value = "cancelauction"
                 info.checked = ASsavedtable.cancelauction
+                info.hasArrow = false
+                info.func =  ASdropDownMenuItem_OnClick
+                info.owner = self:GetParent()
+                UIDropDownMenu_AddButton(info, level)
+                --- Search owned auction
+                info.text = OPT_LABEL["searchauction"]
+                info.value = "searchauction"
+                info.checked = ASsavedtable.searchauction
                 info.hasArrow = false
                 info.func =  ASdropDownMenuItem_OnClick
                 info.owner = self:GetParent()
@@ -1029,7 +1044,14 @@ OPT_HIDDEN = {
             ASsavedtable.cancelauction = not ASsavedtable.cancelauction
             ASprint(MSG_C.INFO.."Cancel auction on right-click:|r "..MSG_C.BOOL..tostring(ASsavedtable.cancelauction))
             if not ASsavedtable.cancelauction then
-                ASprint(MSG_C.WARN.."To turn off cancel auction, you will need to reloading your UI", 1)
+                ASprint(MSG_C.WARN.."To turn off cancel auction, you will need to reload your UI", 1)
+            end
+            return
+        elseif self.value == "searchauction" then
+            ASsavedtable.searchauction = not ASsavedtable.searchauction
+            ASprint(MSG_C.INFO.."Search owned auction on double-click:|r "..MSG_C.BOOL..tostring(ASsavedtable.searchauction))
+            if not ASsavedtable.cancelauction then
+                ASprint(MSG_C.WARN.."To turn off search owned auction, you will need to reload your UI", 1)
             end
             return
         elseif self.value == "AOrenamelist" then
@@ -1830,6 +1852,26 @@ OPT_HIDDEN = {
         return false
     end
 
+    function AS_RegisterSearchAction()
+        -------------- THANK YOU AUCTIONEER ----------------
+        for i = 1, 199 do
+            local owner_button = _G["AuctionsButton"..i]
+            if not owner_button then
+                break
+            end
+            if ASsavedtable.searchauction then
+                owner_button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+                owner_button:SetScript("OnDoubleClick", function(self)
+                    BrowseResetButton:Click()
+                    AuctionFrameBrowse.page = 0
+                    BrowseName:SetText(ASsanitize(GetAuctionItemInfo("owner", GetSelectedAuctionItem("owner"))))
+                    AuctionFrameTab1:Click()
+                    AuctionFrameBrowse_Search()
+                end)
+            end
+        end
+    end
+
     function AS_RegisterCancelAction()
         -------------- THANK YOU AUCTIONEER ----------------
         for i = 1, 199 do
@@ -1881,7 +1923,7 @@ OPT_HIDDEN = {
             table.insert(AUC_EVENTS['REMOVE'], item)
 
             if ASsavedtable.AOexpired then
-               PlaySoundFile("Interface\\Addons\\AuctionSnatch\\Sounds\\Expired.mp3", "Master")
+               PlaySoundFile("Interface\\Addons\\AuctionSnatch\\Sounds\\Expired.mp3", "SFX")
             end
         
         elseif string.match(arg1, string.gsub(ERR_AUCTION_OUTBID_S, "(%%s)", ".+")) ~= nil then

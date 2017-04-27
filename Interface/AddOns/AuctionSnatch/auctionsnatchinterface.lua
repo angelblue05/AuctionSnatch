@@ -785,6 +785,7 @@
             -- Set Event for Owner Auction tab
             AuctionFrameTab3:SetScript("PreClick", function(self, button, down)
                 AS_RegisterCancelAction()
+                AS_RegisterSearchAction()
             end)
         end
     end
