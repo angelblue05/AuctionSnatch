@@ -1,4 +1,10 @@
 ------------------------------------------------------------------------
+1.17a | angelblue05 | 2017-04-27
+
+- Fix bug with expired auctions
+- Add search owned auctions on double-click
+
+------------------------------------------------------------------------
 1.16 | angelblue05 | 2017-04-12
 
 - Fix filters causing item to be ignored completely
