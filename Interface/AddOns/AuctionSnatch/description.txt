@@ -21,6 +21,7 @@ Options:
 * [ Create list ] Create a new list
 * [ Value in copper ] Changes the value, at the time of input, between copper or gold-only
 * [ Remember price ] When using the sell option, remember the unit price from previous auction
+* [ Search owned auction ] Search your owned auctions on double-click in the auctions tab. Reload ui required when disabling this option
 * [ Cancel auction ] Cancel auction on right-click in the auctions tab. Reload ui required when disabling this option
 * [ Alerts ] Sounds and Chat alerts
 	* [ Chat ] Chat alerts for specific auction events
@@ -44,6 +45,7 @@ Other features:
 
 Slash commands:
 /ao debug: Toggle debug
+/ao searchauction: Search owned auction on double-click in the auctions tab
 /ao cancelauction: Cancel auction on right-click in the auctions tab
 /ao searchoncreate: Search the item in the Auction House after creating the auction in our list
 /ao reloadsoldauction: Force refresh the list of owned auctions. Requires re-opening the Auction House to take effect

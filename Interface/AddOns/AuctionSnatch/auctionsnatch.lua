@@ -267,19 +267,22 @@ OPT_HIDDEN = {
                     local current_auctions = AO_CurrentOwnedAuctions(item)
 
                     local saved_auctions = {} -- Copy original auctions to compare
-                    AS_tcopy(saved_auctions, AO_AUCTIONS[item])
+                    if AO_AUCTIONS[item] ~= nil then
 
-                    if current_auctions then
-                        AO_CompareAuctionsTable(current_auctions, saved_auctions)
-                    end
+                        AS_tcopy(saved_auctions, AO_AUCTIONS[item])
 
-                    for key, value in pairs(saved_auctions) do
-                        for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item expired or was cancelled
-                            if type(value) == "table" and type(value2) == "table" then
-                                if value.quantity == value2.quantity and value.price == value2.price then
-                                    -- Found match
-                                    table.remove(AO_AUCTIONS[item], key2)
-                                    break
+                        if current_auctions then
+                            AO_CompareAuctionsTable(current_auctions, saved_auctions)
+                        end
+
+                        for key, value in pairs(saved_auctions) do
+                            for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item expired or was cancelled
+                                if type(value) == "table" and type(value2) == "table" then
+                                    if value.quantity == value2.quantity and value.price == value2.price then
+                                        -- Found match
+                                        table.remove(AO_AUCTIONS[item], key2)
+                                        break
+                                    end
                                 end
                             end
                         end
@@ -340,7 +343,7 @@ OPT_HIDDEN = {
                                         ['buyer'] = value.buyer,
                                         ['link'] = value.link,
                                         ['time'] = time,
-                                        ['timer'] = C_Timer.After(time - GetTime(), function() if AO_AUCTIONS_SOLD ~= nil then table.remove(AO_AUCTIONS_SOLD, 1) end ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
+                                        ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
                                     }
                                 end
                                 if ASsavedtable.AOchatsold then
@@ -653,7 +656,7 @@ OPT_HIDDEN = {
                 table.remove(AO_AUCTIONS_SOLD, key)
             else
                 -- readd time left
-                value['timer'] = C_Timer.After(value.time - GetTime(), function() if AO_AUCTIONS_SOLD ~= nil then table.remove(AO_AUCTIONS_SOLD, 1) end ; AO_OwnerScrollbarUpdate() end)
+                value['timer'] = C_Timer.After(value.time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
             end
         end
         AO_OwnerScrollbarUpdate()

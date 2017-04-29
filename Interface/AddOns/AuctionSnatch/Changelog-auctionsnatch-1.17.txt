@@ -1,5 +1,5 @@
 ------------------------------------------------------------------------
-1.17a | angelblue05 | 2017-04-27
+1.17 | angelblue05 | 2017-04-29
 
 - Fix bug with expired auctions
 - Add search owned auctions on double-click
