@@ -14,7 +14,7 @@
             -------------- STYLE ----------------
                 AS.mainframe = CreateFrame("Frame", "ASmainframe", UIParent)
                 AS.mainframe:SetPoint("RIGHT", 0, 0) -- TODO: Can we anchor to the auction house?
-                AS.mainframe:SetHeight(AS_GROSSHEIGHT + 8)
+                AS.mainframe:SetHeight(AS_GROSSHEIGHT + 6)
                 AS.mainframe:SetWidth(280)
                 AS.mainframe:Hide()
                 if AS_SKIN then
@@ -34,7 +34,8 @@
                 AS.mainframe:SetBackdropColor(0, 0, 0, 0.9)
                 AS.mainframe:SetMovable(true)
                 AS.mainframe:EnableMouse(true)
-                AS.mainframe:SetFrameStrata("HIGH")
+                AS.mainframe:SetToplevel(true)
+                AS.mainframe:SetFrameStrata("MEDIUM")
             -------------- SCRIPT ----------------
                 AS.mainframe:SetScript("OnMouseDown", function(self)
                     AS.mainframe:StartMoving()
@@ -1398,7 +1399,7 @@
                     AS.manualprompt.notes:SetPoint("TOPRIGHT", AS.manualprompt.savebutton, "BOTTOMRIGHT", 0, -15)
                     AS.manualprompt.notes:SetPoint("BOTTOMRIGHT", AS.manualprompt, "BOTTOMRIGHT", 0, 15)
                     AS.manualprompt.notes:SetMultiLine(true)
-                    AS.manualprompt.notes:SetMaxLetters(300)
+                    AS.manualprompt.notes:SetMaxLetters(110)
                 -------------- SCRIPT ----------------
                     AS.manualprompt.notes:SetScript("OnEscapePressed", function(self)
                         AS.manualprompt.notes:ClearFocus()
