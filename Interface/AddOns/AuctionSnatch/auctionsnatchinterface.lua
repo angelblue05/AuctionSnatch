@@ -289,6 +289,29 @@
                         F.Reskin(AS.mainframe.headerframe.deletelistbutton) -- Aurora
                     end
 
+            ------ REFRESH SOLD AUCTION BUTTON
+                -------------- STYLE ----------------
+                    AS.mainframe.headerframe.refreshlistbutton = CreateFrame("Button", nil, AS.mainframe.headerframe, "UIPanelbuttontemplate")
+                    AS.mainframe.headerframe.refreshlistbutton:SetText(L[10083])
+                    AS.mainframe.headerframe.refreshlistbutton:SetWidth(100)
+                    AS.mainframe.headerframe.refreshlistbutton:SetHeight(AS_BUTTON_HEIGHT)
+                    AS.mainframe.headerframe.refreshlistbutton:SetPoint("BOTTOMLEFT", AS.mainframe, "BOTTOMLEFT", 17, 3)
+                    AS.mainframe.headerframe.refreshlistbutton:Hide()
+                -------------- SCRIPT ----------------
+                    AS.mainframe.headerframe.refreshlistbutton:SetScript("OnClick", function(self)
+                        AO_FIRSTRUN_AH = false
+                        ASprint(MSG_C.WARN..L[10075], 1)
+                    end)
+                    AS.mainframe.headerframe.refreshlistbutton:SetScript("OnEnter", function(self)
+                        ASshowtooltip(AS.mainframe.headerframe.refreshlistbutton, L[10084])
+                    end)
+                    AS.mainframe.headerframe.refreshlistbutton:SetScript("OnLeave", function(self)
+                        AShidetooltip()
+                    end)
+                    if AS_SKIN then
+                        F.Reskin(AS.mainframe.headerframe.refreshlistbutton) -- Aurora
+                    end
+
             ------ PREV BUTTON
                 -------------- STYLE ----------------
                     AS.mainframe.headerframe.prevlist = CreateFrame("Button", nil, AS.mainframe.headerframe)
@@ -356,11 +379,15 @@
                                 AS_ClearButton(AS.mainframe.headerframe.soldbutton)
                             end
                             AS.mainframe.soldlistframe:Hide()
+                            AS.mainframe.headerframe.refreshlistbutton:Hide()
+                            AS.mainframe.headerframe.deletelistbutton:Show()
                         else -- Toggle on
                             if AS_SKIN then
                                 AS_ColorButton(AS.mainframe.headerframe.soldbutton)
                             end
                             AS.mainframe.soldlistframe:Show()
+                            AS.mainframe.headerframe.deletelistbutton:Hide()
+                            AS.mainframe.headerframe.refreshlistbutton:Show()
                         end
                     end)
                     AS.mainframe.headerframe.soldbutton:SetScript("OnEnter", function(self)
