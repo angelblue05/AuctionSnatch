@@ -46,6 +46,8 @@ AS_SKIN = false
 AO_RENAME = nil
 AO_AUCTIONS = {}
 AO_AUCTIONS_SOLD = {}
+AS_MONEY_TRACKER = {}
+
 
 STATE = {
     ['QUERYING'] = 1,
@@ -108,6 +110,7 @@ OPT_HIDDEN = {
             self:RegisterEvent("AUCTION_HOUSE_SHOW")
             self:RegisterEvent("AUCTION_HOUSE_CLOSED")
             self:RegisterEvent("VARIABLES_LOADED")
+            --self:RegisterEvent("MAIL_INBOX_UPDATE")
 
         ------ SOLD/CANCELLED AUCTION
             AS.AO_AuctionSoldFrame = CreateFrame("Frame")
@@ -212,6 +215,39 @@ OPT_HIDDEN = {
             
             AS_Initialize()
 
+        --[[elseif event == "MAIL_INBOX_UPDATE" then
+
+            local x
+            for x = 1, GetInboxNumItems() do
+                local invoiceType, itemName, playerName, bid, buyout, deposit, consignment = GetInboxInvoiceInfo(x)
+                if invoiceType then
+
+                    local _, _, _, subject, _, _, _, _, wasRead = GetInboxHeaderInfo(x)
+                    local stack = string.match(subject, "%d+") or 1
+
+                    local _, itemlink = GetItemInfo(itemName)
+
+                    local itemid = ASitemid(itemlink)
+                    ASprint(itemid)
+
+                    if not wasRead then
+
+                        if not AS_MONEY_TRACKER[itemName] then
+                            AS_MONEY_TRACKER[itemName] = {}
+                            AS_MONEY_TRACKER[itemName]['sold'] = 0
+                            AS_MONEY_TRACKER[itemName]['bought'] = 0
+                        end
+                        ASprint(AS_MONEY_TRACKER)
+
+                        if invoiceType == "seller" then -- Add
+                            AS_MONEY_TRACKER[itemName]['sold'] = AS_MONEY_TRACKER[itemName]['sold'] + buyout
+                        elseif invoiceType == "buyer" then -- Substract
+                            AS_MONEY_TRACKER[itemName]['bought'] = AS_MONEY_TRACKER[itemName]['bought'] + buyout
+                        end
+                    end
+                end
+            end]]
+
         elseif event == "AUCTION_OWNED_LIST_UPDATE" then
             --ASprint(MSG_C.EVENT..event)
             AS_RegisterCancelAction()
@@ -230,7 +266,7 @@ OPT_HIDDEN = {
                         AO_AUCTIONS[auction[1]]['icon'] = auction[2]
                     end
 
-                    if auction[16] == 1 or auction[3] == 0 then -- Auction is sold (only when not affected by CRZ)
+                    if auction[16] == 1 or auction[3] == 0 then
                         if x == 1 then -- Verification if we should wipe sold auctions
                             AO_AUCTIONS_SOLD = {}
                         end
@@ -305,102 +341,55 @@ OPT_HIDDEN = {
 
                     AS_tcopy(saved_auctions, AO_AUCTIONS[item])
 
-                    if current_auctions and current_auctions[1] ~= nil and (current_auctions[1].quantity == 0 or current_auctions[1].sold == 1) then
-                        -- Auctions are visible in the auction house
-                        local last_auctions
+                    -- Auctions are visible in the auction house
+                    local last_auctions
 
-                        for key = #current_auctions, 1, -1 do
-                            value = current_auctions[key]
-                            if not last_auctions and (value.sold == 1 or value.quantity == 0) then
-                                -- Auction sold
-                                last_auctions = value
+                    for key = #current_auctions, 1, -1 do
+                        value = current_auctions[key]
+                        if not last_auctions and (value.sold == 1 or value.quantity == 0) then
+                            -- Auction sold
+                            last_auctions = value
+                        end
+                        for y = #saved_auctions, 1, -1 do
+                            value2 = saved_auctions[y]
+                            if type(value) == "table" and type(value2) == "table" then
+                                if value.price == value2.price and value.quantity == value2.quantity and value.sold == 0 then
+                                    -- Found match, still exists
+                                    table.remove(saved_auctions, y)
+                                    break
+                                end
                             end
-                            for y = #saved_auctions, 1, -1 do
-                                value2 = saved_auctions[y]
+                        end
+                    end
+                    if saved_auctions[1] then
+                        saved_auctions[1].buyer = last_auctions.buyer
+                        --saved_auctions[1].link = last_auctions.link
+                    end
+
+                    for key, value in pairs(saved_auctions) do
+                        if type(value) == "table" then
+
+                            if time - GetTime() > 1 then
+                                AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
+                                    ['name'] = item,
+                                    ['quantity'] = value.quantity,
+                                    ['icon'] = saved_auctions.icon,
+                                    ['price'] = value.price,
+                                    ['buyer'] = value.buyer,
+                                    ['link'] = value.link,
+                                    ['time'] = time,
+                                    ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
+                                }
+                            end
+                            if ASsavedtable.AOchatsold then
+                                ASprint(L[10078]..":|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
+                            end
+                            for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
                                 if type(value) == "table" and type(value2) == "table" then
-                                    if value.price == value2.price and value.quantity == value2.quantity and value.sold == 0 then
-                                        -- Found match, still exists
-                                        table.remove(saved_auctions, y)
+                                    if value.price == value2.price and value.quantity == value2.quantity then
+                                        -- Found match
+                                        table.remove(AO_AUCTIONS[item], key2)
                                         break
-                                    end
-                                end
-                            end
-                        end
-                        if saved_auctions[1] then
-                            saved_auctions[1].buyer = last_auctions.buyer
-                            --saved_auctions[1].link = last_auctions.link
-                        end
-
-                        for key, value in pairs(saved_auctions) do
-                            if type(value) == "table" then
-
-                                if time - GetTime() > 1 then
-                                    AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
-                                        ['name'] = item,
-                                        ['quantity'] = value.quantity,
-                                        ['icon'] = saved_auctions.icon,
-                                        ['price'] = value.price,
-                                        ['buyer'] = value.buyer,
-                                        ['link'] = value.link,
-                                        ['time'] = time,
-                                        ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
-                                    }
-                                end
-                                if ASsavedtable.AOchatsold then
-                                    ASprint(L[10078]..":|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
-                                end
-                                for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
-                                    if type(value) == "table" and type(value2) == "table" then
-                                        if value.price == value2.price and value.quantity == value2.quantity then
-                                            -- Found match
-                                            table.remove(AO_AUCTIONS[item], key2)
-                                            break
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    else -- Auctions are not visible, due to CRZ
-                        if current_auctions then
-                            for key, value in pairs(current_auctions) do
-                                for y = #saved_auctions, 1, -1 do
-                                    value2 = saved_auctions[y]
-                                    if type(value) == "table" and type(value2) == "table" then
-                                        if value.price == value2.price and value.quantity == value2.quantity and value.sold == 0 then
-                                            -- Found match, still exists
-                                            table.remove(saved_auctions, y)
-                                            break
-                                        end
-                                    end
-                                end
-                            end
-                        end
-
-                        for key, value in pairs(saved_auctions) do
-                            if type(value) == "table" then
-
-                                if time - GetTime() > 1 then
-                                    AO_AUCTIONS_SOLD[#AO_AUCTIONS_SOLD + 1] = {
-                                        ['name'] = item,
-                                        ['quantity'] = value.quantity,
-                                        ['icon'] = saved_auctions.icon,
-                                        ['price'] = value.price,
-                                        ['buyer'] = value.buyer,
-                                        ['link'] = value.link,
-                                        ['time'] = time,
-                                        ['timer'] = C_Timer.After(time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end) -- 60min countdown
-                                    }
-                                end
-                                if ASsavedtable.AOchatsold then
-                                    ASprint(L[10078]..":|T"..saved_auctions.icon..":0|t"..value.link.."x"..value.quantity.."  "..ASGSC(value.price), 1)
-                                end
-                                for key2, value2 in pairs(AO_AUCTIONS[item]) do -- delete entry since item was sold
-                                    if type(value) == "table" and type(value2) == "table" then
-                                        if value.price == value2.price and value.quantity == value2.quantity then
-                                            -- Found match
-                                            table.remove(AO_AUCTIONS[item], key2)
-                                            break
-                                        end
                                     end
                                 end
                             end
@@ -617,6 +606,15 @@ OPT_HIDDEN = {
         hooksecurefunc("ChatFrame_OnHyperlinkShow", AS_ChatFrame_OnHyperlinkShow)
         hooksecurefunc("ChatEdit_InsertLink", AO_InsertLink)
 
+        --- Doing the hook this way allows the line to show up higher in the tooltip
+        --[[old_OnTooltipSetItem = GameTooltip:GetScript("OnTooltipSetItem")
+        if old_OnTooltipSetItem then
+            GameTooltip:SetScript("OnTooltipSetItem", function(self, ...)
+                AS_TooltipAuction(self)
+                return old_OnTooltipSetItem(self, ...)
+            end)
+        end]]
+
         if (playerName == nil) or (playerName == UNKNOWNOBJECT) or (playerName == UNKNOWNBEING) then
             return
         end
@@ -633,10 +631,6 @@ OPT_HIDDEN = {
             AS_template(serverName)
         end
 
-        if not AO_AUCTIONS_SOLD then -- Remember sold auctions between sessions
-            AO_AUCTIONS_SOLD = {}
-        end
-
         -- font size testing and adjuting height of prompt
         local _, height = GameFontNormal:GetFont()
         local new_height = (height * 10) + ((AS_BUTTON_HEIGHT + AS_FRAMEWHITESPACE)*6)  -- LINES, 5 BUTTONS + 1 togrow on
@@ -649,16 +643,6 @@ OPT_HIDDEN = {
         -- Generate scroll bar items
         AS_ScrollbarUpdate()
         -- Clean auction sold list
-        local key, value
-        for key = #AO_AUCTIONS_SOLD, 1, -1 do
-            value = AO_AUCTIONS_SOLD[key]
-            if value.time <= GetTime() then
-                table.remove(AO_AUCTIONS_SOLD, key)
-            else
-                -- readd time left
-                value['timer'] = C_Timer.After(value.time - GetTime(), function() table.remove(AO_AUCTIONS_SOLD, 1) ; AO_OwnerScrollbarUpdate() end)
-            end
-        end
         AO_OwnerScrollbarUpdate()
     end
 
@@ -1295,15 +1279,12 @@ OPT_HIDDEN = {
                 AS.manualprompt:Hide()
         end
 
-        AS[L[10045]] = function()  -- Save price filter in manualprompt
-                local name = AS.item['ASmanualedit'].name
-                local listnumber = AS.item['ASmanualedit'].listnumber
+        AS[L[10045]] = function()  -- Save information from manualprompt
+                local item = AS.item['ASmanualedit']
+                local name = item.name
+                local listnumber = item.listnumber
 
-                if AS.item['ASmanualedit'].priceoverride == nil and AS.item['ASmanualedit'].ilvl == nil and AS.item['ASmanualedit'].stackone == nil then
-                    AS.manualprompt:Hide()
-                    return
-                end
-
+                -- Failsafe for ignoretable
                 if not AS.item[listnumber].ignoretable then
                     AS.item[listnumber].ignoretable = {}
                 end
@@ -1311,16 +1292,31 @@ OPT_HIDDEN = {
                     AS.item[listnumber].ignoretable[name] = {}
                 end
 
-                if AS.item['ASmanualedit'].priceoverride then
-                    AS.item[listnumber].ignoretable[name].cutoffprice = AS.item['ASmanualedit'].priceoverride
+                -- Price override
+                if item.priceoverride then
+                    AS.item[listnumber].ignoretable[name].cutoffprice = item.priceoverride
                 end
-                if AS.item['ASmanualedit'].ilvl then
-                    AS.item[listnumber].ignoretable[name].ilvl = AS.item['ASmanualedit'].ilvl
+                -- iLvl filter
+                if item.ilvl then
+                    if item.ilvl ~= "" then
+                        AS.item[listnumber].ignoretable[name].ilvl = tonumber(item.ilvl)
+                    else
+                        AS.item[listnumber].ignoretable[name].ilvl = nil
+                    end
                 end
-                if AS.item['ASmanualedit'].stackone then
-                    AS.item[listnumber].ignoretable[name].stackone = AS.item['ASmanualedit'].stackone
-                elseif AS.item['ASmanualedit'].stackone == false then
+                -- Stack of one filter
+                if item.stackone == false then
                     AS.item[listnumber].ignoretable[name].stackone = nil
+                else
+                    AS.item[listnumber].ignoretable[name].stackone = item.stackone
+                end
+                -- Notes
+                if item.notes then
+                    if item.notes ~= "" then
+                        AS.item[listnumber].notes = item.notes
+                    else
+                        AS.item[listnumber].notes = nil
+                    end
                 end
 
                 AS.item[listnumber].priceoverride = nil
@@ -1609,7 +1605,7 @@ OPT_HIDDEN = {
             auction_item = {GetAuctionItemInfo("list", AScurrentahresult)}
             SetSelectedAuctionItem("list", AScurrentahresult)
 
-            if AS_IsShowPrompt() then
+            if AS_IsShowPrompt(auction_item) then
                 
                 if ASnodoorbell then
                    ASprint(MSG_C.DEBUG.."Attempting to play sound file")
@@ -1662,9 +1658,8 @@ OPT_HIDDEN = {
         return false
     end
 
-    function AS_IsShowPrompt()
+    function AS_IsShowPrompt(auction_item)
         -- Primary conditional and fill info for prompt if returns true
-        local auction_item = auction_item
         local item = AS.item[AScurrentauctionsnatchitem]
         local cutoffprice = AS_CutoffPrice(auction_item[1])
         local bid, _, peritembid, peritembuyout = AS_GetCost()
@@ -1904,6 +1899,15 @@ OPT_HIDDEN = {
         local auction = {GetAuctionItemInfo("owner", GetSelectedAuctionItem('owner'))}
         table.insert(AUC_EVENTS['REMOVE'], auction[1])
     end
+
+    --[[function AS_TooltipAuction(self)
+
+        local itemName, ItemLink = self:GetItem()
+        if itemName then
+            self:AddLine(" ")
+            self:AddDoubleLine("Auction Profit", "1g 2s", 0, 0.9, 0.1)
+        end
+    end]]
 
     function AO_AuctionSold(self, event, arg1)
         -- Workaround because auction sold doesn't work properly since Cross Server support

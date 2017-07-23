@@ -543,7 +543,7 @@
                 local high_tex = button_tmp:CreateTexture()
                 high_tex:SetHeight(AS_BUTTON_HEIGHT-1)
                 high_tex:SetPoint("LEFT", normal_tex, 0, -1)
-                high_tex:SetPoint("RIGHT",normal_tex)
+                high_tex:SetPoint("RIGHT", normal_tex)
                 high_tex:SetTexture(AS_backdrop) -- Aurora
                 high_tex:SetVertexColor(0.945, 0.847, 0.152,0.3)
                 button_tmp:SetHighlightTexture(high_tex)
@@ -552,7 +552,6 @@
                     ASorignumber = self.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
                 end)
                 button_tmp:SetScript("OnClick", function(self, button, down)
-                    ASprint("CLeeekkk!")
                     current_scroll = self.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
 
                     if AS.optionframe:IsVisible() then
@@ -596,36 +595,67 @@
                     local scrollvalue = FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
                     local idx = AS.item[self.buttonnumber + scrollvalue]
 
-                    strmsg = L[10059]
+                    if idx.rarity then
+                        _,_,_,hexcolor = GetItemQualityColor(idx.rarity)
+                        title = "|c"..hexcolor..idx.name
+                    else
+                        title = "|cffffffff"..idx.name
+                    end
+                    tooltip = ASshowtooltip(self, nil, title)
+                    tooltip:AddLine(L[10059], 0, 1, 1, 1, 1) -- Instructions
 
                     if idx.ignoretable and idx.ignoretable[idx.name] then
+                        local filters = {}
+
                         if idx.ignoretable[idx.name].cutoffprice and idx.ignoretable[idx.name].cutoffprice > 0 then
-                            strmsg = strmsg.."\n"..L[10023]..": "..ASGSC(tonumber(idx.ignoretable[idx.name].cutoffprice))
+                            filters["|cff00ffff"..L[10023]..":|r"] = ASGSC(tonumber(idx.ignoretable[idx.name].cutoffprice), nil, nil, false)
                         elseif idx.ignoretable[idx.name].cutoffprice and idx.ignoretable[idx.name].cutoffprice == 0 then
-                            strmsg = strmsg.."\n"..L[10024]..": "
-                            strmsg = strmsg.."|cff9d9d9d"..L[10025].."|r"
+                            filters["|cff00ffff"..L[10024]..":|r"] = "|cff9d9d9d"..L[10025].."|r"
                         end
                         if idx.ignoretable[idx.name].ilvl then
-                            strmsg = strmsg.."\n"..L[10026]..": |cffffffff"..idx.ignoretable[idx.name].ilvl
+                            filters["|cff00ffff"..L[10026]..":|r"] = "|cffffffff"..idx.ignoretable[idx.name].ilvl.."|r"
                         end
                         if idx.ignoretable[idx.name].stackone then
-                            strmsg = strmsg.."\n".."Ignoring stacks of 1"
+                            filters['single'] = "|cff00ffffIgnoring stacks of 1|r"
+                        end
+
+                        if next(filters) then
+                            tooltip:AddLine(" ")
+                            tooltip:AddLine(L[10019])
+                            local key, value
+                            for key, value in pairs(filters) do
+                                if key == "single" then
+                                    tooltip:AddLine(value)
+                                else
+                                    tooltip:AddDoubleLine(key, value)
+                                end
+                            end
                         end
                     end
 
                     if idx.sellbid or idx.sellbuyout then
-                        strmsg = strmsg.."|cff888888\n\n---------------------|r"
+                        tooltip:AddLine(" ")
+                        tooltip:AddLine(L[10085])
+
                         if idx.sellbid then
-                            strmsg = strmsg.."\n"..L[10027]..": "..ASGSC(idx.sellbid)
+                            tooltip:AddDoubleLine("|cff00ffff"..L[10027]..":|r", ASGSC(idx.sellbid, nil, nil, false))
                         end
                         if idx.sellbuyout and idx.sellbuyout > 0 then
-                            strmsg = strmsg.."\n"..L[10028]..": "..ASGSC(idx.sellbuyout)
+                            tooltip:AddDoubleLine("|cff00ffff"..L[10028]..":|r", ASGSC(idx.sellbuyout, nil, nil, false))
                         end
                     end
+
+                    --[[tooltip:AddLine(" ")
+                    tooltip:AddLine(L[10086])
+                    tooltip:AddDoubleLine("|cff00ff00"..L[10087].."|r", "100000g")
+                    tooltip:AddDoubleLine("|cffc0c0c0"..L[10088].."|r", "|cffc0c0c0-100000g|r")]]
                     if idx.notes then
-                        strmsg = strmsg.."|cff888888\n\n---------------------|r\n"..idx.notes
+                        tooltip:AddLine(" ")
+                        tooltip:AddLine("|cff888888-------------------------------|r")
+                        tooltip:AddLine("|cffffffff"..idx.notes.."|r")
                     end
-                    ASshowtooltip(self, strmsg)
+                    tooltip:Show()
+
                 end)
                 button_tmp:SetScript("OnLeave", AShidetooltip)
                 button_tmp:SetScript("OnDoubleClick", function(self)
@@ -1147,12 +1177,6 @@
                         AS.mainframe.headerframe.stopsearchbutton:Click()
                         AS.manualprompt.priceoverride:SetFocus()
                     end)
-                    AS.manualprompt:SetScript("OnHide", function(self)
-                        if AS.save then
-                            AS.save = nil
-                            AS_SavedVariables()
-                        end
-                    end)
 
             ------ CLOSE BUTTON
                 -------------- STYLE ----------------
@@ -1260,10 +1284,6 @@
                     AS.manualprompt.savebutton:SetScript("OnClick", function(self)
                         AS[L[10045]]()
                     end)
-                    AS.manualprompt.savebutton:SetScript("OnEnter",function(self)
-                        ASshowtooltip(AS.manualprompt.savebutton, L[10048])
-                    end)
-                    AS.manualprompt.savebutton:SetScript("OnLeave", AShidetooltip)
                     if AS_SKIN then
                         F.Reskin(AS.manualprompt.savebutton) -- Aurora
                     end
@@ -1284,7 +1304,7 @@
                     AS.manualprompt.priceoverride:SetScript("OnEnterPressed", function(self)
                         AS.manualprompt.savebutton:Click()
                     end)
-                    AS.manualprompt.priceoverride:SetScript("OnTextChanged", function(self)
+                    AS.manualprompt.priceoverride:SetScript("OnTextChanged", function(self, userInput)
                         local messagestring
 
                         if AS.manualprompt.priceoverride:GetText() == "" then
@@ -1341,16 +1361,10 @@
                     AS.manualprompt.ilvlinput:SetScript("OnEnterPressed", function(self)
                         AS.manualprompt.savebutton:Click()
                     end)
-                    AS.manualprompt.ilvlinput:SetScript("OnTextChanged", function(self)
-                        local messagestring
-
-                        if AS.manualprompt.ilvlinput:GetText() == "" then
-                            AS.item["ASmanualedit"].ilvl = nil
-                        else
-                            AS.item["ASmanualedit"].ilvl = tonumber(AS.manualprompt.ilvlinput:GetText())
-                        end
-
-                        if AS.item["ASmanualedit"].ilvl then
+                    AS.manualprompt.ilvlinput:SetScript("OnTextChanged", function(self, userInput)
+                        if userInput then
+                            AS.item["ASmanualedit"].ilvl = AS.manualprompt.ilvlinput:GetText()
+                            local messagestring
                             messagestring = L[10026]..":\n"
                             messagestring = messagestring.."|cffffffff"..AS.item["ASmanualedit"].ilvl
                             AS.manualprompt.ilvllabel:SetText(messagestring)
@@ -1384,7 +1398,7 @@
                     AS.manualprompt.ilvllabel:SetJustifyV("Top")
                     AS.manualprompt.ilvllabel:SetPoint("LEFT", AS.manualprompt.icon, "LEFT", 0, 2)
                     AS.manualprompt.ilvllabel:SetPoint("TOP", AS.manualprompt.ilvlinput, "TOP", 0, 2)
-                    AS.manualprompt.ilvllabel:SetText(L[10026]..":")
+                    --AS.manualprompt.ilvllabel:SetText(L[10026]..":")
                     AS.manualprompt.ilvllabel:SetTextColor(r, g, b) -- Aurora
 
             ------ IGNORE STACK OF 1
@@ -1393,7 +1407,7 @@
                     AS.manualprompt.stackone:SetPoint("TOPRIGHT", AS.manualprompt.ilvlinput, "BOTTOMRIGHT", 0, -5)
                 -------------- SCRIPT ----------------
                     AS.manualprompt.stackone:SetScript("OnClick", function(self)
-                        if AS.manualprompt.stackone:GetChecked() then
+                        if self:GetChecked() then
                             AS.item['ASmanualedit'].stackone = true
                         else
                             AS.item['ASmanualedit'].stackone = false
@@ -1421,51 +1435,63 @@
 
             ------ NOTES BOX
                 -------------- STYLE ----------------
-                    AS.manualprompt.notes = CreateFrame("EditBox", nil, AS.manualprompt, "InputBoxTemplate")
-                    AS.manualprompt.notes:SetPoint("TOPLEFT", AS.manualprompt.ignorebutton, "BOTTOMLEFT", 2, -20)
-                    AS.manualprompt.notes:SetPoint("TOPRIGHT", AS.manualprompt.savebutton, "BOTTOMRIGHT", 0, -15)
-                    AS.manualprompt.notes:SetPoint("BOTTOMRIGHT", AS.manualprompt, "BOTTOMRIGHT", 0, 15)
+                    AS.manualprompt.notes = CreateFrame("EditBox", "ASnotes", AS.manualprompt)
+                    AS.manualprompt.notes:SetFontObject("ChatFontNormal")
+                    AS.manualprompt.notes:SetWidth(500)
                     AS.manualprompt.notes:SetMultiLine(true)
-                    AS.manualprompt.notes:SetMaxLetters(110)
+                    AS.manualprompt.notes:SetAutoFocus(false)
                 -------------- SCRIPT ----------------
                     AS.manualprompt.notes:SetScript("OnEscapePressed", function(self)
-                        AS.manualprompt.notes:ClearFocus()
+                        self:ClearFocus()
                     end)
                     AS.manualprompt.notes:SetScript("OnTextChanged", function(self)
-
-                        if AS.manualprompt.notes:GetText() == "" then
-                            AS.save = true
-                            AS.item[AS.item['ASmanualedit'].listnumber].notes = nil
-                        elseif AS.manualprompt.notes:GetText() ~= AS.item[AS.item['ASmanualedit'].listnumber].notes then
-                            AS.save = true
-                            AS.item[AS.item['ASmanualedit'].listnumber].notes = AS.manualprompt.notes:GetText()
-                        end
+                        AS.item['ASmanualedit'].notes = self:GetText()
+                    end)
+                -------------- SCROLLBAR ----------------
+                    AS.manualprompt.notes.scroll = CreateFrame('ScrollFrame', nil, AS.manualprompt, 'UIPanelScrollFrameTemplate')
+                    AS.manualprompt.notes.scroll:SetPoint("TOPLEFT", AS.manualprompt.ignorebutton, "BOTTOMLEFT", 2, -20)
+                    AS.manualprompt.notes.scroll:SetPoint("TOPRIGHT", AS.manualprompt.savebutton, "BOTTOMRIGHT", -5, -15)
+                    AS.manualprompt.notes.scroll:SetPoint("BOTTOMRIGHT", AS.manualprompt, "BOTTOMRIGHT", 0, 15)
+                    if AS_SKIN then
+                        F.ReskinScroll(AS.manualprompt.notes.scroll.ScrollBar)
+                    end
+                    AS.manualprompt.notes.scroll:SetScrollChild(AS.manualprompt.notes)
+                -------------- FAKE BACKDROP ----------------
+                    AS.manualprompt.notes.bg = CreateFrame("EditBox", nil, AS.manualprompt, "InputBoxTemplate")
+                    AS.manualprompt.notes.bg:SetPoint("TOPLEFT", AS.manualprompt.ignorebutton, "BOTTOMLEFT", 2, -20)
+                    AS.manualprompt.notes.bg:SetPoint("TOPRIGHT", AS.manualprompt.savebutton, "BOTTOMRIGHT", 0, -20)
+                    AS.manualprompt.notes.bg:SetPoint("BOTTOMRIGHT", AS.manualprompt, "BOTTOMRIGHT", 0, 15)
+                    AS.manualprompt.notes.bg:SetAutoFocus(false)
+                -------------- SCRIPT ----------------
+                    AS.manualprompt.notes.bg:SetScript("OnEditFocusGained", function(self)
+                        AS.manualprompt.notes:SetFocus()
                     end)
                     if AS_SKIN then
-                        F.ReskinInput(AS.manualprompt.notes) -- Aurora
+                        F.ReskinInput(AS.manualprompt.notes.bg) -- Aurora
                     else
-                        AS_inputclean(AS.manualprompt.notes)
-                        AS.manualprompt.notes:SetBackdrop({ bgFile = AS_backdrop,
+                        AS_inputclean(AS.manualprompt.notes.bg)
+                        AS.manualprompt.notes.bg:SetBackdrop({ bgFile = AS_backdrop,
                                                             edgeFile = AS_backdrop,
                                                             edgeSize = 1,
                                                             insets = { left = 0, right = 0, top = 0, bottom = 0 }
                         })
-                        AS.manualprompt.notes:SetBackdropColor(0,0,0)
-                        AS.manualprompt.notes:SetBackdropBorderColor(1, 1, 1, 0.2)
-                        AS.manualprompt.notes:SetFontObject("GameFontNormal")
+                        AS.manualprompt.notes.bg:SetBackdropColor(0,0,0)
+                        AS.manualprompt.notes.bg:SetBackdropBorderColor(1, 1, 1, 0.2)
                     end
 
             ------ NOTES LABEL
                 -------------- STYLE ----------------
                     AS.manualprompt.notes.label = AS.manualprompt:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
                     AS.manualprompt.notes.label:SetJustifyH("LEFT")
-                    AS.manualprompt.notes.label:SetPoint("BOTTOMLEFT", AS.manualprompt.notes, "TOPLEFT", 0, 2)
+                    AS.manualprompt.notes.label:SetPoint("BOTTOMLEFT", AS.manualprompt.notes.bg, "TOPLEFT", 0, 2)
                     AS.manualprompt.notes.label:SetText(L[10052])
                     AS.manualprompt.notes.label:SetTextColor(r, g, b) -- Aurora
         end
 
         if item then
             AS.manualprompt.stackone:SetChecked(false)
+            AS.manualprompt.priceoverride:SetText("")
+            AS.manualprompt.ilvlinput:SetText("")
             AS.manualprompt.icon:SetNormalTexture(item.icon)
 
             if item.notes then
@@ -1487,9 +1513,9 @@
                 else
                     AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n")
                 end
-
                 if item.ignoretable[item.name].ilvl then
-                    AS.manualprompt.ilvllabel:SetText(L[10026]..":\n".."|cffffffff"..item.ignoretable[item.name].ilvl)
+                    AS.manualprompt.ilvllabel:SetText(L[10026]..":\n".."|cffffffff"..item.ignoretable[item.name].ilvl.."|r")
+                    AS.manualprompt.ilvlinput:SetText(item.ignoretable[item.name].ilvl)
                 else
                     AS.manualprompt.ilvllabel:SetText(L[10026]..":\n")
                 end
@@ -1498,8 +1524,7 @@
                     AS.manualprompt.stackone:SetChecked(true)
                 end
             end
-            AS.manualprompt.priceoverride:SetText("")
-            AS.manualprompt.ilvlinput:SetText("")
+
             AS.manualprompt:Show()
         end
     end

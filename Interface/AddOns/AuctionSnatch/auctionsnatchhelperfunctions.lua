@@ -189,7 +189,7 @@
             local TEXT_NONE = "0"
                
             local GSC_GOLD="ffd100"
-            local GSC_SILVER="999999"
+            local GSC_SILVER="c0c0c0"
             local GSC_COPPER="c8602c"
             local GSC_VALUE = "ffffff"
             local GSC_START="|cff%s%s|r|cff%s%s|r"
@@ -202,9 +202,9 @@
            
             local gsc = ""
             local fmt = GSC_START
-            if (g > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, g, GSC_GOLD, 'g') fmt = GSC_PART end
-            if (s > 0) or (c > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, s, GSC_SILVER, 's') fmt = GSC_PART end
-            if (c > 0) then gsc = gsc..string.format(fmt, GSC_VALUE, c, GSC_COPPER, 'c') end
+            if (g > 0) then gsc = gsc..string.format(fmt, GSC_GOLD, g, GSC_GOLD, 'g') fmt = GSC_PART end
+            if (s > 0) or (c > 0) then gsc = gsc..string.format(fmt, GSC_SILVER, s, GSC_SILVER, 's') fmt = GSC_PART end
+            if (c > 0) then gsc = gsc..string.format(fmt, GSC_COPPER, c, GSC_COPPER, 'c') end
             if (gsc == "") then gsc = GSC_NONE end
 
             return gsc
@@ -214,23 +214,37 @@
     end
 
 ------ GAME TOOLTIP
-
-    function ASshowtooltip(frame, notes)
-        
+    function ASsettooltip(frame, text)
         if frame then
-            
             if frame:GetRight() >= (GetScreenWidth() * 0.5) then
                 GameTooltip:SetOwner(frame, "ANCHOR_LEFT")
             else
                 GameTooltip:SetOwner(frame, "ANCHOR_RIGHT")
             end
             
-            if notes then
-                GameTooltip:SetText(notes, 0, 1, 1, 1, 1)
-                GameTooltip:SetBackdropColor(0, 0, 0, 0.9) -- Make it darker
-                GameTooltip:SetBackdropBorderColor(1, 1, 1, 0.5)
-                GameTooltip:Show()
+            if text then -- Title
+                GameTooltip:SetText(text)
             end
+
+            GameTooltip:SetBackdropBorderColor(1, 1, 1, 0.5)
+            GameTooltip:SetBackdropColor(0, 0, 0, 0.8) -- Make it darker
+        end
+
+        return GameTooltip
+    end
+
+    function ASshowtooltip(frame, notes, text)
+
+        if frame then
+            
+            tooltip = ASsettooltip(frame, text)
+
+            if not notes then
+                return tooltip
+            else
+                tooltip:AddLine(notes, 0, 1, 1, 1, 1)
+            end
+            GameTooltip:Show()
        end
     end
 
@@ -318,18 +332,14 @@
     function ASrowsthatcanfit()  --i dunno.  i don't see anything wrong with this
         --so, mainframe is 420, right?  header is 120.  300 is the listframe height.  25 is button height  300/25 = 12 - crap, only 11 show?!  why?!
         --lolol on debugging, ourheight is 299.9999999999999552965            thats messed up
-        if(AS) then
-            if AS.mainframe then
-                if AS.mainframe.listframe then
-                    local ourheight = math.ceil(AS.mainframe.listframe:GetHeight()) - AS_FRAMEWHITESPACE
-                    --ASprint("Listframe height = "..ourheight)
-                    --ASprint("AS_BUTTON_HEIGHT = "..AS_BUTTON_HEIGHT)
-                    --ASprint("math.floor(ourheight / AS_BUTTON_HEIGHT) = "..math.floor(ourheight / AS_BUTTON_HEIGHT))
-                    
-                    --math.floor(ourheight / AS_BUTTON_HEIGHT)
-                    return math.floor(ourheight / AS_BUTTON_HEIGHT)
-                end
-            end
+        if AS and AS.mainframe and AS.mainframe.listframe then
+            local ourheight = math.ceil(AS.mainframe.listframe:GetHeight()) - AS_FRAMEWHITESPACE
+            --ASprint("Listframe height = "..ourheight)
+            --ASprint("AS_BUTTON_HEIGHT = "..AS_BUTTON_HEIGHT)
+            --ASprint("math.floor(ourheight / AS_BUTTON_HEIGHT) = "..math.floor(ourheight / AS_BUTTON_HEIGHT))
+            
+            --math.floor(ourheight / AS_BUTTON_HEIGHT)
+            return math.floor(ourheight / AS_BUTTON_HEIGHT)
         end
         return 10--default
     end
@@ -341,6 +351,12 @@ function ASsanitize(str)
     str = string.gsub(str,'|r',"")
     --str = string.gsub(str,'[^a-z:%p]',"")
     return str
+end
+
+function ASitemid(itemlink)
+
+    _, itemid = strsplit(":", string.match(itemlink, "item[%-?%d:]+"))
+    return itemid
 end
 
 function ASbuttontolistnum(button)
