@@ -1,4 +1,11 @@
 ------------------------------------------------------------------------
+1.18 | angelblue05 | 2017-07-22
+
+- Allow AuctionSnatch to be placed in the background
+- Add a scroll to notes and removed character limit
+- Rework tooltips for items in your search list
+
+------------------------------------------------------------------------
 1.17 | angelblue05 | 2017-04-29
 
 - Fix bug with expired auctions
