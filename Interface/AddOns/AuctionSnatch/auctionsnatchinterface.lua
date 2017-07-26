@@ -1398,7 +1398,7 @@
                     AS.manualprompt.ilvllabel:SetJustifyV("Top")
                     AS.manualprompt.ilvllabel:SetPoint("LEFT", AS.manualprompt.icon, "LEFT", 0, 2)
                     AS.manualprompt.ilvllabel:SetPoint("TOP", AS.manualprompt.ilvlinput, "TOP", 0, 2)
-                    --AS.manualprompt.ilvllabel:SetText(L[10026]..":")
+                    AS.manualprompt.ilvllabel:SetText(L[10026]..":")
                     AS.manualprompt.ilvllabel:SetTextColor(r, g, b) -- Aurora
 
             ------ IGNORE STACK OF 1
