@@ -1,4 +1,10 @@
 ------------------------------------------------------------------------
+1.19 | angelblue05 | 2017-07-27
+
+- Fix missing ilvl label
+- Rework tooltips for items in your sold auctions
+
+------------------------------------------------------------------------
 1.18 | angelblue05 | 2017-07-22
 
 - Allow AuctionSnatch to be placed in the background
