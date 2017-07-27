@@ -361,7 +361,7 @@ OPT_HIDDEN = {
                             end
                         end
                     end
-                    if saved_auctions[1] then
+                    if saved_auctions[1] and last_auctions then
                         saved_auctions[1].buyer = last_auctions.buyer
                         --saved_auctions[1].link = last_auctions.link
                     end

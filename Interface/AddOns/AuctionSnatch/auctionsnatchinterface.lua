@@ -735,17 +735,21 @@
                     local scrollvalue = FauxScrollFrame_GetOffset(AS.mainframe.soldlistframe.scrollFrame)
                     local idx = AO_AUCTIONS_SOLD[self.buttonnumber + scrollvalue]
 
-                    strmsg = L[10071].."\n"
-                    strmsg = strmsg.."|cff888888---------------------|r"
+                    tooltip = ASshowtooltip(self, nil, L[10071])
+                    tooltip:AddLine(" ")
+                    --tooltip:AddLine("|cff888888-------------------------------|r")
+                    --strmsg = L[10071].."\n"
+                    --strmsg = strmsg.."|cff888888---------------------|r"
 
                     if idx.quantity and idx.quantity > 0 then
-                        strmsg = strmsg.."\n"..L[10072]..":|r|cffffffff "..idx.quantity.."|r"
+                        tooltip:AddDoubleLine("|cff00ffff"..L[10072]..":|r", "|cffffffff"..idx.quantity.."|r")
                     end
                     if idx.buyer then
-                        strmsg = strmsg.."\n"..L[10073]..":|r|cffffffff "..idx.buyer.."|r"
+                        tooltip:AddDoubleLine("|cff00ffff"..L[10073]..":|r", "|cffffffff"..idx.buyer.."|r")
                     end
-                    strmsg = strmsg.."\n"..L[10074]..":|r|cffffffff "..SecondsToTime(idx['time'] - GetTime()).."|r"
-                    ASshowtooltip(self, strmsg)
+                    tooltip:AddDoubleLine("|cff00ffff"..L[10074]..":|r", "|cffffffff"..SecondsToTime(idx['time'] - GetTime()).."|r")
+                    --ASshowtooltip(self, strmsg)
+                    tooltip:Show()
                 end)
                 button_tmp:SetScript("OnLeave", AShidetooltip)
                 button_tmp:SetScript("OnDoubleClick", function(self)

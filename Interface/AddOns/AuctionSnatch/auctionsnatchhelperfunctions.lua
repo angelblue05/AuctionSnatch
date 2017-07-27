@@ -244,7 +244,7 @@
             else
                 tooltip:AddLine(notes, 0, 1, 1, 1, 1)
             end
-            GameTooltip:Show()
+            tooltip:Show()
        end
     end
 
