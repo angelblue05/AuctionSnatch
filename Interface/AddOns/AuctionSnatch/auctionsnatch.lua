@@ -265,11 +265,11 @@ OPT_HIDDEN = {
                         AO_AUCTIONS[auction[1]] = {}
                         AO_AUCTIONS[auction[1]]['icon'] = auction[2]
                     end
+                    if x == 1 then -- Verification if we should wipe sold auctions
+                        AO_AUCTIONS_SOLD = {}
+                    end
 
                     if auction[16] == 1 or auction[3] == 0 then
-                        if x == 1 then -- Verification if we should wipe sold auctions
-                            AO_AUCTIONS_SOLD = {}
-                        end
                         table.insert(AO_AUCTIONS_SOLD, {
                             ['name'] = auction[1],
                             ['quantity'] = auction[3],
