@@ -59,8 +59,6 @@
         AS.mainframe.headerframe.listlabel:SetText(ACTIVE_TABLE)
         AS.item = {}
         AS_tcopy(AS.item, ASsavedtable[name])
-        AS.item['LastAuctionSetup'] = nil
-        AS.item['LastListButtonClicked'] = nil
 
         if ASsavedtable[name]["test"] then
             ASprint("test = "..ASsavedtable[name]["test"])
@@ -181,7 +179,7 @@
     end
 
     -- formats money text by color for gold, silver, copper
-    function ASGSC(money, exact, dontUseColorCodes, icon)
+    function ASGSC(money, exact, dontUseColorCodes, icon, letters)
         -------------- THANK YOU BOTTOMSCANNER ----------------
         --if not (exact) then exact = true end;
         if (type(money) ~= "number") then return end
@@ -189,7 +187,7 @@
             local TEXT_NONE = "0"
                
             local GSC_GOLD="ffd100"
-            local GSC_SILVER="c0c0c0"
+            local GSC_SILVER="e0e0e0"
             local GSC_COPPER="c8602c"
             local GSC_VALUE = "ffffff"
             local GSC_START="|cff%s%s|r|cff%s%s|r"
@@ -202,14 +200,14 @@
            
             local gsc = ""
             local fmt = GSC_START
-            if (g > 0) then gsc = gsc..string.format(fmt, GSC_GOLD, g, GSC_GOLD, 'g') fmt = GSC_PART end
-            if (s > 0) or (c > 0) then gsc = gsc..string.format(fmt, GSC_SILVER, s, GSC_SILVER, 's') fmt = GSC_PART end
-            if (c > 0) then gsc = gsc..string.format(fmt, GSC_COPPER, c, GSC_COPPER, 'c') end
+            if (g > 0) then gsc = gsc..string.format(fmt, GSC_GOLD, g, GSC_GOLD, letters and "g" or "") fmt = GSC_PART end
+            if (s > 0) or (c > 0) then gsc = gsc..string.format(fmt, GSC_SILVER, s, GSC_SILVER, letters and "s" or "") fmt = GSC_PART end
+            if (c > 0) then gsc = gsc..string.format(fmt, GSC_COPPER, c, GSC_COPPER, letters and "c" or "") end
             if (gsc == "") then gsc = GSC_NONE end
 
             return gsc
         else
-            return "|cffffffff"..GetCoinTextureString(money, 10).."|r"--gsc
+            return "|cffffffff"..GetCoinTextureString(money, 11).."|r"--gsc
         end
     end
 
@@ -233,11 +231,12 @@
         return GameTooltip
     end
 
-    function ASshowtooltip(frame, notes, text)
+    function ASshowtooltip(frame, notes, text, always)
 
         if frame then
             
-            tooltip = ASsettooltip(frame, text)
+            tooltip = ASsettooltip(frame, text, fadeout)
+            if not always then GameTooltip.Timer = C_Timer.After(3, function() AShidetooltip() end) end
 
             if not notes then
                 return tooltip
@@ -319,16 +318,6 @@
         return x / scale, y / scale
     end
 
-    function ASvisibility(compared_to)
-        local x,y = GetCursorScaledPosition()
-        --ASprint("Cursor x,y="..x..","..y.."  Left, right, bottom, top="..compared_to:GetLeft()..","..compared_to:GetRight()..","..compared_to:GetBottom()..","..compared_to:GetTop())
-        
-        if(x < compared_to:GetLeft() or x > compared_to:GetRight() or y < compared_to:GetBottom() or y > compared_to:GetTop()) then
-            return false
-        end
-        return true
-    end
-
     function ASrowsthatcanfit()  --i dunno.  i don't see anything wrong with this
         --so, mainframe is 420, right?  header is 120.  300 is the listframe height.  25 is button height  300/25 = 12 - crap, only 11 show?!  why?!
         --lolol on debugging, ourheight is 299.9999999999999552965            thats messed up
@@ -346,22 +335,56 @@
 
 function ASsanitize(str)
 
-    str = string.lower(str)
     str = string.gsub(str,'|c........',"")
     str = string.gsub(str,'|r',"")
     --str = string.gsub(str,'[^a-z:%p]',"")
     return str
 end
 
-function ASitemid(itemlink)
+function AS_SetSelected(listnumber)
 
-    _, itemid = strsplit(":", string.match(itemlink, "item[%-?%d:]+"))
-    return itemid
+    AS.selected.listnumber = listnumber
+    AS.selected.item = AS.item[listnumber]
 end
 
-function ASbuttontolistnum(button)
-    if AS.item.LastListButtonClicked then
-        ASprint(MSG_C.INFO.."Activated button:|r "..AS.item.LastListButtonClicked)
-        return AS.item.LastListButtonClicked
+function AS_GetSelected()
+
+    return AS.selected.listnumber, AS.selected.item
+end
+
+function test_sold()
+    --AS.soldauctions = {}
+    for x = 1, 1 do
+        table.insert(AS.soldauctions, {
+                ['name'] = "Obliterum",
+                ['quantity'] = 5,
+                ['icon'] = 1341656,
+                ['price'] = 22500000,
+                ['link'] = "|cffa335ee|Hitem:124125::::::::110:102::::::|h[Obliterum]|h|r",
+                ['buyer'] = nil,
+                ['time'] = GetTime() + 360,
+                ['timer'] = C_Timer.After(360, function() table.remove(AS.soldauctions, 1) ; AO_OwnerScrollbarUpdate() end)
+        })
+        table.insert(AS.soldauctions, {
+                ['name'] = "Shal'dorei Silk",
+                ['quantity'] = 200,
+                ['icon'] = 1379172,
+                ['price'] = 110000,
+                ['link'] = "|cffffffff|Hitem:124437::::::::110:102::::::|h[Shal'dorei Silk]|h|r",
+                ['buyer'] = "Morvevel",
+                ['time'] = GetTime() + 360,
+                ['timer'] = C_Timer.After(360, function() table.remove(AS.soldauctions, 1) ; AO_OwnerScrollbarUpdate() end)
+        })
+        table.insert(AS.soldauctions, {
+                ['name'] = "Runescale Koi",
+                ['quantity'] = 10,
+                ['icon'] = 1387371,
+                ['price'] = 120000,
+                ['link'] = "|cffffffff|Hitem:124111::::::::110:102::::::|h[Runescale Koi]|h|r",
+                ['buyer'] = "Morvevel",
+                ['time'] = GetTime() + 360,
+                ['timer'] = C_Timer.After(360, function() table.remove(AS.soldauctions, 1) ; AO_OwnerScrollbarUpdate() end)
+        })
     end
+    AO_OwnerScrollbarUpdate()
 end
