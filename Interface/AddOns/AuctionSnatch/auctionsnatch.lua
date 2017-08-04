@@ -1284,7 +1284,7 @@ OPT_HIDDEN = {
         -- Filter string
         local strcutoffprice = L[10019].."\n"
         if cutoffprice then
-            strcutoffprice = strcutoffprice..L[10020]..": "..ASGSC(cutoffprice, nil, nil, false)
+            strcutoffprice = strcutoffprice..L[10020]..": "..ASGSC(cutoffprice, nil, nil, false, true)
         end
         if item.ignoretable and item.ignoretable[name] and item.ignoretable[name].ilvl then
             if cutoffprice then
