@@ -1,4 +1,12 @@
 ------------------------------------------------------------------------
+1.19 | angelblue05 | 2017-08-03
+
+- Fix refreshing sold auction list
+- Add a buyout tracker
+- Adjust gold display (last time!)
+- Reskin buttons and clean up the interface
+
+------------------------------------------------------------------------
 1.19 | angelblue05 | 2017-07-27
 
 - Fix missing ilvl label
