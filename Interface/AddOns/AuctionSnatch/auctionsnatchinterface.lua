@@ -87,6 +87,7 @@ local ASI = {['List'] = {}}
         AS.mainframe:SetScript("OnMouseDown", ASI.Main.Frame.MouseDown)
         AS.mainframe:SetScript("OnMouseUp", ASI.Main.Frame.MouseUp)
         AS.mainframe:SetScript("OnHide", ASI.Main.Frame.Hide)
+        AS.mainframe:SetScript("OnShow", ASI.Main.Frame.Show)
 
         ASI.Backdrop(AS.mainframe)
 
@@ -95,6 +96,11 @@ local ASI = {['List'] = {}}
         AS.mainframe.closebutton:SetScript("OnClick", function(self)
             AS.mainframe:Hide()
         end)
+    end
+
+    function ASI.Main.Frame:Show(...)
+
+        if not ASsavedtable.onetimead then StaticPopup_Show("AS_OneTimeAd") end
     end
 
     function ASI.Main.Frame:MouseDown(...)

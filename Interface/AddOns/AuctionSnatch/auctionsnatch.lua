@@ -91,7 +91,8 @@ OPT_HIDDEN = {
     ['AOoutbid'] = "",
     ['AOsold'] = "",
     ['AOexpired'] = "",
-    ['AOchatsold'] = ""
+    ['AOchatsold'] = "",
+    ['onetimead'] = ""
 }
 
 
@@ -160,6 +161,18 @@ OPT_HIDDEN = {
                     end
                 end,
                 hasEditBox = true,
+                timeout = 0,
+                whileDead = true,
+                hideOnEscape = true,
+                exclusive = true,
+                preferredIndex = 3  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
+            }
+            StaticPopupDialogs["AS_OneTimeAd"] = {
+                text = "Thank you for using Auction Snatch. \n Support the project, spread the word!",
+                button1 = OKAY,
+                OnAccept = function (self, data, data2)
+                    ASsavedtable.onetimead = true
+                end,
                 timeout = 0,
                 whileDead = true,
                 hideOnEscape = true,
