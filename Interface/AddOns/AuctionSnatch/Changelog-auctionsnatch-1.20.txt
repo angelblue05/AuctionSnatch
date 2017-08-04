@@ -1,9 +1,9 @@
 ------------------------------------------------------------------------
-1.19 | angelblue05 | 2017-08-03
+1.20 | angelblue05 | 2017-08-03
 
 - Fix refreshing sold auction list
 - Add a buyout tracker
-- Adjust gold display (last time!)
+- Adjust gold display in some areas
 - Reskin buttons and clean up the interface
 
 ------------------------------------------------------------------------
