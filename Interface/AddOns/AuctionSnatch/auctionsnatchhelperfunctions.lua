@@ -231,12 +231,13 @@
         return GameTooltip
     end
 
+    local ticker = nil
     function ASshowtooltip(frame, notes, text, always)
 
         if frame then
             
             tooltip = ASsettooltip(frame, text, fadeout)
-            if not always then GameTooltip.Timer = C_Timer.After(3, function() AShidetooltip() end) end
+            if not always then ticker = C_Timer.NewTicker(3, AShidetooltip, 1) end
 
             if not notes then
                 return tooltip
@@ -248,6 +249,8 @@
     end
 
     function AShidetooltip()
+
+        if ticker then ticker:Cancel() end
         GameTooltip:Hide()
     end
 
