@@ -1,4 +1,12 @@
 ------------------------------------------------------------------------
+1.21 | angelblue05 | 2017-08-05
+
+- Add a mass cancel auctions option
+- Move edit search terms to the edit filters frame (double click name label)
+- Fix buying tracker when moving between items
+- Fix tooltips
+
+------------------------------------------------------------------------
 1.20 | angelblue05 | 2017-08-03
 
 - Fix refreshing sold auction list
