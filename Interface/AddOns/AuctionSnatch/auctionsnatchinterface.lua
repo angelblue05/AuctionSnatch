@@ -1186,6 +1186,9 @@ local ASI = {['List'] = {}}
         if AS.boughtauctions[item.name] then
             AS.prompt.tracker.quantity:SetText("("..AS.boughtauctions[item.name]['buyquantity']..")")
             AS.prompt.tracker.total:SetText(ASGSC(AS.boughtauctions[item.name]['buy']))
+        else
+            AS.prompt.tracker.quantity:SetText("(0)")
+            AS.prompt.tracker.total:SetText(ASGSC(0))
         end
     end
 
@@ -1483,6 +1486,7 @@ local ASI = {['List'] = {}}
         end
 
         AS[L[10044]] = function()  -- Go to next item in snatch list
+                AS.prompt:Hide()
                 AS.currentauction = AS.currentauction + 1
                 AS.currentresult = 0
                 AS.status = STATE.QUERYING
@@ -2234,8 +2238,6 @@ local ASI = {['List'] = {}}
         icon:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
         icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
 
-        if parent.link then icon.link = parent.link end
-
         icon:SetScript("OnEnter", ASI.List.Icon.Enter)
         icon:SetScript("OnLeave", ASI.List.Icon.Leave)
         
@@ -2245,6 +2247,7 @@ local ASI = {['List'] = {}}
     function ASI.List.Icon:Enter(...)
 
         if AOicontooltip and self.link then
+
             GameTooltip:SetOwner(self, "ANCHOR_NONE")
             GameTooltip:SetHyperlink(self.link)
             GameTooltip:ClearAllPoints()

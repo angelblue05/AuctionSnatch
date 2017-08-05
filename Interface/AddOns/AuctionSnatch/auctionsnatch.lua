@@ -855,6 +855,7 @@ OPT_HIDDEN = {
                     AS.mainframe.listframe.itembuttons[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
 
                     link = AS.item[idx].link
+                    AS.mainframe.listframe.itembuttons[x].icon.link = link
                     AS.mainframe.listframe.itembuttons[x].link = link
                     if not AS.item[idx].rarity then --updated for 3.1 to include colors
                         _, _, itemRarity = GetItemInfo(link)
@@ -906,6 +907,7 @@ OPT_HIDDEN = {
                     AS.mainframe.soldlistframe.itembuttons[x].rightstring:SetText(GetCoinTextureString(AS.soldauctions[idx].price, 10))
 
                     link = AS.soldauctions[idx].link
+                    AS.mainframe.soldlistframe.itembuttons[x].icon.link = link
                     AS.mainframe.soldlistframe.itembuttons[x].link = link
                     if not AS.soldauctions[idx].rarity then --updated for 3.1 to include colors
                         if link then
@@ -1206,6 +1208,7 @@ OPT_HIDDEN = {
                 AS.status = STATE.QUERYING
             end
             AS.currentresult = 0
+            AS.prompt:Hide()
             return true
         end
         return false
