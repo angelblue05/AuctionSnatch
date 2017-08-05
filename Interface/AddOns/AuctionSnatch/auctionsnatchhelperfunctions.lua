@@ -250,7 +250,7 @@
 
     function AShidetooltip()
 
-        if ticker then ticker:Cancel() end
+        if ticker then ticker:Cancel(); ticker = nil end
         GameTooltip:Hide()
     end
 
@@ -353,6 +353,13 @@ end
 function AS_GetSelected()
 
     return AS.selected.listnumber, AS.selected.item
+end
+
+function AS_CloseAllPrompt()
+
+    if AS.manualprompt:IsVisible() then AS.manualprompt:Hide() end
+    if AS.cancelprompt:IsVisible() then AS.cancelprompt:Hide() end
+    if AS.prompt:IsVisible() then AS.mainframe.headerframe.stopsearchbutton:Click() end
 end
 
 function test_sold()
