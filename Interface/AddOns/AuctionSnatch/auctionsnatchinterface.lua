@@ -1002,9 +1002,14 @@ local ASI = {['List'] = {}}
         AS.item['ASmanualedit'].name = item.name
         AS.item['ASmanualedit'].listnumber = listnumber
 
+        AS.manualprompt.upperstring:SetText(item.name)
         AS.manualprompt.stackone:SetChecked(false)
         AS.manualprompt.priceoverride:SetText("")
         AS.manualprompt.ilvlinput:SetText("")
+        AS.manualprompt.notes:SetText("")
+        AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n")
+        AS.manualprompt.ilvllabel:SetText(L[10026]..":\n")
+
         if item.icon then
             AS.manualprompt.icon:SetNormalTexture(item.icon)
             AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
@@ -1017,28 +1022,20 @@ local ASI = {['List'] = {}}
 
         if item.notes then
             AS.manualprompt.notes:SetText(item.notes)
-        else
-            AS.manualprompt.notes:SetText("")
         end
 
         if item.rarity then
             local _, _, _, hexcolor = GetItemQualityColor(item.rarity)
             AS.manualprompt.upperstring:SetText("|c"..hexcolor..tostring(item.name))
-        else
-            AS.manualprompt.upperstring:SetText(item.name)
         end
         
         if item.ignoretable and item.ignoretable[item.name] then
             if item.ignoretable[item.name].cutoffprice then
                 AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n"..ASGSC(tonumber(item.ignoretable[item.name].cutoffprice)))
-            else
-                AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n")
             end
             if item.ignoretable[item.name].ilvl then
                 AS.manualprompt.ilvllabel:SetText(L[10026]..":\n".."|cffffffff"..item.ignoretable[item.name].ilvl.."|r")
                 AS.manualprompt.ilvlinput:SetText(item.ignoretable[item.name].ilvl)
-            else
-                AS.manualprompt.ilvllabel:SetText(L[10026]..":\n")
             end
 
             if item.ignoretable[item.name].stackone then
