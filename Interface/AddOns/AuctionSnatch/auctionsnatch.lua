@@ -46,6 +46,7 @@ AO_RENAME = nil
 AS = { -- Contains everything
     ['item'] = {},
     ['currentauction'] = 1,
+    ['currentownerauction'] = 1,
     ['currentauctionitem'] = {},
     ['currentresult'] = 0,
     ['elapsed'] = 0,
@@ -209,6 +210,7 @@ OPT_HIDDEN = {
 
         table.insert(UISpecialFrames, AS.mainframe:GetName())
         table.insert(UISpecialFrames, AS.prompt:GetName())
+        table.insert(UISpecialFrames, AS.cancelprompt:GetName())
         table.insert(UISpecialFrames, AS.manualprompt:GetName())
     end
 
@@ -372,6 +374,9 @@ OPT_HIDDEN = {
             if AS.mainframe.soldlistframe:IsVisible() then
                 AO_OwnerScrollbarUpdate()
             end
+            if AS.CancelStatus == STATE.BUYING then
+                AS.CancelStatus = STATE.EVALUATING
+            end
 
         elseif event == "AUCTION_ITEM_LIST_UPDATE" then
             --ASprint(MSG_C.INFO..event)
@@ -405,6 +410,7 @@ OPT_HIDDEN = {
                         AS.mainframe.headerframe.stopsearchbutton:Click()
                     end)
                 end
+
                 -- CANCEL AUCTION BUTTON / STATICPOPUP LISTENER
                 if AuctionsCancelAuctionButton then
                     AuctionsCancelAuctionButton:HookScript("PostClick", function(self, button)
@@ -544,6 +550,36 @@ OPT_HIDDEN = {
                     -- The prompt buttons will change the status accordingly
                 elseif AS.status == STATE.BUYING then
                     -- Nothing to do
+                end
+            end
+        end
+
+        if AS.CancelStatus then
+            AS.elapsed = AS.elapsed + elapsed
+
+            if AS.elapsed > 0.1 then
+                AS.elapsed = 0
+
+                if AS.CancelStatus == STATE.QUERYING then
+                    local canQuery, canQueryAll = CanSendAuctionQuery("owner")
+                    if canQuery then
+                        ASprint(MSG_C.EVENT.."[ Start querying ]")
+                        AS_QueryCancelOwnerAH()
+                    end
+                
+                elseif AS.CancelStatus == STATE.WAITINGFORUPDATE then
+                    ASprint(MSG_C.EVENT.."[ Waiting for update event ]")
+                    AS.CancelStatus = STATE.EVALUATING
+                
+                elseif AS.CancelStatus == STATE.EVALUATING then
+                    local canQuery, canQueryAll = CanSendAuctionQuery("owner")
+                    if canQuery then
+                        ASprint(MSG_C.EVENT.."[ Start evaluating ]")
+                        AS_EvaluateCancelOwner()
+                    end
+                
+                elseif AS.CancelStatus == STATE.WAITINGFORPROMPT then
+                    -- The prompt buttons will change the status accordingly
                 end
             end
         end
@@ -869,6 +905,7 @@ OPT_HIDDEN = {
                     AS.mainframe.listframe.itembuttons[x].icon:SetNormalTexture("")
                     AS.mainframe.listframe.itembuttons[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
                     AS.mainframe.listframe.itembuttons[x].link = nil
+                    AS.mainframe.listframe.itembuttons[x].icon.link = nil
                     AS.mainframe.listframe.itembuttons[x].rarity = nil
                 end
 
@@ -925,6 +962,7 @@ OPT_HIDDEN = {
                     AS.mainframe.soldlistframe.itembuttons[x].icon:SetNormalTexture("")
                     AS.mainframe.soldlistframe.itembuttons[x].icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
                     AS.mainframe.soldlistframe.itembuttons[x].link = nil
+                    AS.mainframe.soldlistframe.itembuttons[x].icon.link = nil
                     AS.mainframe.soldlistframe.itembuttons[x].rarity = nil
                 end
 
@@ -988,6 +1026,7 @@ OPT_HIDDEN = {
             AS.item[new_id] = {}
         end
 
+
         if itemLink then
             ASprint(MSG_C.INFO.."New Item name: "..itemName)
             ASprint(MSG_C.INFO.."Link found "..itemLink)
@@ -1007,6 +1046,9 @@ OPT_HIDDEN = {
         AS.mainframe.headerframe.editbox:SetText("")
         AS_SavedVariables()
         AS_ScrollbarUpdate()
+        
+        AS_SetSelected(AS_GetSelected())
+        AS.optionframe.manualpricebutton:Click() -- reopen frame to update name
     end
 
     function AS_MoveListButton(orignumber, insertat)
@@ -1090,7 +1132,8 @@ OPT_HIDDEN = {
     
     -- STATE.QUERYING
     function AS_QueryAH()
-        
+        AS_CloseAllPrompt()
+
         if (AS.currentauction > table.maxn(AS.item)) then
             ASprint(MSG_C.INFO.."Nothing to process. Reset", 1)
 
@@ -1517,13 +1560,17 @@ OPT_HIDDEN = {
             local auction = {GetAuctionItemInfo("owner", x)}
 
             if name == auction[1] or not name then
-                table.insert(current, {
+                current[#current + 1] = {
+                    ['index'] = x,
+                    ['icon'] = auction[2],
                     ['quantity'] = auction[3],
+                    ['quality'] = auction[4],
+                    ['bidprice'] = auction[8],
                     ['price'] = auction[10],
                     ['sold'] = auction[16],
                     ['buyer'] = auction[12],
                     ['link'] = GetAuctionItemLink("owner", x)
-                })
+                }
             end
         end
         return current
@@ -1548,4 +1595,94 @@ OPT_HIDDEN = {
         end
 
         return oldtable
+    end
+
+
+--[[//////////////////////////////////////////////////
+
+    MASS CANCEL FUNCTIONS
+
+----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
+
+-- STATE.QUERYING
+    function AS_QueryCancelOwnerAH()
+        AS_CloseAllPrompt()
+
+        if AuctionFrameAuctions and AuctionFrameAuctions:IsVisible() then
+
+            AS.CancelStatus = STATE.WAITINGFORUPDATE
+            AS.currentownerresult = 0
+            if not AS.cancelprompt:IsVisible() then AS.cancelprompt:Show() end
+            return true
+        else
+            ASprint(MSG_C.ERROR.."Can't find auction frame object")
+        end
+
+        AS.CancelStatus = nil
+        return false
+    end
+
+    -- STATE.EVALUATING
+    function AS_EvaluateCancelOwner()
+
+        while true do
+            
+            AS.currentownerresult = AS.currentownerresult + 1  --next!!
+            auction = AS.currentownerauctions[(#AS.currentownerauctions + 1) - AS.currentownerresult]
+            if auction then
+
+                SetSelectedAuctionItem("owner", auction.index)
+
+                if AS_IsShowCancelOwnerPrompt(auction) then -- always true
+
+                    AuctionFrameAuctions_Update()
+
+                    AS.CancelStatus = STATE.WAITINGFORPROMPT
+                    if not AS.cancelprompt:IsVisible() then AS.cancelprompt:Show() end
+                    return true
+                end
+            end
+
+            ASprint(MSG_C.INFO.."Nothing to process. Reset", 1)
+
+            AS.CancelStatus = nil
+            AS.currentownerauction = 1
+            AS.cancelprompt:Hide()
+            return false
+        end
+    end
+
+    function AS_IsShowCancelOwnerPrompt(auction)
+
+        local _, item = AS_GetSelected()
+        local peritembid, peritembuyout
+        AS.cancelprompt.icon:SetNormalTexture(auction.icon)
+        AS.cancelprompt.icon.link = auction.link
+        AS.cancelprompt.quantity:SetText(auction.quantity)
+
+        -- Fill prompt info, title, icon, bid or buyout text/buttons
+        -- Set the title
+        if auction.quality then
+            local _, _, _, hexcolor = GetItemQualityColor(auction.quality)
+            AS.cancelprompt.upperstring:SetText("|c"..hexcolor..item.name)
+        else
+            AS.cancelprompt.upperstring:SetText(item.name)
+        end
+
+        if auction.quantity > 1 then
+            AS.cancelprompt.bidbuyout.each:Show()
+            AS.cancelprompt.bidbuyout.bid.single:SetText(ASGSC(auction.bidprice * (1/auction.quantity), nil, nil, false))
+            AS.cancelprompt.bidbuyout.bid.total:SetText(ASGSC(auction.bidprice, nil, nil, false))
+            AS.cancelprompt.bidbuyout.buyout.single:SetText(ASGSC(auction.price * (1/auction.quantity), nil, nil, false))
+            AS.cancelprompt.bidbuyout.buyout.total:SetText(ASGSC(auction.price, nil, nil, false))
+        else
+            AS.cancelprompt.bidbuyout.each:Hide()
+            AS.cancelprompt.bidbuyout.bid.single:SetText(ASGSC(auction.bidprice, nil, nil, false))
+            AS.cancelprompt.bidbuyout.bid.total:SetText("")
+            AS.cancelprompt.bidbuyout.buyout.single:SetText(ASGSC(auction.price, nil, nil, false))
+            AS.cancelprompt.bidbuyout.buyout.total:SetText("")
+        end
+
+        ASprint(MSG_C.INFO.."Show cancel prompt:|r"..MSG_C.BOOL.." true", 2)
+        return true
     end

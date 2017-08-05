@@ -70,6 +70,7 @@ local ASI = {['List'] = {}}
 
         ASI.Options.Create()
         ASI.Search.CreateFrame()
+        ASI.MassCancel.CreateFrame()
         ASI.Filters.CreateFrame()
     end
 
@@ -119,8 +120,7 @@ local ASI = {['List'] = {}}
         self.headerframe.editbox:SetText("|cff737373"..L[10015])
         self.headerframe.additembutton:Disable()
 
-        if AS.prompt:IsVisible() then AS.prompt:Hide() end
-        if AS.manualprompt:IsVisible() then AS.manualprompt:Hide() end
+        AS_CloseAllPrompt()
     end
 
     ASI.Main.StartButton = {}
@@ -232,6 +232,7 @@ local ASI = {['List'] = {}}
             F.ReskinInput(AS.mainframe.headerframe.editbox) -- Aurora
         else
             ASI.Input(AS.mainframe.headerframe.editbox)
+            AS.mainframe.headerframe.editbox:SetFontObject("ChatFontNormal")
         end
     end
 
@@ -249,7 +250,7 @@ local ASI = {['List'] = {}}
 
     function ASI.Main.InputSearch:FocusGain(...)
 
-        if AO_RENAME then ASshowtooltip(self, L[10037]) end
+        if AO_RENAME then ASshowtooltip(self, L[10037], nil, true) else ASshowtooltip(self, L[10090], nil, true) end
         if self:GetText() == "|cff737373"..L[10015] then self:SetText("") end
     end
 
@@ -753,7 +754,6 @@ local ASI = {['List'] = {}}
                 local idx = self.buttonnumber + FauxScrollFrame_GetOffset(AS.mainframe.listframe.scrollFrame)
                 
                 AuctionFrameTab1:Click() -- Focus on search tab
-                AS.prompt:Hide()
                 AuctionFrameBrowse.page = 0
 
                 AS.override = true
@@ -871,7 +871,7 @@ local ASI = {['List'] = {}}
     function ASI.Options.Create()
 
         AS.optionframe = CreateFrame("Frame", "ASoptionframe", AS.mainframe)
-        AS.optionframe:SetHeight((AS_BUTTON_HEIGHT * 8) + (AS_FRAMEWHITESPACE * 2))  --8 buttons
+        AS.optionframe:SetHeight((AS_BUTTON_HEIGHT * 8) + (AS_FRAMEWHITESPACE * 2))  -- 8 buttons
         AS.optionframe:SetWidth(200)
         AS.optionframe:SetToplevel(true)
         
@@ -881,7 +881,7 @@ local ASI = {['List'] = {}}
                                         insets = { left = 0, right = 0, top = 0, bottom = 0 }
         })
         AS.optionframe:SetBackdropColor(0, 0, 0, 0.8)
-        AS.optionframe:SetBackdropBorderColor(r, g, b, 0.2)
+        AS.optionframe:SetBackdropBorderColor(r, g, b, 0.3)
 
         AS.optionframe:SetScript("OnLeave", function(self)
             local x, y = GetCursorScaledPosition()
@@ -899,19 +899,19 @@ local ASI = {['List'] = {}}
         AS.optionframe.sellbutton:SetPoint("TOP", 0, -AS_FRAMEWHITESPACE)
         AS.optionframe.sellbutton:SetScript("OnClick", ASI.Options.Sell)
 
+        ------ MASS CANCEL
+        AS.optionframe.masscancelbutton = ASI.Options.Button(L[10087])
+        AS.optionframe.masscancelbutton:SetPoint("TOP", AS.optionframe.sellbutton, "BOTTOM")
+        AS.optionframe.masscancelbutton:SetScript("OnClick", ASI.Options.MassCancel)
+
         ------ MANUAL PRICE
         AS.optionframe.manualpricebutton = ASI.Options.Button(L[10030])
-        AS.optionframe.manualpricebutton:SetPoint("TOP", AS.optionframe.sellbutton, "BOTTOM")
+        AS.optionframe.manualpricebutton:SetPoint("TOP", AS.optionframe.masscancelbutton, "BOTTOM")
         AS.optionframe.manualpricebutton:SetScript("OnClick", ASI.Options.Filters)
-
-        ------ CHANGE SEARCH TERMS
-        AS.optionframe.renamebutton = ASI.Options.Button(L[10031])
-        AS.optionframe.renamebutton:SetPoint("TOP", AS.optionframe.manualpricebutton, "BOTTOM")
-        AS.optionframe.renamebutton:SetScript("OnClick", ASI.Options.Rename)
 
         ------ COPY ENTRY
         AS.optionframe.copyrowbutton = ASI.Options.Button(L[10032])
-        AS.optionframe.copyrowbutton:SetPoint("TOP", AS.optionframe.renamebutton, "BOTTOM")
+        AS.optionframe.copyrowbutton:SetPoint("TOP", AS.optionframe.manualpricebutton, "BOTTOM")
         AS.optionframe.copyrowbutton:SetScript("OnClick", ASI.Options.Copy)
 
         ------ RESET FILTERS
@@ -994,10 +994,9 @@ local ASI = {['List'] = {}}
 
     function ASI.Options:Filters(...)
 
-        local _, item = AS_GetSelected()
+        local listnumber, item = AS_GetSelected()
 
-        if AS.manualprompt:IsVisible() then AS.manualprompt:Hide() end
-        if AS.prompt:IsVisible() then AS.prompt:Hide() end
+        AS_CloseAllPrompt()
 
         AS.item['ASmanualedit'] = {}
         AS.item['ASmanualedit'].name = item.name
@@ -1006,7 +1005,15 @@ local ASI = {['List'] = {}}
         AS.manualprompt.stackone:SetChecked(false)
         AS.manualprompt.priceoverride:SetText("")
         AS.manualprompt.ilvlinput:SetText("")
-        AS.manualprompt.icon:SetNormalTexture(item.icon)
+        if item.icon then
+            AS.manualprompt.icon:SetNormalTexture(item.icon)
+            AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+        else
+            -- clear icon, link
+            AS.manualprompt.icon:SetNormalTexture("")
+            AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+            AS.manualprompt.icon.link = nil
+        end
 
         if item.notes then
             AS.manualprompt.notes:SetText(item.notes)
@@ -1090,6 +1097,28 @@ local ASI = {['List'] = {}}
     function ASI.Options:MoveBottom(...)
 
         AS_MoveListButton(AS_GetSelected(), table.maxn(AS.item))
+    end
+
+    function ASI.Options:MassCancel(...)
+
+        local x, auction
+        local _, item = AS_GetSelected()
+
+        AS_CloseAllPrompt()
+        AS.optionframe:Hide()
+
+        AuctionFrameTab3:Click() -- Focus on auction tab
+
+        if AuctionFrame and AuctionFrame:IsVisible() then
+            AS.currentownerauctions = AO_CurrentOwnedAuctions(item.name)
+            if next(AS.currentownerauctions) then
+                AS.CancelStatus = STATE.QUERYING
+                return
+            end
+            ASprint("No items with that name found in your owned auctions.", 1)
+            return
+        end
+        ASprint("Auction House is not visible.", 1)
     end
 
 
@@ -1578,6 +1607,251 @@ local ASI = {['List'] = {}}
 
 --[[//////////////////////////////////////////////////
 
+    MASS CANCEL PROMPT FUNCTIONS
+
+----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
+    
+    ASI.MassCancel = {}
+    function ASI.MassCancel.CreateFrame()
+
+        ------ MAIN FRAME
+            ASI.MassCancel.Frame.Create()
+
+            ------ ICON
+                ASI.MassCancel.Icon.Create()
+
+            ------ ITEM
+                ASI.MassCancel.Item.Create()
+
+            ------ BID/BUYOUT FRAME
+                ASI.MassCancel.BidBuyoutFrame.Create()
+
+            ------ CANCEL BUTTON
+                ASI.MassCancel.CancelButton.Create()
+
+            ------ NEXT BUTTON
+                ASI.MassCancel.NextButton.Create()
+    end
+
+    ASI.MassCancel.Frame = {}
+    function ASI.MassCancel.Frame.Create()
+
+        AS.cancelprompt = CreateFrame("Frame", "AScancelpromptframe", AS.mainframe)
+        AS.cancelprompt:SetPoint("TOPLEFT", AS.mainframe, "TOPRIGHT", 3, 0)
+        AS.cancelprompt:SetHeight(215)
+        AS.cancelprompt:SetWidth(200)
+        AS.cancelprompt:SetFrameStrata("DIALOG")
+        AS.cancelprompt:Hide()
+        ASI.Backdrop(AS.cancelprompt)
+        AS.cancelprompt:SetUserPlaced(true)
+
+        AS.cancelprompt:SetScript("OnMouseDown", ASI.MassCancel.Frame.MouseDown)
+        AS.cancelprompt:SetScript("OnMouseUp", ASI.MassCancel.Frame.MouseUp)
+
+        ------ CLOSE BUTTON
+        AS.cancelprompt.closebutton = ASI.Close.Create(AS.cancelprompt)
+        AS.cancelprompt.closebutton:SetScript("OnClick", function(self) AS.cancelprompt:Hide(); AS.CancelStatus = nil end)
+    end
+
+    function ASI.MassCancel.Frame:MouseDown(...)
+
+        self:StartMoving()
+    end
+
+    function ASI.MassCancel.Frame:MouseUp(...)
+
+        self:StopMovingOrSizing()
+    end
+
+    ASI.MassCancel.Icon = {}
+    function ASI.MassCancel.Icon.Create()
+
+        AS.cancelprompt.icon = CreateFrame("Button", nil, AS.cancelprompt)
+        AS.cancelprompt.icon:SetNormalTexture("Interface\\AddOns\\AuctionSnatch\\media\\gloss")
+        AS.cancelprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+        AS.cancelprompt.icon:SetPoint("TOPLEFT", AS.cancelprompt, "TOPLEFT", 18, -15)
+        AS.cancelprompt.icon:SetHeight(37)
+        AS.cancelprompt.icon:SetWidth(37)
+
+        AS.cancelprompt.icon:SetScript("OnEnter", ASI.MassCancel.Icon.Enter)
+        AS.cancelprompt.icon:SetScript("OnLeave", ASI.GameTooltip.Leave)
+    end
+
+    function ASI.MassCancel.Icon:Enter(...)
+
+        local link = self.link
+        if link then
+            --if (item.id and item.id > 0) then
+            GameTooltip:SetOwner(AuctionFrameCloseButton, "ANCHOR_NONE")
+            -- Check the link type:   http://www.wowinterface.com/forums/archive/index.php/t-48939.html
+            if strmatch(link, "|Hbattlepet:") then
+                -- Battle pet link
+                local _, speciesID, level, breedQuality, maxHealth, power, speed, name = strsplit(":", link)
+                BattlePetToolTip_Show(tonumber(speciesID), tonumber(level), tonumber(breedQuality), tonumber(maxHealth), tonumber(power), tonumber(speed), name)
+            else
+                -- Other kind of link, OK to use GameTooltip
+                GameTooltip:SetHyperlink(link)
+            end
+            GameTooltip:ClearAllPoints()
+            GameTooltip:SetPoint("TOPRIGHT", AS.cancelprompt.icon, "TOPLEFT", -10, -20)
+            if EnhTooltip then
+                EnhTooltip.TooltipCall(GameTooltip, name, link, -1, count, buyout)
+            end
+            GameTooltip:ClearAllPoints()
+            GameTooltip:SetPoint("TOPRIGHT", AS.cancelprompt.icon, "TOPLEFT", -10, -20)
+            GameTooltip:Show()
+        end
+    end
+
+    ASI.MassCancel.Item = {}
+    function ASI.MassCancel.Item.Create()
+
+        ------ ITEM LABEL
+            AS.cancelprompt.upperstring = AS.cancelprompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            AS.cancelprompt.upperstring:SetJustifyH("CENTER")
+            AS.cancelprompt.upperstring:SetWidth(AS.cancelprompt:GetWidth() - (AS.cancelprompt.icon:GetWidth() + (2*AS_FRAMEWHITESPACE)))
+            AS.cancelprompt.upperstring:SetHeight(AS.cancelprompt.icon:GetHeight())
+            AS.cancelprompt.upperstring:SetPoint("LEFT", AS.cancelprompt.icon, "RIGHT", 7, 0)
+            AS.cancelprompt.upperstring:SetPoint("RIGHT", AS.cancelprompt, "RIGHT", -15, 0)
+
+        ------ ITEM QUANTITY
+            AS.cancelprompt.quantity = AS.cancelprompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            local Path = AS.cancelprompt.quantity:GetFont()
+            AS.cancelprompt.quantity:SetFont(Path, 26) -- Resize string
+            AS.cancelprompt.quantity:SetJustifyH("CENTER")
+            AS.cancelprompt.quantity:SetPoint("TOP", AS.cancelprompt, "TOP", 0, -AS.cancelprompt.icon:GetWidth() - 30)
+
+        ------ ITEM LEFT SEPARATOR
+            AS.cancelprompt.separator = AS.cancelprompt:CreateTexture()
+            AS.cancelprompt.separator:SetColorTexture(r, b, g, 0.3) -- Aurora
+            AS.cancelprompt.separator:SetSize((AS.cancelprompt:GetWidth()/2)-20, 1)
+            AS.cancelprompt.separator:SetPoint("RIGHT", AS.cancelprompt.quantity, "BOTTOM", 0, -23)
+
+        ------ ITEM RIGHT SEPARATOR
+            AS.cancelprompt.rseparator = AS.cancelprompt:CreateTexture()
+            AS.cancelprompt.rseparator:SetColorTexture(r, g, b, 0.3) -- Aurora
+            AS.cancelprompt.rseparator:SetSize((AS.cancelprompt:GetWidth()/2)-20, 1)
+            AS.cancelprompt.rseparator:SetPoint("LEFT", AS.cancelprompt.separator, "RIGHT")
+    end
+
+    ASI.MassCancel.BidBuyoutFrame = {}
+    function ASI.MassCancel.BidBuyoutFrame.Create()
+
+        AS.cancelprompt.bidbuyout = CreateFrame("FRAME", nil, AS.cancelprompt)
+
+        ------ ITEM BID LABEL
+            AS.cancelprompt.bidbuyout.bid = AS.cancelprompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            AS.cancelprompt.bidbuyout.bid:SetJustifyH("CENTER")
+            AS.cancelprompt.bidbuyout.bid:SetText(string.upper(L[10042]))
+            AS.cancelprompt.bidbuyout.bid:SetPoint("BOTTOM", AS.cancelprompt.separator, "TOP", 0, 2)
+
+        ------ BID AMOUNT EACH
+            AS.cancelprompt.bidbuyout.bid.single = AS.cancelprompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            AS.cancelprompt.bidbuyout.bid.single:SetJustifyH("RIGHT")
+            AS.cancelprompt.bidbuyout.bid.single:SetPoint("TOP", AS.cancelprompt.bidbuyout.bid, "BOTTOM", 0, -10)
+            AS.cancelprompt.bidbuyout.bid.single:SetTextColor(r, g, b) -- Aurora
+
+        ------ BID AMOUNT TOTAL
+            AS.cancelprompt.bidbuyout.bid.total = AS.cancelprompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            AS.cancelprompt.bidbuyout.bid.total:SetJustifyH("RIGHT")
+            AS.cancelprompt.bidbuyout.bid.total:SetPoint("TOP", AS.cancelprompt.bidbuyout.bid.single, "BOTTOM", 0, -16)
+            AS.cancelprompt.bidbuyout.bid.total:SetTextColor(r, g, b) -- Aurora
+
+        ------ ITEM BUYOUT LABEL
+            AS.cancelprompt.bidbuyout.buyout = AS.cancelprompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+            AS.cancelprompt.bidbuyout.buyout:SetJustifyH("CENTER")
+            AS.cancelprompt.bidbuyout.buyout:SetText(string.upper(L[10041]))
+            AS.cancelprompt.bidbuyout.buyout:SetPoint("BOTTOM", AS.cancelprompt.rseparator, "TOP", 0, 2)
+
+        ------ BUYOUT AMOUNT EACH
+            AS.cancelprompt.bidbuyout.buyout.single = AS.cancelprompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            AS.cancelprompt.bidbuyout.buyout.single:SetJustifyH("LEFT")
+            AS.cancelprompt.bidbuyout.buyout.single:SetPoint("TOP", AS.cancelprompt.bidbuyout.buyout, "BOTTOM", 0, -10)
+            AS.cancelprompt.bidbuyout.buyout.single:SetTextColor(r, g, b) -- Aurora
+
+        ------ BUYOUT AMOUNT TOTAL
+            AS.cancelprompt.bidbuyout.buyout.total = AS.cancelprompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            AS.cancelprompt.bidbuyout.buyout.total:SetJustifyH("LEFT")
+            AS.cancelprompt.bidbuyout.buyout.total:SetPoint("TOP", AS.cancelprompt.bidbuyout.buyout.single, "BOTTOM", 0, -16)
+            AS.cancelprompt.bidbuyout.buyout.total:SetTextColor(r, g, b) -- Aurora
+
+        ------ MIDDLE SEPARATOR
+            AS.cancelprompt.bidbuyout.vseparator = AS.cancelprompt.bidbuyout:CreateTexture()
+            AS.cancelprompt.bidbuyout.vseparator:SetColorTexture(r, g, b, 0.3) -- Aurora
+            AS.cancelprompt.bidbuyout.vseparator:SetSize(1, AS.cancelprompt.bidbuyout.bid:GetHeight() + 17)
+            AS.cancelprompt.bidbuyout.vseparator:SetPoint("TOP", AS.cancelprompt.separator, "RIGHT")
+
+            ------ MIDDLE SEPARATOR EACH
+                AS.cancelprompt.bidbuyout.each = AS.cancelprompt.bidbuyout:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+                AS.cancelprompt.bidbuyout.each:SetHeight(AS.cancelprompt.bidbuyout.bid.single:GetHeight() + 10)
+                AS.cancelprompt.bidbuyout.each:SetJustifyH("CENTER")
+                AS.cancelprompt.bidbuyout.each:SetJustifyV("BOTTOM")
+                AS.cancelprompt.bidbuyout.each:SetText(L[10053])
+                AS.cancelprompt.bidbuyout.each:SetTextColor(r, g, b, 1) -- Aurora
+                AS.cancelprompt.bidbuyout.each:SetPoint("CENTER", AS.cancelprompt.bidbuyout.vseparator)
+
+            ------ MIDDLE HORIZONTAL SEPARATOR
+                AS.cancelprompt.bidbuyout.hseparator = AS.cancelprompt:CreateTexture()
+                AS.cancelprompt.bidbuyout.hseparator:SetColorTexture(r, b, g, 0.3) -- Aurora
+                AS.cancelprompt.bidbuyout.hseparator:SetSize(AS.cancelprompt.separator:GetWidth()+AS.cancelprompt.rseparator:GetWidth(), 1)
+                AS.cancelprompt.bidbuyout.hseparator:SetPoint("TOP", AS.cancelprompt.bidbuyout.vseparator, "BOTTOM", 0, -1)
+    end
+
+    ASI.MassCancel.CancelButton = {}
+    function ASI.MassCancel.CancelButton.Create()
+
+        AS.cancelprompt.bid = CreateFrame("Button", nil, AS.cancelprompt, "UIPanelbuttontemplate")
+        AS.cancelprompt.bid:SetText(L[10005])
+        AS.cancelprompt.bid:SetWidth((AS.cancelprompt:GetWidth() / 1.5) - (2 * AS_FRAMEWHITESPACE))
+        AS.cancelprompt.bid:SetHeight(AS_BUTTON_HEIGHT)
+        AS.cancelprompt.bid:SetPoint("TOP", AS.cancelprompt.separator, "BOTTOM", 0, -60)
+        AS.cancelprompt.bid:SetPoint("LEFT", AS.cancelprompt.separator, "LEFT")
+
+        AS.cancelprompt.bid:SetScript("OnClick", ASI.MassCancel.CancelButton.Click)
+
+        if AS_SKIN then
+            F.Reskin(AS.cancelprompt.bid) -- Aurora
+        else
+            ASI.GradientButton.Create(AS.cancelprompt.bid, "VERTICAL")
+        end
+    end
+
+    function ASI.MassCancel.CancelButton:Click(...)
+
+        if CanCancelAuction(GetSelectedAuctionItem("owner")) then
+            AO_UntrackCancelledAuction()
+            CancelAuction(GetSelectedAuctionItem("owner"))
+        end
+        AS.cancelprompt:Hide()
+        AS.CancelStatus = STATE.BUYING
+    end
+
+    ASI.MassCancel.NextButton = {}
+    function ASI.MassCancel.NextButton.Create()
+
+        AS.cancelprompt.buyout = CreateFrame("Button", nil, AS.cancelprompt, "UIPanelbuttontemplate")
+        AS.cancelprompt.buyout:SetText(L[10088])
+        AS.cancelprompt.buyout:SetWidth((AS.cancelprompt:GetWidth() / 3) - (2 * AS_FRAMEWHITESPACE))
+        AS.cancelprompt.buyout:SetHeight(AS_BUTTON_HEIGHT)
+        AS.cancelprompt.buyout:SetPoint("LEFT", AS.cancelprompt.bid, "RIGHT", 2, 0)
+
+        AS.cancelprompt.buyout:SetScript("OnClick", ASI.MassCancel.NextButton.Click)
+
+        if AS_SKIN then
+            F.Reskin(AS.cancelprompt.buyout) -- Aurora
+        else
+            ASI.GradientButton.Create(AS.cancelprompt.buyout, "VERTICAL")
+        end
+    end
+
+    function ASI.MassCancel.NextButton:Click(...)
+        ASprint(MSG_C.INFO.."Skipping item...")
+        AS.CancelStatus = STATE.EVALUATING
+    end
+
+
+--[[//////////////////////////////////////////////////
+
     FILTERS PROMPT FUNCTIONS
 
 ----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
@@ -1598,6 +1872,13 @@ local ASI = {['List'] = {}}
                 AS.manualprompt.upperstring:SetHeight(AS.manualprompt.icon:GetHeight())
                 AS.manualprompt.upperstring:SetPoint("LEFT", AS.manualprompt.icon, "RIGHT", 7, 0)
                 AS.manualprompt.upperstring:SetPoint("RIGHT", AS.manualprompt, "RIGHT", -15, 0)
+
+            ------ RENAME BOX
+                AS.manualprompt.renamebox = CreateFrame("Button", nil, AS.manualprompt)
+                AS.manualprompt.renamebox:SetAllPoints(AS.manualprompt.upperstring)
+                AS.manualprompt.renamebox:SetScript("OnEnter", function(self) ASshowtooltip(self, L[10089]) end)
+                AS.manualprompt.renamebox:SetScript("OnLeave", AShidetooltip)
+                AS.manualprompt.renamebox:SetScript("OnDoubleClick", ASI.Options.Rename)
 
             ------ CUTOFF PRICE LABEL
                 AS.manualprompt.lowerstring = AS.manualprompt:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -1692,7 +1973,7 @@ local ASI = {['List'] = {}}
     function ASI.Filters.Icon.Create()
 
         AS.manualprompt.icon = CreateFrame("Button", nil, AS.manualprompt)
-        AS.manualprompt.icon:SetNormalTexture("Interface/AddOns/AuctionSnatch/media/gloss")
+        AS.manualprompt.icon:SetNormalTexture("Interface\\AddOns\\AuctionSnatch\\media\\gloss")
         AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
         AS.manualprompt.icon:SetPoint("TOPLEFT", AS.manualprompt, "TOPLEFT", 18, -15)
         AS.manualprompt.icon:SetHeight(37)
@@ -2347,9 +2628,7 @@ local ASI = {['List'] = {}}
                         AS_Main()
                     end
                 end)
-                if AS_SKIN then
-                    F.ReskinTab(ASauctiontab) -- Aurora
-                end
+                if AS_SKIN then F.ReskinTab(ASauctiontab) end -- Aurora
 
             -------------- THANK YOU IGORS MASS AUCTION ----------------
             local index = 1
