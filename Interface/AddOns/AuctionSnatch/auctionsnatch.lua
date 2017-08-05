@@ -374,9 +374,6 @@ OPT_HIDDEN = {
             if AS.mainframe.soldlistframe:IsVisible() then
                 AO_OwnerScrollbarUpdate()
             end
-            if AS.CancelStatus == STATE.BUYING then
-                AS.CancelStatus = STATE.EVALUATING
-            end
 
         elseif event == "AUCTION_ITEM_LIST_UPDATE" then
             --ASprint(MSG_C.INFO..event)

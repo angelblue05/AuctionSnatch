@@ -1823,7 +1823,7 @@ local ASI = {['List'] = {}}
             CancelAuction(GetSelectedAuctionItem("owner"))
         end
         AS.cancelprompt:Hide()
-        AS.CancelStatus = STATE.BUYING
+        AS.CancelStatus = STATE.EVALUATING
     end
 
     ASI.MassCancel.NextButton = {}
