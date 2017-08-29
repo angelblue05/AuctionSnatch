@@ -103,7 +103,7 @@ OPT_HIDDEN = {
 
 ----\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\]]
 
-    function OnLoad(self)
+    function AS_OnLoad(self)
 
         ----- REGISTER FOR EVENTS
             self:RegisterEvent("AUCTION_ITEM_LIST_UPDATE")
@@ -214,7 +214,7 @@ OPT_HIDDEN = {
         table.insert(UISpecialFrames, AS.manualprompt:GetName())
     end
 
-    function OnEvent(self, event)
+    function AS_OnEvent(self, event)
 
         if event == "VARIABLES_LOADED" then
             ASprint(MSG_C.EVENT.."Variables loaded. Initializing.", 2)
@@ -510,7 +510,7 @@ OPT_HIDDEN = {
         end
     end
 
-    function OnUpdate(self, elapsed)
+    function AS_OnUpdate(self, elapsed)
 
         -- This is the Blizzard Update, called every computer clock cycle ~millisecond
         if not elapsed then return end -- Otherwise it will infinite loop

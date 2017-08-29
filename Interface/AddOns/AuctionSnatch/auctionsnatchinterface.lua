@@ -1003,21 +1003,10 @@ local ASI = {['List'] = {}}
         AS.item['ASmanualedit'].listnumber = listnumber
 
         AS.manualprompt.upperstring:SetText(item.name)
-        AS.manualprompt.stackone:SetChecked(false)
-        AS.manualprompt.priceoverride:SetText("")
-        AS.manualprompt.ilvlinput:SetText("")
-        AS.manualprompt.notes:SetText("")
-        AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n")
-        AS.manualprompt.ilvllabel:SetText(L[10026]..":\n")
 
         if item.icon then
             AS.manualprompt.icon:SetNormalTexture(item.icon)
             AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
-        else
-            -- clear icon, link
-            AS.manualprompt.icon:SetNormalTexture("")
-            AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
-            AS.manualprompt.icon.link = nil
         end
 
         if item.notes then
@@ -1944,6 +1933,7 @@ local ASI = {['List'] = {}}
         AS.manualprompt:SetScript("OnMouseDown", ASI.Filters.Frame.MouseDown)
         AS.manualprompt:SetScript("OnMouseUp", ASI.Filters.Frame.MouseUp)
         AS.manualprompt:SetScript("OnShow", ASI.Filters.Frame.Show)
+        AS.manualprompt:SetScript("OnHide", ASI.Filters.Frame.Hide)
 
         ------ CLOSE BUTTON
         AS.manualprompt.closebutton = ASI.Close.Create(AS.manualprompt)
@@ -1964,6 +1954,21 @@ local ASI = {['List'] = {}}
 
         AS.mainframe.headerframe.stopsearchbutton:Click()
         self.priceoverride:SetFocus()
+    end
+
+    function ASI.Filters.Frame:Hide(...)
+
+        AS.manualprompt.upperstring:SetText("")
+        AS.manualprompt.stackone:SetChecked(false)
+        AS.manualprompt.priceoverride:SetText("")
+        AS.manualprompt.ilvlinput:SetText("")
+        AS.manualprompt.notes:SetText("")
+        AS.manualprompt.lowerstring:SetText("\n"..L[10038]..":\n")
+        AS.manualprompt.ilvllabel:SetText(L[10026]..":\n")
+
+        AS.manualprompt.icon:SetNormalTexture("")
+        AS.manualprompt.icon:GetNormalTexture():SetTexCoord(0.1, 0.9, 0.1, 0.9)
+        AS.manualprompt.icon.link = nil
     end
 
     ASI.Filters.Icon = {}

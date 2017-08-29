@@ -3,13 +3,13 @@
 	<Frame name="ASframe">
 		<Scripts>
 			<OnLoad>
-				OnLoad(self);
+				AS_OnLoad(self);
 			</OnLoad>
 			<OnEvent>
-				OnEvent(self, event);
+				AS_OnEvent(self, event);
 			</OnEvent>
 			<OnUpdate>
-				OnUpdate(self, elapsed);
+				AS_OnUpdate(self, elapsed);
 			</OnUpdate>
 		</Scripts>
 	</Frame>
