@@ -1,4 +1,6 @@
-﻿if L['language'] ~= "frFR" then return end
+﻿local B, L, T = unpack(select(2, ...))
+
+if L['language'] ~= "frFR" then return end
 
 L[10000] = "AuctionOne chargé.\nTapé /ao ou /auctionone"
 L[10001] = "Sonnette"
@@ -85,3 +87,9 @@ L[10081] = "Chat"
 L[10082] = "Rechercher tes enchères"
 L[10083] = "Rafraîchir la liste"
 L[10084] = "Rafraîchir la liste des ventes"
+L[10085] = "Dernière enchère"
+L[10086] = "Enchères"
+L[10087] = "Annulation en masse des ventes"
+L[10088] = "Prochain"
+L[10089] = "Double-clic pour éditer la recherche"
+L[10090] = "Entrer les mots ou lien d'item"

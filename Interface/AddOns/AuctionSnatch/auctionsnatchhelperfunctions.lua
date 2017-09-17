@@ -1,3 +1,4 @@
+local B, L, T = unpack(select(2, ...))
 
 --[[
 
@@ -12,10 +13,10 @@
 
 ------ MAIN TABLE
 
-    function AS_template(name)
+    function B.template(name)
 
-        ASprint(MSG_C.EVENT.."Generating template: "..name)
-        AS.item = {}
+        B.print(T.MSGC.EVENT.."Generating template: "..name)
+        T.AS.item = {}
         ASautostart = true
         ASautoopen = true
         ASnodoorbell = true
@@ -30,112 +31,112 @@
             AOserver = false
         end
 
-        ACTIVE_TABLE = name
-        AS.mainframe.headerframe.listlabel:SetText(ACTIVE_TABLE)
-        AS_SavedVariables()
+        T.ACTIVE_TABLE = name
+        T.AS.mainframe.headerframe.listlabel:SetText(T.ACTIVE_TABLE)
+        B.SavedVariables()
 
         LISTNAMES = {}
         I_LISTNAMES = {}
         for key, value in pairs(ASsavedtable) do
-            if not OPT_LABEL[key] and not OPT_HIDDEN[key] then-- Found a server
+            if not T.LABEL[key] and not T.OPTIONS[key] then-- Found a server
                 LISTNAMES[#LISTNAMES + 1] = key
             end
         end
-        I_LISTNAMES = table_invert(LISTNAMES)
+        I_LISTNAMES = B.tinvert(LISTNAMES)
         
         if #LISTNAMES > 1 then
-            AS.mainframe.headerframe.nextlist:Enable()
-            AS.mainframe.headerframe.prevlist:Enable()
+            T.AS.mainframe.headerframe.nextlist:Enable()
+            T.AS.mainframe.headerframe.prevlist:Enable()
         else
-            AS.mainframe.headerframe.nextlist:Disable()
-            AS.mainframe.headerframe.prevlist:Disable()
+            T.AS.mainframe.headerframe.nextlist:Disable()
+            T.AS.mainframe.headerframe.prevlist:Disable()
         end
     end
 
-    function AS_LoadTable(name)
+    function B.LoadTable(name)
 
         local serverName = GetRealmName()
-        ACTIVE_TABLE = name
-        AS.mainframe.headerframe.listlabel:SetText(ACTIVE_TABLE)
-        AS.item = {}
-        AS_tcopy(AS.item, ASsavedtable[name])
+        T.ACTIVE_TABLE = name
+        T.AS.mainframe.headerframe.listlabel:SetText(T.ACTIVE_TABLE)
+        T.AS.item = {}
+        B.tcopy(T.AS.item, ASsavedtable[name])
 
         if ASsavedtable[name]["test"] then
-            ASprint("test = "..ASsavedtable[name]["test"])
+            B.print("test = "..ASsavedtable[name]["test"])
         end
 
         if ASsavedtable[name].ASnodoorbell ~= nil then
             ASnodoorbell = ASsavedtable[name].ASnodoorbell
-            --ASprint("Doorbell sound = "..MSG_C.BOOL..""..tostring(ASnodoorbell))
+            --B.print("Doorbell sound = "..T.MSGC.BOOL..""..tostring(ASnodoorbell))
         else
             ASnodoorbell = true
-            AS_SavedVariables()
+            B.SavedVariables()
         end
         if ASsavedtable[name].ASignorebid ~= nil then
             ASignorebid = ASsavedtable[name].ASignorebid
-            --ASprint("Ignore bid = "..MSG_C.BOOL..""..tostring(ASignorebid))
+            --B.print("Ignore bid = "..T.MSGC.BOOL..""..tostring(ASignorebid))
         else
             ASignorebid = false
-            AS_SavedVariables()
+            B.SavedVariables()
         end
         if ASsavedtable[name].ASignorenobuyout ~= nil then
             ASignorenobuyout = ASsavedtable[name].ASignorenobuyout
-            --ASprint("Ignore no buyout = "..MSG_C.BOOL..""..tostring(ASignorenobuyout))
+            --B.print("Ignore no buyout = "..T.MSGC.BOOL..""..tostring(ASignorenobuyout))
         else
             ASignorenobuyout = false
-            AS_SavedVariables()
+            B.SavedVariables()
         end
         if ASsavedtable[name].AOicontooltip ~= nil then
             AOicontooltip = ASsavedtable[name].AOicontooltip
         else
             AOicontooltip = true
-            AS_SavedVariables()
+            B.SavedVariables()
         end
         if serverName == name then
             AOserver = true
-            AS_SavedVariables()
+            B.SavedVariables()
         elseif ASsavedtable[name].AOserver ~= nil then
             AOserver = ASsavedtable[name].AOserver
         else
             AOserver = false
-            AS_SavedVariables()
+            B.SavedVariables()
         end
 
         LISTNAMES = {}
         I_LISTNAMES = {}
         for key, value in pairs(ASsavedtable) do
-            if not OPT_LABEL[key] and not OPT_HIDDEN[key] then-- Found a list
+            if not T.LABEL[key] and not T.OPTIONS[key] then-- Found a list
                 LISTNAMES[#LISTNAMES + 1] = key
             end
         end
-        I_LISTNAMES = table_invert(LISTNAMES)
+        I_LISTNAMES = B.tinvert(LISTNAMES)
 
         if #LISTNAMES > 1 then
-            AS.mainframe.headerframe.nextlist:Enable()
-            AS.mainframe.headerframe.prevlist:Enable()
+            T.AS.mainframe.headerframe.nextlist:Enable()
+            T.AS.mainframe.headerframe.prevlist:Enable()
         else
-            AS.mainframe.headerframe.nextlist:Disable()
-            AS.mainframe.headerframe.prevlist:Disable()
+            T.AS.mainframe.headerframe.nextlist:Disable()
+            T.AS.mainframe.headerframe.prevlist:Disable()
         end
 
-        AS_ScrollbarUpdate()
+        B.ScrollbarUpdate()
     end
 
-    function AS_SwitchTable(name)
-        AS.mainframe.listframe.scrollFrame:SetVerticalScroll(0)
-        AS_LoadTable(name)
+    function B.SwitchTable(name)
+        T.AS.mainframe.listframe.scrollFrame:SetVerticalScroll(0)
+        B.LoadTable(name)
     end
 
 ------ LOGGING
     local ASprintstack = -1
     local messagestring = ""
 
-    function ASprint(message, level)
+    function B.print(message, level)
 
         if ASdebug or (level == 1) then
 
             if ASprintstack == -1 then
-                messagestring = MSG_C.DEFAULT.."AuctionSnatch|r: "
+                messagestring = T.MSGC.DEFAULT.."AuctionSnatch|r: "
             end
 
             if not message then
@@ -151,7 +152,7 @@
                 DEFAULT_CHAT_FRAME:AddMessage(messagestring.."{table} --> ")
                 for k, v in pairs(message) do
                     messagestring = filler.."["..k.."] = "
-                    ASprint(v)
+                    B.print(v)
                 end
             
             elseif (type(message) == "userdata") then
@@ -170,7 +171,7 @@
 
 ------ GOLD MANAGEMENT
 
-    ASGetGSC = function (money)
+    local ASGetGSC = function (money)
             if (money == nil) then money = 0 end
             local g = math.floor(money / 10000)
             local s = math.floor((money - (g*10000)) / 100)
@@ -179,7 +180,7 @@
     end
 
     -- formats money text by color for gold, silver, copper
-    function ASGSC(money, exact, dontUseColorCodes, icon, letters)
+    function B.ASGSC(money, exact, dontUseColorCodes, icon, letters)
         -------------- THANK YOU BOTTOMSCANNER ----------------
         --if not (exact) then exact = true end;
         if (type(money) ~= "number") then return end
@@ -212,7 +213,7 @@
     end
 
 ------ GAME TOOLTIP
-    function ASsettooltip(frame, text)
+    function B.settooltip(frame, text)
         if frame then
             if frame:GetRight() >= (GetScreenWidth() * 0.5) then
                 GameTooltip:SetOwner(frame, "ANCHOR_LEFT")
@@ -232,12 +233,12 @@
     end
 
     local ticker = nil
-    function ASshowtooltip(frame, notes, text, always)
+    function B.showtooltip(frame, notes, text, always)
 
         if frame then
             
-            tooltip = ASsettooltip(frame, text, fadeout)
-            if not always then ticker = C_Timer.NewTicker(3, AShidetooltip, 1) end
+            tooltip = B.settooltip(frame, text, fadeout)
+            if not always then ticker = C_Timer.NewTicker(3, B.hidetooltip, 1) end
 
             if not notes then
                 return tooltip
@@ -248,21 +249,21 @@
        end
     end
 
-    function AShidetooltip()
+    function B.hidetooltip()
 
         if ticker then ticker:Cancel(); ticker = nil end
-        GameTooltip:Hide()
+        GameTooltip_Hide()
     end
 
 ------ FILE AND TABLE MANAGEMENT
     -- tcopy: recursively copy contents of one table to another.  from wowwiki
-    function AS_tcopy(to, from)
+    function B.tcopy(to, from)
         -- "to" must be a table (possibly empty)
         for k, v in pairs(from) do
 
             if type(v) == "table" then
                 to[k] = {}
-                AS_tcopy(to[k], v)
+                B.tcopy(to[k], v)
             else
                 to[k] = v
             end
@@ -270,7 +271,7 @@
     end
 
     -- tcount: count table members even if they're not indexed by numbers
-    function AS_tcount(tab)
+    function B.tcount(tab)
         local n = 0
         
         for _ in pairs(tab) do
@@ -279,13 +280,13 @@
         return n
     end
 
-    function table_invert(t)
+    function B.tinvert(t)
         local u = {}
         for k, v in pairs(t) do u[v] = k end
         return u
     end
 
-    function ASremoveduplicates(ASlist)
+    function B.removeduplicates(ASlist)
 
         local newlist = {}
         local ASexists = false
@@ -293,21 +294,21 @@
         for i = 1,#ASlist do
             ASexists = false
             if not (newlist[1]) then
-                ASprint("Newlist is empty.")
+                B.print("Newlist is empty.")
             end
             
             for j = 1,#newlist do
-                ASprint("Does ASlist["..i.."] ("..ASlist[i].." = newlist["..j.."] ("..newlist[j].." ? ")    
+                B.print("Does ASlist["..i.."] ("..ASlist[i].." = newlist["..j.."] ("..newlist[j].." ? ")    
                 if (ASlist[i] == newlist[j]) then --it exists in the new list already
                     ASexists  = true
                     break
                 end
             end
             if(ASexists == false) then
-                ASprint("Inserting: "..ASlist[i])
+                B.print("Inserting: "..ASlist[i])
                 tinsert(newlist,ASlist[i])
             else
-                ASprint("NOT Inserting: "..ASlist[i])
+                B.print("NOT Inserting: "..ASlist[i])
             end
         end
 
@@ -316,56 +317,65 @@
 
 ------ VISIBILITY, CURSOR
 
-    function GetCursorScaledPosition()
+    function B.GetCursorScaledPosition()
         local scale, x, y = UIParent:GetScale(), GetCursorPosition()
         return x / scale, y / scale
     end
 
-    function ASrowsthatcanfit()  --i dunno.  i don't see anything wrong with this
+    function B.rowsthatcanfit()  --i dunno.  i don't see anything wrong with this
         --so, mainframe is 420, right?  header is 120.  300 is the listframe height.  25 is button height  300/25 = 12 - crap, only 11 show?!  why?!
         --lolol on debugging, ourheight is 299.9999999999999552965            thats messed up
-        if AS and AS.mainframe and AS.mainframe.listframe then
-            local ourheight = math.ceil(AS.mainframe.listframe:GetHeight()) - AS_FRAMEWHITESPACE
-            --ASprint("Listframe height = "..ourheight)
-            --ASprint("AS_BUTTON_HEIGHT = "..AS_BUTTON_HEIGHT)
-            --ASprint("math.floor(ourheight / AS_BUTTON_HEIGHT) = "..math.floor(ourheight / AS_BUTTON_HEIGHT))
+        if T.AS and T.AS.mainframe and T.AS.mainframe.listframe then
+            local ourheight = math.ceil(T.AS.mainframe.listframe:GetHeight()) - T.FRAMEWHITESPACE
+            --B.print("Listframe height = "..ourheight)
+            --B.print("T.BUTTON_HEIGHT = "..T.BUTTON_HEIGHT)
+            --B.print("math.floor(ourheight / T.BUTTON_HEIGHT) = "..math.floor(ourheight / T.BUTTON_HEIGHT))
             
-            --math.floor(ourheight / AS_BUTTON_HEIGHT)
-            return math.floor(ourheight / AS_BUTTON_HEIGHT)
+            --math.floor(ourheight / T.BUTTON_HEIGHT)
+            return math.floor(ourheight / T.BUTTON_HEIGHT)
         end
         return 10--default
     end
 
-function ASsanitize(str)
+    function B.sanitize(str)
 
-    str = string.gsub(str,'|c........',"")
-    str = string.gsub(str,'|r',"")
-    --str = string.gsub(str,'[^a-z:%p]',"")
-    return str
-end
+        str = string.gsub(str,'|c........',"")
+        str = string.gsub(str,'|r',"")
+        --str = string.gsub(str,'[^a-z:%p]',"")
+        return str
+    end
 
-function AS_SetSelected(listnumber)
+    function B.SetSelected(listnumber)
 
-    AS.selected.listnumber = listnumber
-    AS.selected.item = AS.item[listnumber]
-end
+        T.AS.selected.listnumber = listnumber
+        T.AS.selected.item = T.AS.item[listnumber]
+    end
 
-function AS_GetSelected()
+    function B.GetSelected()
 
-    return AS.selected.listnumber, AS.selected.item
-end
+        return T.AS.selected.listnumber, T.AS.selected.item
+    end
 
-function AS_CloseAllPrompt()
+    function B.CloseAllPrompt()
 
-    if AS.manualprompt:IsVisible() then AS.manualprompt:Hide() end
-    if AS.cancelprompt:IsVisible() then AS.cancelprompt:Hide() end
-    if AS.prompt:IsVisible() then AS.mainframe.headerframe.stopsearchbutton:Click() end
-end
+        if T.AS.manualprompt:IsVisible() then T.AS.manualprompt:Hide() end
+        if T.AS.cancelprompt:IsVisible() then T.AS.cancelprompt:Hide() end
+        if T.AS.prompt:IsVisible() then T.AS.mainframe.headerframe.stopsearchbutton:Click() end
+    end
+
+    function B.GetPetInfo(itemlink)
+        local speciesID, level, breedQuality, maxHealth, power, speed, name, icon
+
+        _, speciesID, level, breedQuality, maxHealth, power, speed, name = strsplit(":", itemlink)
+        name, icon = C_PetJournal.GetPetInfoBySpeciesID(speciesID)
+        return {[1] = name, [2] = itemlink, [3] = tonumber(breedQuality), [10] = icon}
+    end
+
 
 function test_sold()
-    --AS.soldauctions = {}
+    --T.AS.soldauctions = {}
     for x = 1, 1 do
-        table.insert(AS.soldauctions, {
+        table.insert(T.AS.soldauctions, {
                 ['name'] = "Obliterum",
                 ['quantity'] = 5,
                 ['icon'] = 1341656,
@@ -373,9 +383,9 @@ function test_sold()
                 ['link'] = "|cffa335ee|Hitem:124125::::::::110:102::::::|h[Obliterum]|h|r",
                 ['buyer'] = nil,
                 ['time'] = GetTime() + 360,
-                ['timer'] = C_Timer.After(360, function() table.remove(AS.soldauctions, 1) ; AO_OwnerScrollbarUpdate() end)
+                ['timer'] = C_Timer.After(360, function() table.remove(T.AS.soldauctions, 1) ; B.OwnerScrollbarUpdate() end)
         })
-        table.insert(AS.soldauctions, {
+        table.insert(T.AS.soldauctions, {
                 ['name'] = "Shal'dorei Silk",
                 ['quantity'] = 200,
                 ['icon'] = 1379172,
@@ -383,9 +393,9 @@ function test_sold()
                 ['link'] = "|cffffffff|Hitem:124437::::::::110:102::::::|h[Shal'dorei Silk]|h|r",
                 ['buyer'] = "Morvevel",
                 ['time'] = GetTime() + 360,
-                ['timer'] = C_Timer.After(360, function() table.remove(AS.soldauctions, 1) ; AO_OwnerScrollbarUpdate() end)
+                ['timer'] = C_Timer.After(360, function() table.remove(T.AS.soldauctions, 1) ; B.OwnerScrollbarUpdate() end)
         })
-        table.insert(AS.soldauctions, {
+        table.insert(T.AS.soldauctions, {
                 ['name'] = "Runescale Koi",
                 ['quantity'] = 10,
                 ['icon'] = 1387371,
@@ -393,8 +403,8 @@ function test_sold()
                 ['link'] = "|cffffffff|Hitem:124111::::::::110:102::::::|h[Runescale Koi]|h|r",
                 ['buyer'] = "Morvevel",
                 ['time'] = GetTime() + 360,
-                ['timer'] = C_Timer.After(360, function() table.remove(AS.soldauctions, 1) ; AO_OwnerScrollbarUpdate() end)
+                ['timer'] = C_Timer.After(360, function() table.remove(T.AS.soldauctions, 1) ; B.OwnerScrollbarUpdate() end)
         })
     end
-    AO_OwnerScrollbarUpdate()
+    B.OwnerScrollbarUpdate()
 end

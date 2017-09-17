@@ -1,4 +1,21 @@
 ------------------------------------------------------------------------
+1.25 | angelblue05 | 2017-09-16
+
+- Reset AH when clicking start search
+- Properly support battle pets
+- Add Exact Match to filters
+
+------------------------------------------------------------------------
+1.24 | angelblue05 | 2017-09-07
+
+- Fixed localization error
+
+------------------------------------------------------------------------
+1.23 | angelblue05 | 2017-09-07
+
+- Fixed small error when adding new items to your lists.
+
+------------------------------------------------------------------------
 1.22 | angelblue05 | 2017-08-29
 
 - Fix filters

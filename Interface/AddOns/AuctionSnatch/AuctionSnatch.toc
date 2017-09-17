@@ -2,8 +2,10 @@
 ## Title: Auction Snatch
 ## Notes: "Get that auction!  Go! Go! Go!"
 ## Author:  Angelblue05, Dax006
-## Version: 1.22
+## Version: 1.24
 ## SavedVariables: ASsavedtable, ASsavedposition, ASfirsttime, ASdebug
+
+init.lua
 
 locale\localization.lua
 locale\english.lua

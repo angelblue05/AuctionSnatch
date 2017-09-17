@@ -1,4 +1,6 @@
-﻿if L['language'] ~= "ruRU" then return end
+﻿local B, L, T = unpack(select(2, ...))
+
+if L['language'] ~= "ruRU" then return end
 
 L[10000] = "AuctionOne загружен.\nКоманды: /ao или /auctionone"
 L[10001] = "Звуковой сигнал"

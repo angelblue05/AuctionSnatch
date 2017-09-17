@@ -1,3 +1,4 @@
+local B, L, T = unpack(select(2, ...))
 -- Primary localization (default)
 
 L[10000] = "AuctionSnatch loaded.\nType /as or /auctionsnatch"
