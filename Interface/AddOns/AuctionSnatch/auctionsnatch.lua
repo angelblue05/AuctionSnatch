@@ -1069,8 +1069,6 @@ T.LABEL = {
 
         local item = T.AS.item[T.AS.currentauction]
         if AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then  --some mods change the default AH frame name
-            BrowseResetButton:Click()
-
             -- Only proceed if item is not set to ignore. Right click item to bypass the ignore filter.
             if T.AS.override or not item.ignoretable or not (item.ignoretable[item.name] and item.ignoretable[item.name].cutoffprice and item.ignoretable[item.name].cutoffprice == 0) then
                 B.print(T.MSGC.INFO.."Called query: ("..T.AS.currentauction..")|r "..item.name, 1)

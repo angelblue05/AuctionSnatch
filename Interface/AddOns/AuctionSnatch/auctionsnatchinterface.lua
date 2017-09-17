@@ -152,6 +152,7 @@ B.I = {['List'] = {}}
         if AuctionFrame and AuctionFrame:IsVisible() then
             AuctionFrameTab1:Click()  -- Focus on search tab
             if AuctionFrameBrowse:IsVisible() then
+                BrowseResetButton:Click()
                 
                 if not IsShiftKeyDown() then T.AS.currentauction = 1 end
 
