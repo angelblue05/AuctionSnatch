@@ -722,7 +722,7 @@ B.I = {['List'] = {}}
                 tooltip:AddLine(L[10019])
 
                 for key, value in pairs(filters) do
-                    if strfind("single", key) then
+                    if strfind(key, "single") then
                         tooltip:AddLine(value)
                     else
                         tooltip:AddDoubleLine(key, value)
@@ -775,13 +775,21 @@ B.I = {['List'] = {}}
 
     function B.I.List.Search:DoubleClick(...)
 
-        BrowseResetButton:Click()
-        AuctionFrameBrowse.page = 0
-        BrowseName:SetText(B.sanitize(self.leftstring:GetText()))
-        if AuctionFrame.selectedTab == 3 or AuctionFrame.selectedTab == 2 then
-            AuctionFrameTab1:Click()
+        if AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then
+            BrowseResetButton:Click()
+            AuctionFrameBrowse.page = 0
+
+            local idx = self.buttonnumber + FauxScrollFrame_GetOffset(T.AS.mainframe.listframe.scrollFrame)
+            local item = T.AS.item[idx]
+
+            BrowseName:SetText(B.sanitize(item.name))
+            ExactMatchCheckButton:SetChecked(item.ignoretable and item.ignoretable[item.name] and item.ignoretable[item.name].exactmatch and true or false)
+
+            if AuctionFrame.selectedTab == 3 or AuctionFrame.selectedTab == 2 then
+                AuctionFrameTab1:Click()
+            end
+            AuctionFrameBrowse_Search()
         end
-        AuctionFrameBrowse_Search()
     end
 
 
@@ -2129,6 +2137,13 @@ B.I = {['List'] = {}}
         else
             T.AS.item[listnumber].ignoretable[name].stackone = item.stackone
         end
+        -- Exact match filter
+        if item.exactmatch == false then
+            T.AS.item[listnumber].ignoretable[name].exactmatch = nil
+        else
+            T.AS.item[listnumber].ignoretable[name].exactmatch = item.exactmatch
+        end
+
         -- Notes
         if item.notes then
             if item.notes ~= "" then
@@ -2259,7 +2274,7 @@ B.I = {['List'] = {}}
 
     function B.I.Filters.ExactMatch:Click(...)
 
-        T.AS.item['ASmanualedit'].exactmatch = self:GetChecked() and true or false
+        T.AS.item['ASmanualedit'].exactmatch = self:GetChecked()
     end
 
     function B.I.Filters.ExactMatch:Enter(...)

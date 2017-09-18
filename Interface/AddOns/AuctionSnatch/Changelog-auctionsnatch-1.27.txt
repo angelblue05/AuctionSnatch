@@ -1,4 +1,15 @@
 ------------------------------------------------------------------------
+1.27 | angelblue05 | 2017-09-17
+
+- Fixed new Exact Match filter
+
+------------------------------------------------------------------------
+1.26 | angelblue05 | 2017-09-17
+
+- Fixed tooltip for new Exact Match filter
+- Add missing Russian translation
+
+------------------------------------------------------------------------
 1.25 | angelblue05 | 2017-09-16
 
 - Reset AH when clicking start search
